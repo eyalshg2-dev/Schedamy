@@ -13,6 +13,7 @@ public class Room {
 	{
 		this.roomID = roomID;
 		this.building = building;
+		this.capacity = capacity;
 		this.roomType = roomType;
 		this.specialEquipment = specialEquipment;
 	}
