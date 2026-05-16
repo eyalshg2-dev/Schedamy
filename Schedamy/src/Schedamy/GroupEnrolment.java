@@ -69,7 +69,7 @@ public class GroupEnrolment
         if(group.getStudyYear() == 3 ||
            group.getStudyYear() == 4)
         {
-            finalPriority += 5;
+           finalPriority += 5;
         }
         priorityLevel = finalPriority;
         return priorityLevel;
