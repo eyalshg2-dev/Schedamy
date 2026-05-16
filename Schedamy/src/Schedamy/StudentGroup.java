@@ -106,7 +106,7 @@ public class StudentGroup
     		return true;
     		}
     	System.out.println("The group schedule is not overloaded");
-    	return false;
+    	 return false;
     }
 
 }
