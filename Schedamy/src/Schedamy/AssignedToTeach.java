@@ -39,7 +39,7 @@ public double calculateLecturerWeeklyHours()
             if (lesson.getStatus().equals("SCHEDULED") ||
                 lesson.getStatus().equals("RESCHEDULED")) 
                 {
-                totalHours += lesson.getDurationTime();
+                totalHours += lesson.getDurationTime().toMinutes() / 60.0;//it turns the duration type into double
                 }
         }
     }

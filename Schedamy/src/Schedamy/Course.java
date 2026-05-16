@@ -1,14 +1,14 @@
 package Schedamy;
 
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.Vector;
 
 public class Course{
 	
 	private int courseID;
 	private String courseName;
 	private int credits;
-	<Lesson> lessons = new ArrayList<>();
+	private Vector<Lesson> lessons;
 	private String courseType;
 	
 	
@@ -20,8 +20,8 @@ public class Course{
 	}
 	
 	// calculate the total hours by iterating through the lessons
-	public int calculateCourseHours() {
-		int totalHours = 0;
+	public double calculateCourseHours() {
+		double totalHours = 0;
 		
 		for (Lesson lesson : lessons) {
 			totalHours += lesson.getDurationTime().toHours();
@@ -61,6 +61,9 @@ public class Course{
 		return this.courseType;
 	}
 	
+	public Vector<Lesson> getLessons(){
+		return this.lessons;
+	}
 	
 	public void setCourseType(String courseType) {
 		if (courseType.equals("elective") || 
