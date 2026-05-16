@@ -13,7 +13,6 @@ public class Room {
 	{
 		this.roomID = roomID;
 		this.building = building;
-		this.capacity = capacity;
 		this.roomType = roomType;
 		this.specialEquipment = specialEquipment;
 	}
@@ -54,11 +53,4 @@ public class Room {
 		return "		Room Number: " + building + roomID  + "	Room Type: " + roomType + "	Capacity: " + capacity + "	Special Equipment: " + specialEquipment;
 	}
 
-	//Get room size
-	public String classifyRoomSize()
-	{
-		if (capacity <= 20) return "small room";
-		if (capacity > 20 && capacity <= 50) return "medium room ";
-		else {return "large room";}
-	} 
 }

@@ -8,7 +8,7 @@ public class Course{
 	private int courseID;
 	private String courseName;
 	private int credits;
-	List<Lesson> lessons = new ArrayList<>();
+	<Lesson> lessons = new ArrayList<>();
 	private String courseType;
 	
 	
