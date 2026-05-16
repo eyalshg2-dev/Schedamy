@@ -24,7 +24,7 @@ public class Course{
 		double totalHours = 0;
 		
 		for (Lesson lesson : lessons) {
-			totalHours += lesson.getDurationTime().toHours();
+			totalHours += lesson.getDurationTime().toMinutes();
 		}
 		
 		return totalHours;

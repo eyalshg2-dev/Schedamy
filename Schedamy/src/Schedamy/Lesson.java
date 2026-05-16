@@ -10,10 +10,13 @@ public class Lesson {
 	private LocalTime startTime;
 	private LocalTime endTime;
 	private String status;
+	private String teachingMode;
+	private boolean requiresLabRoom;
 
 	
 	public Lesson(int lessonID, LocalDate lessonDate, LocalTime startTime,
-		  		  LocalTime endTime, String status) {
+		  		  LocalTime endTime, String status,
+		  		  String teachingMode, boolean requiresLabRoom) {
 		
 		if (lessonDate == null || startTime == null || endTime == null ||
 			status == null) {
@@ -28,7 +31,9 @@ public class Lesson {
 	this.lessonDate = lessonDate;
 	this.startTime = startTime;
 	this.endTime = endTime;
+	this.requiresLabRoom = requiresLabRoom;
 	setStatus(status);
+	setTeachingMode(teachingMode);
 	}
 			
 	public int getLessonID() {
@@ -75,9 +80,29 @@ public class Lesson {
 	}
 
 	
-	public String teachingMode;
+	public String getTeachingMode() {
+		return this.teachingMode;
+	}
 	
-	public boolean requiresLabRoom;
+	
+	public void setTeachingMode(String teachingMode) {
+		
+		if (teachingMode == null) {
+			throw new IllegalArgumentException ("Teaching mode cannot be null");
+		}
+		
+		if (teachingMode.equals("FRONTAL") ||
+			teachingMode.equals("ZOOM") ||
+			teachingMode.equals("HYBRID")) {
+			this.teachingMode = teachingMode;
+		}
+	}
+	
+	
+	public boolean getRequiresLabRoom() {
+		
+		return this.requiresLabRoom;
+	}
 
 	
 	public void changeMode(String newMode) {
