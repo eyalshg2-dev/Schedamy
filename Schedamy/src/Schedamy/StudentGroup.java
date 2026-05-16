@@ -44,7 +44,7 @@ public class StudentGroup
     {
         return this.studentCount;
     }
-    
+     
     //Get program name
     public String getProgramName()
     {
@@ -108,7 +108,7 @@ public class StudentGroup
     	System.out.println("The group schedule is not overloaded");
     	 return false;
     }
- 
+
 }
 
 	
