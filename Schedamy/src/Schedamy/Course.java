@@ -61,6 +61,7 @@ public class Course{
 		return this.courseType;
 	}
 	
+	
 	public Vector<Lesson> getLessons(){
 		return this.lessons;
 	}

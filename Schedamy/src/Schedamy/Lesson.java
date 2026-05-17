@@ -11,12 +11,12 @@ public class Lesson {
 	private LocalTime endTime;
 	private String status;
 	private String teachingMode;
-	private boolean requiresLabRoom;
+	private boolean labRoomRequired;
 
 	
 	public Lesson(int lessonID, LocalDate lessonDate, LocalTime startTime,
 		  		  LocalTime endTime, String status,
-		  		  String teachingMode, boolean requiresLabRoom) {
+		  		  String teachingMode, boolean labRoomRequired) {
 		
 		if (lessonDate == null || startTime == null || endTime == null ||
 			status == null) {
@@ -31,7 +31,7 @@ public class Lesson {
 	this.lessonDate = lessonDate;
 	this.startTime = startTime;
 	this.endTime = endTime;
-	this.requiresLabRoom = requiresLabRoom;
+	this.labRoomRequired = labRoomRequired;
 	setStatus(status);
 	setTeachingMode(teachingMode);
 	}
@@ -96,12 +96,14 @@ public class Lesson {
 			teachingMode.equals("HYBRID")) {
 			this.teachingMode = teachingMode;
 		}
+		
+		throw new IllegalArgumentException("Invalidt teaching mode");
 	}
 	
 	
-	public boolean getRequiresLabRoom() {
+	public boolean isLabRoomRequired() {
 		
-		return this.requiresLabRoom;
+		return labRoomRequired;
 	}
 
 	
