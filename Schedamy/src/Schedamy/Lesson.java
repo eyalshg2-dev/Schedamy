@@ -95,9 +95,10 @@ public class Lesson {
 			teachingMode.equals("ZOOM") ||
 			teachingMode.equals("HYBRID")) {
 			this.teachingMode = teachingMode;
-		}
+		} else {
 		
-		throw new IllegalArgumentException("Invalidt teaching mode");
+		throw new IllegalArgumentException("Invalid teaching mode");
+		}
 	}
 	
 	
