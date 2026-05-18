@@ -7,14 +7,16 @@ public class Room {
 	private String roomType; 
 	private int capacity;
 	private String specialEquipment;  
+	private String status;
 
 	//Constructor
-	public Room(int roomID, int building, String roomType, int capacity, String specialEquipment)
+	public Room(int roomID, int building, String roomType, int capacity, String specialEquipment, String status)
 	{
 		this.roomID = roomID;
 		this.building = building;
 		this.roomType = roomType;
 		this.specialEquipment = specialEquipment;
+		this.status = status;
 	}
 
 	//Get roomID 
@@ -59,5 +61,14 @@ public class Room {
 		if (capacity <= 20) return "small room";
 		if (capacity > 20 && capacity <= 50) return "medium room ";
 		else {return "large room";}
+	}
+
+	public String getStatus() {
+		return status;
 	} 
+	
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
 }
