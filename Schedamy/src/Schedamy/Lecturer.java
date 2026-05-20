@@ -1,6 +1,7 @@
 package Schedamy;
 
 import java.util.ArrayList;
+import java.util.Vector;
 
 public class Lecturer {
 
@@ -11,6 +12,7 @@ public class Lecturer {
 	private double teachingScore;  
 	private double FTE;
 	private static final int FULL_TIME_HOURS = 40;
+	private Vector<Lesson> lessons;
 	
 	//Constructor
 	public Lecturer(int lecturerID, String firstName, String lastName, ArrayList<String> specializations, double teachingScore, double FTE)
@@ -21,6 +23,7 @@ public class Lecturer {
 			this.specializations = specializations;
 			this.teachingScore = teachingScore;
 			this.FTE = FTE;
+			lessons = new Vector<>();
 		}	
 	// get lecturerId
 	public int getLecturerID()
@@ -85,4 +88,15 @@ public class Lecturer {
 			return (calculateWeeklyLoadDiff()<=0);
 			
 	}
+	
+	
+	public Vector<Lesson> getLessons() {
+		return lessons;
+	}
+	
+	
+	public void addLesson(Lesson lesson) {
+		lessons.add(lesson);
+	}
+
 }
