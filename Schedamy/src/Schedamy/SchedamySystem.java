@@ -7,7 +7,6 @@ public class SchedamySystem
 {
     private List<Course> courses;
     private List<Lecturer> lecturers;
-    private List<Lesson> lessons;
     private List<Room> rooms;
     private List<RoomResrvation> roomReservations;
     private List<StudentGroup> studentGroups;
@@ -18,7 +17,6 @@ public class SchedamySystem
     {
         courses = new ArrayList<Course>();
         lecturers = new ArrayList<Lecturer>();
-        lessons = new ArrayList<Lesson>();
         rooms = new ArrayList<Room>();
         roomReservations = new ArrayList<RoomResrvation>();
         studentGroups = new ArrayList<StudentGroup>();
@@ -34,11 +32,6 @@ public class SchedamySystem
     public void addLecturer(Lecturer lecturer)
     {
         lecturers.add(lecturer);
-    }
-
-    public void addLesson(Lesson lesson)
-    {
-        lessons.add(lesson);
     }
 
     public void addRoom(Room room)
@@ -74,11 +67,6 @@ public class SchedamySystem
     public List<Lecturer> getLecturers()
     {
         return lecturers;
-    }
-
-    public List<Lesson> getLessons()
-    {
-        return lessons;
     }
 
     public List<Room> getRooms()
