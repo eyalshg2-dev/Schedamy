@@ -53,7 +53,7 @@ public class GroupEnrolment
         }
         return attendanceRequired;
     }
-    
+     
     // calculation Priority
     public int calculationPriority()
     {

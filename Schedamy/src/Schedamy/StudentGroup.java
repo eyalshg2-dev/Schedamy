@@ -58,38 +58,35 @@ public class StudentGroup
     }
 
     //calculate Weekly hours in course
-    public int calculateTotalWeeklyHours(GroupEnrolment[] enrolments,LocalDate startWeek)
+    public int calculateTotalHours(GroupEnrolment[] enrolments)
     {
-    	int totalHours = 0;
-    	LocalDate endWeek = startWeek.plusDays(7);
+        int totalHours = 0;
 
-    	for(int i = 0; i < enrolments.length; i++)
-    	{
-    		if(enrolments[i] != null)
-    		{
-    			for(int j = 0; j < enrolments[i].getCourse().getLessons().size(); j++)
-    			{
-    				if(enrolments[i].getCourse().getLessons().get(j) != null)
-    				{
-    					if((enrolments[i].getCourse().getLessons().get(j).getLessonDate().isEqual(startWeek) ||
-    						enrolments[i].getCourse().getLessons().get(j).getLessonDate().isAfter(startWeek)) &&
-    							(enrolments[i].getCourse().getLessons().get(j).getLessonDate().isBefore(endWeek) ||
-    							 enrolments[i].getCourse().getLessons().get(j).getLessonDate().isEqual(endWeek)))
-    					{
-    						totalHours += Duration.between(enrolments[i].getCourse().getLessons().get(j).getStartTime(),enrolments[i].getCourse().getLessons().get(j).getEndTime()).toMinutes() / 45;
-    						}
-    					}
-    				}
-    			}
-    		}
-    	return totalHours;
+        for(int i = 0; i < enrolments.length; i++)
+        {
+            if(enrolments[i] != null)
+            {
+                for(int j = 0; j < enrolments[i].getCourse().getLessons().size(); j++)
+                {
+                    if(enrolments[i].getCourse().getLessons().get(j) != null)
+                    {
+                        totalHours += Duration.between(
+                                enrolments[i].getCourse().getLessons().get(j).getStartTime(),
+                                enrolments[i].getCourse().getLessons().get(j).getEndTime()
+                        ).toMinutes() / 45;
+                    }
+                }
+            }
+        }
+
+        return totalHours;
     }
     
     //calculate if the schedule over loaded
     public boolean isScheduleOverloaded(GroupEnrolment[] enrolments,
             LocalDate startWeek)
     {
-    	int totalHours = calculateTotalWeeklyHours(enrolments, startWeek);
+    	int totalHours = calculateTotalHours(enrolments);
     	if(programName.equals("Evening"))
     	{
     		if(totalHours > 15)
