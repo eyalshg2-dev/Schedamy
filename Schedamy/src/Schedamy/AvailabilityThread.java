@@ -5,6 +5,10 @@ import java.util.Vector;
 
 public class AvailabilityThread implements Runnable {
 	
+	//By using Runnable we want to create a thread 
+	// that runs in sync by checking the availability
+	// of the lecturers, students and classrooms
+	
 	private Lecturer lecturer;
 	private Lesson lesson;
 	private LocalDate date;
@@ -29,7 +33,7 @@ public class AvailabilityThread implements Runnable {
 			//Check the availability of the lecturer
 			for (Lesson current : lecturer.getLessons()) {
 				if(current.getLessonDate().equals(date)) {
-					System.out.println("[Thread] lecturer unavilable on : " + date);
+					System.out.println("Lecturer unavilable on : " + date);
 					return;
 				}
 			}
@@ -41,7 +45,7 @@ public class AvailabilityThread implements Runnable {
 						for(Lesson groupLesson : enrolment.getCourse().getLessons()){
 							if(groupLesson.getLessonDate().equals(date) &&
 									!groupLesson.getStatus().equals("CANCELLED")) {
-								System.out.println("[Thread] Group: " +
+								System.out.println("Group: " +
 									group.getGroupID() + ("unavailable on: " + date));
 								return;
 							}
@@ -57,7 +61,7 @@ public class AvailabilityThread implements Runnable {
 			}
 			
 		} catch(Exception e) {
-			System.out.println("[AvailabilityThread] Error: " + e.getMessage());
+			System.out.println("Error: " + e.getMessage());
 		}
 	}
 		
@@ -84,7 +88,7 @@ public class AvailabilityThread implements Runnable {
 			}
 		}
 		
-		//function to handle incase the class will be in zoom
+		//function to handle incase the lesson will be in zoom
 		private void handleZoom() {
 			synchronized (lesson) {
 				if(!"RESCHEDULED".equals(lesson.getStatus())) {
