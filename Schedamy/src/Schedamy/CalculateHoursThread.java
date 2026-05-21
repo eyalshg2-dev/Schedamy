@@ -11,9 +11,12 @@ public class CalculateHoursThread extends Thread{
 	@Override
 	public void run() {
 		
+		try {
 		double totalHours = assignedToTeach.calculateLecturerWeeklyHours();
-		
 		System.out.println("Total lecture hours:" + totalHours);
+		} catch (Exception e) {
+			System.out.println("[CalculateHoursThread] Error: " + e.getMessage());
+		}
 		
 	}
 
