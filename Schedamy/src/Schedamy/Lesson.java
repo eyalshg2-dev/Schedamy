@@ -2,6 +2,7 @@ package Schedamy;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Vector;
 
 public class Lesson {
 	
@@ -12,11 +13,13 @@ public class Lesson {
 	private String status;
 	private String teachingMode;
 	private boolean labRoomRequired;
+	private Room room;
+	private Vector<StudentGroup> students;
 
 	
 	public Lesson(int lessonID, LocalDate lessonDate, LocalTime startTime,
 		  		  LocalTime endTime, String status,
-		  		  String teachingMode, boolean labRoomRequired) {
+		  		  String teachingMode, boolean labRoomRequired, Vector<StudentGroup> student) {
 		
 		if (lessonDate == null || startTime == null || endTime == null ||
 			status == null) {
@@ -32,6 +35,7 @@ public class Lesson {
 	this.startTime = startTime;
 	this.endTime = endTime;
 	this.labRoomRequired = labRoomRequired;
+	this.students = new Vector<>();
 	setStatus(status);
 	setTeachingMode(teachingMode);
 	}
@@ -40,8 +44,15 @@ public class Lesson {
 		return this.lessonID;
 	}
 	
-	public LocalDate getLessonDate() {
+	public synchronized LocalDate getLessonDate() {
 		return this.lessonDate;
+	}
+	
+	public synchronized void setLessonDate(LocalDate newDate) {
+		if (newDate == null) {
+			throw new IllegalArgumentException("Date cannot be null");
+		}
+		this.lessonDate = newDate;
 	}
 	
 	public LocalTime getStartTime() {
@@ -52,11 +63,11 @@ public class Lesson {
 		return this.endTime;
 	}
 	
-	public String getStatus() {
+	public synchronized String getStatus() {
 		return this.status;
 	}
 	
-	public void setStatus(String status) {
+	public synchronized void setStatus(String status) {
 		
 		if (status == null) {
 			throw new IllegalArgumentException("Status cannot be null");
@@ -80,12 +91,12 @@ public class Lesson {
 	}
 
 	
-	public String getTeachingMode() {
+	public synchronized String getTeachingMode() {
 		return this.teachingMode;
 	}
 	
 	
-	public void setTeachingMode(String teachingMode) {
+	public synchronized void setTeachingMode(String teachingMode) {
 		
 		if (teachingMode == null) {
 			throw new IllegalArgumentException ("Teaching mode cannot be null");
@@ -108,21 +119,24 @@ public class Lesson {
 	}
 
 	
-	public void changeMode(String newMode) {
-		
-		if (newMode == null) {
-			throw new IllegalArgumentException("Teaching mode cannot be null");
-		}
-		
-		if (newMode.equals("FRONTAL") ||
-			newMode.equals("ZOOM") ||
-			newMode.equals("HYBRID")){
-			
-			this.teachingMode = newMode;
-			
-		} else {
-			throw new IllegalArgumentException("Invalid teaching mode");
-		}
-	}		
+	public synchronized void changeMode(String newMode) {
+		setTeachingMode(newMode);
+	}	
+	
+	public synchronized Room getRoom() {
+		return this.room;
+	}
+	
+	public synchronized void setRoom(Room room) {
+		this.room = room;
+	}
+	
+	public synchronized void addStudent(StudentGroup student) {
+		students.add(student);
+	}
+	
+	public Vector<StudentGroup> getStudents() {
+	    return students;
+	}
 }
 	

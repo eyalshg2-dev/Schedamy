@@ -12,19 +12,21 @@ public class Course{
 	private String courseType;
 	
 	 
-	public Course(int courseID, String courseName, int credits, String courseType) {
+	public Course(int courseID, String courseName, int credits,
+			String courseType, Vector<Lesson> lessons) {
 		this.courseID = courseID;
+		this.lessons = new Vector<>();
 		setCourseName(courseName);
 		setCredits(credits);
 		setCourseType(courseType);
 	}
 	
 	// calculate the total hours by iterating through the lessons
-	public double calculateCourseHours() {
+	public synchronized double calculateCourseHours() {
 		double totalHours = 0;
 		
 		for (Lesson lesson : lessons) {
-			totalHours += lesson.getDurationTime().toMinutes();
+			totalHours += lesson.getDurationTime().toMinutes() /60.0;
 		}
 		
 		return totalHours;
@@ -36,37 +38,40 @@ public class Course{
 	}
 	
 	
-	public String getCourseName() {
+	public synchronized String getCourseName() {
 		return this.courseName;
 	}
 	
 	
-	public void setCourseName(String courseName) {
+	public synchronized void setCourseName(String courseName) {
 		this.courseName = courseName;
 	}
 	
 	
-	public int getCredits() {
+	public synchronized int getCredits() {
 		return this.credits;
 	}
 	
 	
-	public void setCredits(int credits) {
+	public synchronized void setCredits(int credits) {
+		if (credits <= 0) {
+			throw new IllegalArgumentException("Credits must be positive");
+		}
 		this.credits = credits;
 		
 	}
 	
 	
-	public String getCourseType() {
+	public synchronized String getCourseType() {
 		return this.courseType;
 	}
 	
 	
-	public Vector<Lesson> getLessons(){
+	public synchronized Vector<Lesson> getLessons(){
 		return this.lessons;
 	}
 	
-	public void setCourseType(String courseType) {
+	public synchronized void setCourseType(String courseType) {
 		if (courseType.equals("elective") || 
 			courseType.equals("mandatory")) {
 			this.courseType = courseType;
@@ -76,7 +81,7 @@ public class Course{
 	}
 	
 	
-	public void addLesson (Lesson lesson) {
+	public synchronized void addLesson (Lesson lesson) {
 		if (lesson == null) {
 			throw new IllegalArgumentException("Lesson cannot be null");
 		}

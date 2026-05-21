@@ -9,44 +9,31 @@ public class AvailabilityThread implements Runnable {
 	private Lesson lesson;
 	private LocalDate date;
 	private Vector<Room> rooms;
+	private final Object roomLock;
 	
 	public AvailabilityThread(Lecturer lecturer, Lesson lesson, 
-							  LocalDate date, Vector<Room> rooms) {
+							  LocalDate date, Vector<Room> rooms, Object roomLock) {
 		this.lecturer = lecturer;
 		this.lesson = lesson;
 		this.date = date;
 		this.rooms = rooms;
+		this.roomLock = roomLock;
 	}
 	
 	public void run() {
 		
-		  boolean lecturerAvailable = true;
-
-	        for (Lesson currentLesson : lecturer.getLessons()) {
-	            if (currentLesson.getLessonDate().equals(date)) {
-	                lecturerAvailable = false;
-	                break;
-	            }
-	        }
-
-	        if (!lecturerAvailable) {
-	            System.out.println("Lecturer is not available on: " + date);
-	            return;
-	        }
-
-	        if ("FRONTAL".equals(lesson.getTeachingMode())) {
-
-	            for (Room room : rooms) {
-	            	if("AVAILABILITY".equals(room.getStatus()))
-	            		System.out.println("Available classroom found");
-	                	break;
-	            }
-
-	        } else {
-	            System.out.println("Lecturer is available on: " + date + "for ZOOM");
-	        }
+		try {
+			for (Lesson current : lecturer.getLessons()) {
+				if(current.getLessonDate().equals(date)) {
+					System.out.println("Thread lecturer unavilable on : " + date);
+					return;
+				}
+			}
+		} catch(Exception e) {
+			System.out.println("[AvailabilityThread] Error: " + e.getMessage());
+		}
 	        
 
-	        lesson.setStatus("UPDATED");
+	        lesson.setStatus("RESCHEDULED");
 	    }
 	}
