@@ -31,7 +31,7 @@ public Vector<Course> getCourses()
 // calculate lecturer's weekly hours
 public double calculateLecturerWeeklyHours()
 {
-    double totalHours = 0;
+    int totalHours = 0;
     for (Course course : courses)
     {
         for (Lesson lesson : course.getLessons()) 
@@ -39,7 +39,7 @@ public double calculateLecturerWeeklyHours()
             if (lesson.getStatus().equals("SCHEDULED") ||
                 lesson.getStatus().equals("RESCHEDULED")) 
                 {
-                totalHours += lesson.getDurationTime().toMinutes() / 60.0;//it turns the duration type into double
+                totalHours += lesson.getDurationTime().toMinutes() / 45;//it turns the duration type into double
                 }
         }
     }
