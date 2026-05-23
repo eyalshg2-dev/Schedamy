@@ -88,4 +88,18 @@ public class Course{
 		
 		 lessons.add(lesson);
 	}
+	
+	public synchronized void removeLesson(Lesson lesson) {
+		
+		if (lesson == null) {
+			throw new IllegalArgumentException("Lesson cannot be null");
+		}
+		
+		if (!lessons.remove(lesson)) {
+			throw new IllegalArgumentException("Lesson not found");
+		}
+	}
+	public String toString() {
+		return "courseID=" + courseID +"courseName=" + courseName +"credits=" + credits +"courseType=" + courseType +"lessons=" + lessons.size();
+	}
 }

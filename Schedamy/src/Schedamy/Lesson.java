@@ -138,5 +138,10 @@ public class Lesson {
 	public Vector<StudentGroup> getStudents() {
 	    return students;
 	}
+	@Override
+	public String toString() {
+		return "lessonID=" + lessonID + "lessonDate=" + lessonDate + "startTime=" + startTime +"endTime=" + endTime +
+			   "status=" + status + "teachingMode=" + teachingMode + "labRoomRequired=" + labRoomRequired + "room=" + room ;
+	}
 }
 	

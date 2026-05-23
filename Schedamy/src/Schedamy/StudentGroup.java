@@ -78,7 +78,7 @@ public class StudentGroup
                 }
             }
         }
- 
+  
         return totalHours;
     }
     
