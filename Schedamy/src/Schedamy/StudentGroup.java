@@ -57,7 +57,7 @@ public class StudentGroup
         return "Group ID: " + groupID + "Department: " + department + "Study Year: " + studyYear + "Student Count: " + studentCount + "Program Name: " + programName;
     }
 
-    //calculate Weekly hours in course
+    //calculate hours in course
     public int calculateTotalHours(GroupEnrolment[] enrolments)
     {
         int totalHours = 0;
