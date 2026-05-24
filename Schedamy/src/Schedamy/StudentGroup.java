@@ -56,7 +56,7 @@ public class StudentGroup
     {
         return "Group ID: " + groupID + "Department: " + department + "Study Year: " + studyYear + "Student Count: " + studentCount + "Program Name: " + programName;
     }
-
+ 
     //calculate hours in course
     public int calculateTotalHours(GroupEnrolment[] enrolments)
     {
@@ -78,7 +78,7 @@ public class StudentGroup
                 }
             }
         }
-  
+   
         return totalHours;
     }
     
