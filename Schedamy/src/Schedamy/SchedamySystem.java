@@ -40,6 +40,11 @@ public class SchedamySystem
     	// ID must be 9 digits
     	if (String.valueOf(id).length() != 9) 
     		throw new IllegalArgumentException("ID must contain 9 digits");
+            	for (Lecturer l : lecturers) 
+    	{
+    	    if (l.getLecturerID() == id)
+    	        throw new IllegalArgumentException("This ID already exists");
+    	}
     	// First name only letters
     	if (!firstName.matches("[a-zA-Z]+"))
     		throw new IllegalArgumentException("First name must contain only letters");
