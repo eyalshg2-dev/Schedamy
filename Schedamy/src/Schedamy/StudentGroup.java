@@ -56,8 +56,8 @@ public class StudentGroup
     {
         return "Group ID: " + groupID + "Department: " + department + "Study Year: " + studyYear + "Student Count: " + studentCount + "Program Name: " + programName;
     }
- 
-    //calculate hours in course
+
+  //calculate hours in course
     public int calculateTotalHours(GroupEnrolment[] enrolments)
     {
         int totalHours = 0;
@@ -83,8 +83,7 @@ public class StudentGroup
     }
     
     //calculate if the schedule over loaded
-    public boolean isScheduleOverloaded(GroupEnrolment[] enrolments,
-            LocalDate startWeek)
+    public boolean isScheduleOverloaded(GroupEnrolment[] enrolments)
     {
     	int totalHours = calculateTotalHours(enrolments);
     	if(programName.equals("Evening"))
@@ -109,4 +108,3 @@ public class StudentGroup
 }
 
 	
-
