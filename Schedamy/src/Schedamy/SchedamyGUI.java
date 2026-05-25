@@ -91,10 +91,18 @@ public class SchedamyGUI extends Frame implements ActionListener {
     private void buildViewMenu() {
         viewMenu = new Menu("View");
 
-        viewMenu.add(new MenuItem("Rooms"));
-        viewMenu.add(new MenuItem("Lecturers"));
-        viewMenu.add(new MenuItem("Student Groups"));
-        viewMenu.add(new MenuItem("Courses"));
+        MenuItem roomsItem = new MenuItem("Rooms");
+        roomsItem.addActionListener(this);
+        viewMenu.add(roomsItem);
+        MenuItem lecturersItem = new MenuItem("Lecturers");
+        lecturersItem.addActionListener(this);
+        viewMenu.add(lecturersItem);
+        MenuItem coursesItem = new MenuItem("Courses");
+        coursesItem.addActionListener(this);
+        viewMenu.add(coursesItem);
+        MenuItem groupsItem = new MenuItem("Student Groups");
+        groupsItem.addActionListener(this);
+        viewMenu.add(groupsItem);
         viewMenu.add(new MenuItem("Lessons"));
 
         viewMenu.addSeparator();
@@ -176,6 +184,20 @@ public class SchedamyGUI extends Frame implements ActionListener {
         String commandAddLecturer = e.getActionCommand();
         if (commandAddLecturer.equals("Add Lecturer")) {
             openAddLecturerDialog();
+        }
+        if (e.getActionCommand().equals("Lecturers"))
+        {
+            openLecturersView();
+        }
+        if (e.getActionCommand().equals("Courses"))
+        {
+            openCoursesView();
+        }
+        if (e.getActionCommand().equals("Student Groups")) {
+            openStudentGroupsView();
+        }
+        if (e.getActionCommand().equals("Rooms")) {
+            openRoomsView();
         }
     }
     
@@ -267,17 +289,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
                 for (String spec : selectedSpecs) 
                     specializations.add(spec);
             
-
-                Lecturer lecturer = new Lecturer(
-                    id,
-                    firstName,
-                    lastName,
-                    specializations,
-                    teachingScore,
-                    fte
-                );
-
-                system.addLecturer(lecturer);
+                system.addLecturer(id,firstName,lastName,specializations,teachingScore,fte);
                 System.out.println(system.getLecturers());
                 JOptionPane.showMessageDialog(
                 	    this,
@@ -347,17 +359,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         addButton.addActionListener(e -> {
             try {
-                Room room = new Room(
-                    Integer.parseInt(roomNumberField.getText()),
-                    Integer.parseInt(buildingField.getText()),
-                    roomTypeChoice.getSelectedItem(),
-                    Integer.parseInt(capacityField.getText()),
-                    equipmentField.getText(),
-                    "AVAILABLE"
-                );
-
-                system.addRoom(room);
-
+                system.addRoom(Integer.parseInt(roomNumberField.getText()),Integer.parseInt(buildingField.getText()),roomTypeChoice.getSelectedItem(),Integer.parseInt(capacityField.getText()),equipmentField.getText());
                 JOptionPane.showMessageDialog(
                     this,
                     "Room added successfully!\n" +
@@ -423,15 +425,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 	    addButton.addActionListener(e -> {
 	        try {
-	            Course course = new Course(
-	            	nextCourseID++,
-	                capitalizeFirstLetter(courseNameField.getText()),
-	                Integer.parseInt(creditsField.getText()),
-	                courseTypeChoice.getSelectedItem(),
-	                new Vector<Lesson>()
-	            );
+	        	int courseID = nextCourseID++;
 
-	            system.addCourse(course);
+	        	system.addCourse(courseID,capitalizeFirstLetter(courseNameField.getText()),Integer.parseInt(creditsField.getText()),courseTypeChoice.getSelectedItem());
 
 	            JOptionPane.showMessageDialog(this,
 	                "Course added successfully!\nTotal courses: " + system.getCourses().size() + "\n"+ "Course ID "+ nextCourseID);
@@ -512,19 +508,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	      // Add button action
 	    addButton.addActionListener(e -> {
 	        try {
-	        	StudentGroup group = new StudentGroup(
-	            nextGroupID++,
-	                departmentChoice.getSelectedItem(),
-	                Integer.parseInt(studyYearChoice.getSelectedItem()),
-	                Integer.parseInt(studentCountField.getText()),
-	                programChoice.getSelectedItem());
-	            // Add group into the system
-	            system.addStudentGroup(group);
+	        system.addStudentGroup(nextGroupID++,departmentChoice.getSelectedItem(),Integer.parseInt(studyYearChoice.getSelectedItem()),Integer.parseInt(studentCountField.getText()),programChoice.getSelectedItem());
 	            //success and error massages
 	            JOptionPane.showMessageDialog(
 	                this,
 	                "Student group added successfully!\n" +
-	                "Group ID: " + group.getGroupID() + "\n" +
+	                "Group ID: " + nextGroupID + "\n" + "\n" +
 	                "Total groups: " + system.getStudentGroups().size(),
 	                "Success",JOptionPane.INFORMATION_MESSAGE);
 	            // Close dialog window
@@ -550,6 +539,71 @@ public class SchedamyGUI extends Frame implements ActionListener {
     public static void main(String[] args)
     {
         new SchedamyGUI();
+    }
+    private void openLecturersView() {
+        String text = "";
+
+        for (Lecturer lecturer : system.getLecturers()) {
+            text += lecturer.toString() + "\n\n";
+        }
+
+        if (text.isEmpty()) {
+            text = "No lecturers found.";
+        }
+
+        JOptionPane.showMessageDialog(
+            this,
+            text,
+            "Lecturers",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+    private void openCoursesView() {
+        String text = "";
+
+        for (Course course : system.getCourses()) {
+            text += course.toString() + "\n\n";
+        }
+
+        if (text.isEmpty()) {
+            text = "No courses found.";
+        }
+        JOptionPane.showMessageDialog(
+            this,
+            text,
+            "Courses",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+    private void openStudentGroupsView()
+    {
+        String text = "";
+        for (StudentGroup group : system.getStudentGroups()) {
+            text += group.toString() + "\n\n";
+        }
+        if (text.isEmpty())
+            text = "No student groups found.";
+        JOptionPane.showMessageDialog(
+            this,
+            text,
+            "Student Groups",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+    private void openRoomsView()
+    {
+        String text = "";
+        for (Room room : system.getRooms()) {
+            text += room.toString() + "\n\n";
+        }
+        if (text.isEmpty())
+            text = "No rooms found.";
+        JOptionPane.showMessageDialog(
+            this,
+            text,
+            "Rooms",
+            JOptionPane.INFORMATION_MESSAGE
+        );
     }
 
 }

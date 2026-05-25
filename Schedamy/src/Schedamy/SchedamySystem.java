@@ -2,6 +2,7 @@ package Schedamy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
 public class SchedamySystem 
 {
@@ -24,19 +25,46 @@ public class SchedamySystem
         assignedToTeachList = new ArrayList<AssignedToTeach>();
     }
 
-    public void addCourse(Course course)
+    public void addCourse(int courseID, String courseName,int credits, String courseType)
     {
-        courses.add(course);
+    	if (courseName == null || courseName.isEmpty())
+    		throw new IllegalArgumentException("Invalid course name");
+    	if (credits <= 0)
+    		throw new IllegalArgumentException("Invalid credits");
+    	Course course = new Course(courseID,courseName,credits,courseType,new Vector<Lesson>());
+    	courses.add(course);
     }
 
-    public void addLecturer(Lecturer lecturer)
+    public void addLecturer(int id, String firstName, String lastName,ArrayList<String> specializations,double teachingScore,double fte)
     {
-        lecturers.add(lecturer);
+    	// ID must be 9 digits
+    	if (String.valueOf(id).length() != 9) 
+    		throw new IllegalArgumentException("ID must contain 9 digits");
+    	// First name only letters
+    	if (!firstName.matches("[a-zA-Z]+"))
+    		throw new IllegalArgumentException("First name must contain only letters");
+    	// Last name only letters
+    	if (!lastName.matches("[a-zA-Z]+"))
+    		throw new IllegalArgumentException("Last name must contain only letters");
+    	Lecturer lecturer = new Lecturer(id,firstName,lastName,specializations,teachingScore,fte);
+    	// FTE Between 0-100
+    	if (fte < 0 || fte > 100)
+    	    throw new IllegalArgumentException("FTE must be a number between 0-100");
+    	if (specializations.isEmpty())
+    	    throw new IllegalArgumentException("Choose at least one specialization");
+    	lecturers.add(lecturer);
     }
 
-    public void addRoom(Room room)
+    public void addRoom(int roomNumber, int building,String roomType, int capacity,String equipment)
     {
-        rooms.add(room);
+    	if (roomNumber <= 0)
+    		throw new IllegalArgumentException("Invalid room number");
+    	if (building <= 0)
+    		throw new IllegalArgumentException("Invalid building");
+    	if (capacity <= 0)
+    		throw new IllegalArgumentException("Invalid capacity");
+    	Room room = new Room(roomNumber,building,roomType,capacity,equipment,"AVAILABLE");
+    	rooms.add(room);
     }
  
     public void addRoomReservation(RoomResrvation roomReservation)
@@ -44,11 +72,13 @@ public class SchedamySystem
         roomReservations.add(roomReservation);
     }
 
-    public void addStudentGroup(StudentGroup studentGroup)
+    public void addStudentGroup(int groupID, String department,int studyYear, int studentCount,String programName)
     {
-        studentGroups.add(studentGroup);
+    	if (studentCount <= 0)
+    		throw new IllegalArgumentException("Invalid student count");
+    	StudentGroup group = new StudentGroup(groupID,department,studyYear,studentCount,programName);
+    	studentGroups.add(group);
     }
-
     public void addGroupEnrolment(GroupEnrolment groupEnrolment)
     {
         groupEnrolments.add(groupEnrolment);
