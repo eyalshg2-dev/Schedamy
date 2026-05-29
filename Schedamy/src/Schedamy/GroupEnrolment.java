@@ -8,12 +8,12 @@ public class GroupEnrolment
     private Course course;
 
   //Constructor
-    public GroupEnrolment(int priorityLevel, boolean attendanceRequired,StudentGroup group, Course course)
+    public GroupEnrolment(StudentGroup group, Course course)
     {
-        this.priorityLevel = priorityLevel;
-        this.attendanceRequired = attendanceRequired;
         this.group = group;
         this.course = course;
+        this.attendanceRequired = isAttendanceRequired();
+        this.priorityLevel = calculationPriority();
     }
     
     //Get PriorityLevel
@@ -57,7 +57,7 @@ public class GroupEnrolment
     // calculation Priority
     public int calculationPriority()
     {
-        int finalPriority = priorityLevel;
+        int finalPriority = 0;
         if(course.getCourseType().equals("mandatory"))
         {
             finalPriority += 10;

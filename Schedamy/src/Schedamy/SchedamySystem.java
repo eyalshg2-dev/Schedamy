@@ -1,6 +1,8 @@
 package Schedamy;
 
 import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Vector;
 
@@ -25,14 +27,25 @@ public class SchedamySystem
         assignedToTeachList = new ArrayList<AssignedToTeach>();
     }
 
-    public void addCourse(int courseID, String courseName,int credits, String courseType)
+    public void addCourse(int courseID, String courseName,int credits, String courseType,int lecturerID, int groupID)
     {
     	if (courseName == null || courseName.isEmpty())
     		throw new IllegalArgumentException("Invalid course name");
     	if (credits <= 0)
     		throw new IllegalArgumentException("Invalid credits");
     	Course course = new Course(courseID,courseName,credits,courseType,new Vector<Lesson>());
+    	
+    	Lecturer lecturer = findLecturerById(lecturerID);
+    	StudentGroup group = findStudentGroupById(groupID);
+    	if (lecturer == null)
+    	    throw new IllegalArgumentException("Lecturer not found");
+    	if (group == null)
+    	    throw new IllegalArgumentException("Student group not found");
     	courses.add(course);
+    	AssignedToTeach assigned = new AssignedToTeach(lecturer, course);
+    	assignedToTeachList.add(assigned);
+    	GroupEnrolment enrolment = new GroupEnrolment(group, course);
+    	groupEnrolments.add(enrolment);
     }
 
     public void addLecturer(int id, String firstName, String lastName,ArrayList<String> specializations,double teachingScore,double fte)
@@ -93,6 +106,25 @@ public class SchedamySystem
     {
         assignedToTeachList.add(assignedToTeach);
     }
+    
+    //add lessons to course
+    public void addLessonToCourse(int courseID, int lessonID,LocalDate lessonDate,LocalTime startTime,LocalTime endTime,String status,String teachingMode,boolean labRoomRequired)
+    {
+    	Course course = findCourseById(courseID);
+    	if (course == null)
+    		throw new IllegalArgumentException("Course not found");
+    	Lesson lesson = new Lesson(lessonID,lessonDate,startTime,endTime,status,teachingMode,labRoomRequired,new Vector<StudentGroup>());
+    	for (Lesson existingLesson : course.getLessons())
+    	{
+    		if (existingLesson.getLessonDate().equals(lesson.getLessonDate()))
+    		{
+    			boolean overlap =lesson.getStartTime().isBefore(existingLesson.getEndTime()) &&lesson.getEndTime().isAfter(existingLesson.getStartTime());
+    			if (overlap)
+    				throw new IllegalArgumentException("This course already has a lesson at this time");
+    			}
+    		}
+    	course.getLessons().add(lesson);
+    	}
 
     public List<Course> getCourses()
     {
@@ -127,5 +159,61 @@ public class SchedamySystem
     public List<AssignedToTeach> getAssignedToTeachList()
     {
         return assignedToTeachList;
+    }
+    //find lecturer by id
+    private Lecturer findLecturerById(int lecturerID) {
+        for (Lecturer lecturer : lecturers) {
+            if (lecturer.getLecturerID() == lecturerID)
+                return lecturer;
+        }
+
+        return null;
+    }
+    //find student group by id
+    private StudentGroup findStudentGroupById(int groupID) {
+        for (StudentGroup group : studentGroups) {
+            if (group.getGroupID() == groupID)
+                return group;
+        }
+        return null;
+    }
+    //get lecturer name and student group for course
+    public String getCourseInfo(Course course)
+    {
+        String info = "";
+
+        for (AssignedToTeach assigned : assignedToTeachList)
+        {
+            if (assigned.getCourse().equals(course))
+            {
+                Lecturer lecturer = assigned.getLecturer();
+
+                info += "Lecturer: " +
+                        lecturer.getFirstName() + " " +
+                        lecturer.getLastName();
+            }
+        }
+
+        for (GroupEnrolment enrolment : groupEnrolments)
+        {
+            if (enrolment.getCourse().equals(course))
+            {
+                info += "\n Student Group: " +
+                        enrolment.getGroup().getDepartment()+ "Year :" + enrolment.getGroup().getStudyYear();
+            }
+        }
+
+        return info;
+    }
+    //find course by ID
+    private Course findCourseById(int courseID)
+    {
+        for (Course course : courses)
+        {
+            if (course.getCourseID() == courseID)
+                return course;
+        }
+
+        return null;
     }
 }

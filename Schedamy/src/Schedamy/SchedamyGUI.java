@@ -2,15 +2,19 @@ package Schedamy;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.JOptionPane;
 import java.awt.event.*;
 
+
 public class SchedamyGUI extends Frame implements ActionListener {
 	
     private int nextGroupID = 1;// Running number for student groups
     private int nextCourseID = 1;// Running number for course
+    private int nextLessonID = 1; //Running number for lesson
     private MenuBar menuBar;
 
     private Menu fileMenu;
@@ -82,7 +86,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
         manageMenu.add(addCourseItem);
         manageMenu.add(addStudentGroupItem);
         manageMenu.add(addRoomItem);
-        manageMenu.add(new MenuItem("Add Lesson"));
+        MenuItem addLessonItem = new MenuItem("Add Lesson");
+        addLessonItem.addActionListener(this);
+        manageMenu.add(addLessonItem);
         manageMenu.addSeparator();
         manageMenu.add(new MenuItem("Cancel Lesson"));
         manageMenu.add(new MenuItem("Reschedule Lesson"));
@@ -198,6 +204,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
         }
         if (e.getActionCommand().equals("Rooms")) {
             openRoomsView();
+        }
+        if (e.getActionCommand().equals("Add Lesson")) {
+            openAddLessonDialog();
         }
     }
     
@@ -387,7 +396,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	    Dialog dialog = new Dialog(this, "Add Course", true);
 	    dialog.setLayout(new BorderLayout());
 	    dialog.setSize(420, 260);
-	    Panel formPanel = new Panel(new GridLayout(3,1,5,5));
+	    Panel formPanel = new Panel(new GridLayout(5,1,5,5));
 	    
 	    
 	    TextField courseNameField = new TextField();
@@ -396,14 +405,30 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	    Choice courseTypeChoice = new Choice();
 	    courseTypeChoice.add("mandatory");
 	    courseTypeChoice.add("elective");
-	  
+	    Choice lecturerChoice = new Choice();
+
+	    for (Lecturer lecturer : system.getLecturers()) {
+	        lecturerChoice.add(
+	            lecturer.getLecturerID() + " - " +
+	            lecturer.getFirstName() + " " +
+	            lecturer.getLastName()
+	        );
+	    }
+	    Choice groupChoice = new Choice();
+
+	    for (StudentGroup group : system.getStudentGroups()) {
+	        groupChoice.add(
+	            group.getGroupID() + " - " +
+	            group.getDepartment()
+	        );
+	    }
 	    Panel namePanel = new Panel(new BorderLayout());
 	    namePanel.add(new Label("Course Name:"), BorderLayout.WEST);
 	    namePanel.add(courseNameField, BorderLayout.CENTER);
 	    formPanel.add(namePanel); 
 	    
 	    Panel creditsPanel = new Panel(new BorderLayout());
-	    creditsPanel.add(new Label("Credits:"), BorderLayout.WEST);
+	    creditsPanel.add(new Label("Credits:          "), BorderLayout.WEST);
 	    creditsPanel.add(creditsField, BorderLayout.CENTER);
 	    formPanel.add(creditsPanel);
 	    
@@ -411,7 +436,16 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	    typePanel.add(new Label("Course Type:"), BorderLayout.WEST);
 	    typePanel.add(courseTypeChoice, BorderLayout.CENTER);
 	    formPanel.add(typePanel);
-	  
+	    
+	    Panel lecturerPanel = new Panel(new BorderLayout());
+	    lecturerPanel.add(new Label("Lecturer:       "), BorderLayout.WEST);
+	    lecturerPanel.add(lecturerChoice, BorderLayout.CENTER);
+	    formPanel.add(lecturerPanel);
+
+	    Panel groupPanel = new Panel(new BorderLayout());
+	    groupPanel.add(new Label("Student Group:"), BorderLayout.WEST);
+	    groupPanel.add(groupChoice, BorderLayout.CENTER);
+	    formPanel.add(groupPanel);
 	    
 	    
 	    Panel buttonPanel = new Panel(new GridLayout(1, 2, 5, 5));
@@ -426,12 +460,16 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	    addButton.addActionListener(e -> {
 	        try {
 	        	int courseID = nextCourseID++;
-
-	        	system.addCourse(courseID,capitalizeFirstLetter(courseNameField.getText()),Integer.parseInt(creditsField.getText()),courseTypeChoice.getSelectedItem());
+	        	String lecturerText = lecturerChoice.getSelectedItem();
+	        	String groupText = groupChoice.getSelectedItem();
+	        	int lecturerID = Integer.parseInt(lecturerText.split(" - ")[0]);
+	        	int groupID = Integer.parseInt(groupText.split(" - ")[0]);
+	        	system.addCourse(courseID,capitalizeFirstLetter(courseNameField.getText()),Integer.parseInt(creditsField.getText()),courseTypeChoice.getSelectedItem(),lecturerID,groupID);;
 
 	            JOptionPane.showMessageDialog(this,
 	                "Course added successfully!\nTotal courses: " + system.getCourses().size() + "\n"+ "Course ID "+ nextCourseID);
 	            dialog.dispose();
+	            
 
 	        } catch (Exception ex) {
 	            JOptionPane.showMessageDialog(this,
@@ -562,7 +600,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
         String text = "";
 
         for (Course course : system.getCourses()) {
-            text += course.toString() + "\n\n";
+            text += course.toString();
+            text +=  system.getCourseInfo(course);
+            text += "\n\n";
         }
 
         if (text.isEmpty()) {
@@ -604,6 +644,134 @@ public class SchedamyGUI extends Frame implements ActionListener {
             "Rooms",
             JOptionPane.INFORMATION_MESSAGE
         );
+    }
+    private void openAddLessonDialog()
+    {
+        Dialog dialog = new Dialog(this, "Add Lesson", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(500, 350);
+
+        Panel formPanel = new Panel(new GridLayout(7, 2, 5, 5));
+
+        Choice courseChoice = new Choice();
+
+        for (Course course : system.getCourses())
+        {
+            courseChoice.add(course.getCourseID() + " - " + course.getCourseName());
+        }
+
+        TextField dateField = new TextField();      // 2026-05-29
+        TextField startField = new TextField();     // 08:30
+        TextField endField = new TextField();       // 10:00
+
+        Choice statusChoice = new Choice();
+        statusChoice.add("SCHEDULED");
+        statusChoice.add("RESCHEDULED");
+        statusChoice.add("CANCELLED");
+
+        Choice modeChoice = new Choice();
+        modeChoice.add("FRONTAL");
+        modeChoice.add("ZOOM");
+        modeChoice.add("HYBRID");
+        Choice roomChoice = new Choice();
+        roomChoice.setEnabled(true);
+        modeChoice.addItemListener(e -> {
+
+            String mode = modeChoice.getSelectedItem();
+
+            if (mode.equals("ZOOM"))
+                roomChoice.setEnabled(false);
+            else
+                roomChoice.setEnabled(true);
+        });
+        for (Room room : system.getRooms()) {
+            roomChoice.add(room.getRoomID() + " - " + room.toString());
+        }
+
+        Choice labChoice = new Choice();
+        labChoice.add("false");
+        labChoice.add("true");
+
+        formPanel.add(new Label("Course:"));
+        formPanel.add(courseChoice);
+
+        formPanel.add(new Label("Date yyyy-mm-dd:"));
+        formPanel.add(dateField);
+
+        formPanel.add(new Label("Start HH:mm:"));
+        formPanel.add(startField);
+
+        formPanel.add(new Label("End HH:mm:"));
+        formPanel.add(endField);
+
+        formPanel.add(new Label("Status:"));
+        formPanel.add(statusChoice);
+
+        formPanel.add(new Label("Teaching Mode:"));
+        formPanel.add(modeChoice);
+        formPanel.add(new Label("Room:"));
+        formPanel.add(roomChoice);
+
+        Panel buttonPanel = new Panel(new GridLayout(1, 2, 5, 5));
+        Button addButton = new Button("Add");
+        Button cancelButton = new Button("Cancel");
+
+        buttonPanel.add(addButton);
+        buttonPanel.add(cancelButton);
+
+        dialog.add(formPanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        addButton.addActionListener(e -> {
+            try {
+                String courseText = courseChoice.getSelectedItem();
+                int courseID = Integer.parseInt(courseText.split(" - ")[0]);
+                String dateText = dateField.getText();
+                String startText = startField.getText();
+                String endText = endField.getText();
+
+                if (!dateText.matches("\\d{4}-\\d{2}-\\d{2}"))
+                    throw new IllegalArgumentException("Date must be in format yyyy-mm-dd");
+
+                if (!startText.matches("\\d{2}:\\d{2}"))
+                    throw new IllegalArgumentException("Start time must be in format HH:mm");
+
+                if (!endText.matches("\\d{2}:\\d{2}"))
+                    throw new IllegalArgumentException("End time must be in format HH:mm");
+
+                LocalDate lessonDate = LocalDate.parse(dateText);
+                LocalTime startTime = LocalTime.parse(startText);
+                LocalTime endTime = LocalTime.parse(endText);
+
+                if (lessonDate.isBefore(LocalDate.now()))
+                    throw new IllegalArgumentException("Lesson date cannot be in the past");
+
+                if (!endTime.isAfter(startTime))
+                    throw new IllegalArgumentException("End time must be after start time");
+
+                system.addLessonToCourse(courseID,nextLessonID++,lessonDate,startTime,endTime,statusChoice.getSelectedItem(),modeChoice.getSelectedItem(),false);
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Lesson added successfully!",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+
+                dialog.dispose();
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Invalid input: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        });
+
+        cancelButton.addActionListener(e -> dialog.dispose());
+
+        dialog.setVisible(true);
     }
 
 }

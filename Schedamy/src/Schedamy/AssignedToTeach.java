@@ -1,18 +1,17 @@
 package Schedamy;
 
-import java.util.Vector;
 
 public class AssignedToTeach 
 {
 	
 private Lecturer lecturer;
-private Vector<Course> courses;
+private Course course;
 
 //Constructor
-public AssignedToTeach (Lecturer lecturer, Vector<Course> courses)
+public AssignedToTeach (Lecturer lecturer,Course course)
 {
 	this.lecturer = lecturer;
-	this.courses = courses;
+	this.course = course;
 	
 }
 
@@ -23,24 +22,22 @@ public Lecturer getLecturer()
 }
 
 // get Course
-public Vector<Course> getCourses()
+public Course getCourse()
 {
-	return this.courses;
+	return this.course;
 }
 
 // calculate lecturer's weekly hours
 public double calculateLecturerWeeklyHours()
 {
-    double totalHours = 0;
-    for (Course course : courses)
+    int totalHours = 0;
+
+    for (Lesson lesson : course.getLessons())
     {
-        for (Lesson lesson : course.getLessons()) 
+        if (lesson.getStatus().equals("SCHEDULED") ||
+            lesson.getStatus().equals("RESCHEDULED"))
         {
-            if (lesson.getStatus().equals("SCHEDULED") ||
-                lesson.getStatus().equals("RESCHEDULED")) 
-                {
-                totalHours += lesson.getDurationTime().toMinutes() / 60.0;//it turns the duration type into double
-                }
+            totalHours += lesson.getDurationTime().toMinutes() / 45;
         }
     }
 
