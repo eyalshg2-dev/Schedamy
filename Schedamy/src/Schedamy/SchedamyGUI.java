@@ -109,7 +109,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
         MenuItem groupsItem = new MenuItem("Student Groups");
         groupsItem.addActionListener(this);
         viewMenu.add(groupsItem);
-        viewMenu.add(new MenuItem("Lessons"));
+         MenuItem lessonsItem = new MenuItem("Lessons");
+        lessonsItem.addActionListener(this);
+        viewMenu.add(lessonsItem);
 
         viewMenu.addSeparator();
 
