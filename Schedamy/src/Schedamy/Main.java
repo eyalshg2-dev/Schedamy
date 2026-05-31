@@ -71,50 +71,6 @@ public class Main {
 				break;
 				
 			case 8: 
-				System.out.println("Choose a lecturer: ");
-				List<Lecturer> lecturers8 = system.getLecturers();
-				if (lecturers8.isEmpty()) {
-					System.out.println("No lecturers found");
-					break;
-				}
-				
-				
-				for (int i = 0; i < lecturers8.size(); i++) {
-                    System.out.println((i + 1) + ". " + lecturers8.get(i).toString());
-                }
-				
-                int lecturerChoice8 = sc.nextInt() - 1;
-                Lecturer selectedLecturer8 = lecturers8.get(lecturerChoice8);
-
-                
-                System.out.println("\n--- Timetable for: " + selectedLecturer8.getFirstName()
-                        + " " + selectedLecturer8.getLastName() + " ---");
-                for (Lesson lesson : selectedLecturer8.getLessons()) {
-                    System.out.println(lesson.toString());
-                }
-
-                
-                AssignedToTeach assignedToTeach = null;
-                for (AssignedToTeach att : system.getAssignedToTeachList()) {
-                    if (att.getLecturer().getLecturerID() == selectedLecturer8.getLecturerID()) {
-                        assignedToTeach = att;
-                        break;
-                    }
-                }
-
-                if (assignedToTeach == null) {
-                    System.out.println("No courses assigned to this lecturer");
-                    break;
-                }
-
-                try {
-                    CalculateHoursThread hoursThread = new CalculateHoursThread(assignedToTeach);
-                    hoursThread.start();
-                    hoursThread.join();
-                    
-                } catch (InterruptedException e) {
-                    System.out.println("Thread interrupted: " + e.getMessage());
-                }
 				break;
 				
 			case 9: 
