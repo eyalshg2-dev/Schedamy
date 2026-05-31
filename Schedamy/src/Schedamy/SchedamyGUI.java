@@ -7,6 +7,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import java.awt.event.*;
 
 
@@ -24,6 +26,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
     private Menu helpMenu;
     
     private SchedamySystem system;
+    private final Object sharedRoomLock = new Object();
     
     public SchedamyGUI() {
         super("Schedamy System");
@@ -76,21 +79,23 @@ public class SchedamyGUI extends Frame implements ActionListener {
         MenuItem addCourseItem = new MenuItem("Add Course");
         MenuItem addStudentGroupItem = new MenuItem("Add Student Group");
         MenuItem addRoomItem = new MenuItem("Add Room");
+        MenuItem cancelLessonItem = new MenuItem("Cancel Lesson");
+        MenuItem addLessonItem = new MenuItem("Add Lesson");
         
+        addLessonItem.addActionListener(this);
         addLecturerItem.addActionListener(this);
         addCourseItem.addActionListener(this);
         addStudentGroupItem.addActionListener(this);
         addRoomItem.addActionListener(this);
+        cancelLessonItem.addActionListener(this);
         
         manageMenu.add(addLecturerItem);
         manageMenu.add(addCourseItem);
         manageMenu.add(addStudentGroupItem);
         manageMenu.add(addRoomItem);
-        MenuItem addLessonItem = new MenuItem("Add Lesson");
-        addLessonItem.addActionListener(this);
+        manageMenu.add(cancelLessonItem);
         manageMenu.add(addLessonItem);
         manageMenu.addSeparator();
-        manageMenu.add(new MenuItem("Cancel Lesson"));
         manageMenu.add(new MenuItem("Reschedule Lesson"));
     }
 
@@ -124,9 +129,16 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
     private void buildThreadsMenu() {
         threadsMenu = new Menu("Threads");
+        
+        MenuItem checkAvailabilityItem = new MenuItem("Check Availability");
+        checkAvailabilityItem.addActionListener(this);
+        
+        MenuItem calculateHoursItem = new MenuItem ("Calculate Lecturer Hours");
+        calculateHoursItem.addActionListener(this);
+        
+        threadsMenu.add(checkAvailabilityItem);
+        threadsMenu.add(calculateHoursItem);
 
-        threadsMenu.add(new MenuItem("Check Availability"));
-        threadsMenu.add(new MenuItem("Calculate Lecturer Hours"));
         threadsMenu.add(new MenuItem("Active Threads Status"));
     }
 
@@ -193,6 +205,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
         if (commandAddLecturer.equals("Add Lecturer")) {
             openAddLecturerDialog();
         }
+        String commandCancelLesson = e.getActionCommand();
+        if (commandCancelLesson.equals("Check Availability")) {
+        	openCancelLessonDialog();
+        }
         if (e.getActionCommand().equals("Lecturers"))
         {
             openLecturersView();
@@ -209,6 +225,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
         }
         if (e.getActionCommand().equals("Add Lesson")) {
             openAddLessonDialog();
+        }
+        if (e.getActionCommand().equals("Cancel Lesson")) {
+        	openCancelLessonDialog();
+        }
+        
+        if (e.getActionCommand().equals("Calculate Lecturer Hours")) {
+        	openCalculateHoursDialog();
         }
     }
     
@@ -773,6 +796,232 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         cancelButton.addActionListener(e -> dialog.dispose());
 
+        dialog.setVisible(true);
+    }
+    
+    
+    private void openCancelLessonDialog() {
+    	
+    	if (system.getCourses().isEmpty()) {
+    	    JOptionPane.showMessageDialog(this,
+    	        "No courses found. Please add a course first.",
+    	        "Error", JOptionPane.ERROR_MESSAGE);
+    	    return;
+    	}
+    	
+        Dialog dialog = new Dialog(this, "Cancel & Reschedule Lesson", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(420, 220);
+
+        Panel formPanel = new Panel(new GridLayout(3, 2, 5, 5));
+
+        // Course dropdown
+        Choice courseChoice = new Choice();
+        for (Course course : system.getCourses()) {
+            courseChoice.add(course.getCourseID() + " - " + course.getCourseName());
+        }
+
+        
+        Choice lessonChoice = new Choice();
+        
+        if (!system.getCourses().isEmpty()) {
+            Course firstCourse = system.getCourses().get(0);
+            for (Lesson lesson : firstCourse.getLessons()) {
+                if (!lesson.getStatus().equals("CANCELLED")) {
+                    lessonChoice.add(lesson.getLessonID() + " - " + lesson.getLessonDate());
+                }
+            }
+        }
+
+        // Update lesson dropdown when course changes
+        courseChoice.addItemListener(e -> {
+            lessonChoice.removeAll();
+            String courseText = courseChoice.getSelectedItem();
+            int courseID = Integer.parseInt(courseText.split(" - ")[0]);
+            for (Course course : system.getCourses()) {
+                if (course.getCourseID() == courseID) {
+                    for (Lesson lesson : course.getLessons()) {
+                        if (!lesson.getStatus().equals("CANCELLED")) {
+                            lessonChoice.add(lesson.getLessonID() + " - " + lesson.getLessonDate());
+                        }
+                    }
+                }
+            }
+        });
+
+        // New date field
+        TextField newDateField = new TextField();
+
+        formPanel.add(new Label("Course:"));
+        formPanel.add(courseChoice);
+        formPanel.add(new Label("Lesson:"));
+        formPanel.add(lessonChoice);
+        formPanel.add(new Label("New Date (yyyy-MM-dd):"));
+        formPanel.add(newDateField);
+
+        Panel buttonPanel = new Panel(new GridLayout(1, 2, 5, 5));
+        Button cancelLessonButton = new Button("Cancel Lesson");
+        Button closeButton = new Button("Close");
+        buttonPanel.add(cancelLessonButton);
+        buttonPanel.add(closeButton);
+
+        dialog.add(formPanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        cancelLessonButton.addActionListener(e -> {
+            try {
+                // Validate new date format
+                String dateText = newDateField.getText();
+                if (!dateText.matches("\\d{4}-\\d{2}-\\d{2}"))
+                    throw new IllegalArgumentException("Date must be in format yyyy-MM-dd");
+                if (lessonChoice.getItemCount() == 0)
+                    throw new IllegalArgumentException("No lessons available for this course");
+
+                int courseID = Integer.parseInt(courseChoice.getSelectedItem().split(" - ")[0]);
+                int lessonID = Integer.parseInt(lessonChoice.getSelectedItem().split(" - ")[0]);
+                LocalDate newDate = LocalDate.parse(dateText);
+
+                
+                new Thread(() -> {
+                    try {
+                        // This calls the Facade which spawns AvailabilityThread
+                        system.cancelLesson(courseID, lessonID, newDate, sharedRoomLock);
+
+                        // Update UI 
+                        SwingUtilities.invokeLater(() -> {
+                            JOptionPane.showMessageDialog(
+                                this,
+                                "Lesson cancelled and rescheduling started!",
+                                "Success",
+                                JOptionPane.INFORMATION_MESSAGE
+                            );
+                            dialog.dispose();
+                        });
+                    } catch (Exception ex) {
+                        SwingUtilities.invokeLater(() -> {
+                            JOptionPane.showMessageDialog(
+                                this,
+                                "Error: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                            );
+                        });
+                    }
+                }).start();
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Invalid input: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        });
+
+        closeButton.addActionListener(e -> dialog.dispose());
+        dialog.setVisible(true);
+    }
+    
+    
+    private void openCalculateHoursDialog() {
+    	
+    	if (system.getLecturers().isEmpty()) {
+    	    JOptionPane.showMessageDialog(this,
+    	        "No lecturers found. Please add a lecturer first.",
+    	        "Error", JOptionPane.ERROR_MESSAGE);
+    	    return;
+    	}
+    	
+    	
+        Dialog dialog = new Dialog(this, "Calculate Lecturer Hours", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(420, 180);
+
+        Panel formPanel = new Panel(new GridLayout(1, 2, 5, 5));
+
+        // Lecturer dropdown
+        Choice lecturerChoice = new Choice();
+        for (Lecturer lecturer : system.getLecturers()) {
+            lecturerChoice.add(
+                lecturer.getLecturerID() + " - " +
+                lecturer.getFirstName() + " " +
+                lecturer.getLastName()
+            );
+        }
+
+        formPanel.add(new Label("Select Lecturer:"));
+        formPanel.add(lecturerChoice);
+
+        Panel buttonPanel = new Panel(new GridLayout(1, 2, 5, 5));
+        Button calculateButton = new Button("Calculate");
+        Button closeButton = new Button("Close");
+        buttonPanel.add(calculateButton);
+        buttonPanel.add(closeButton);
+
+        dialog.add(formPanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        calculateButton.addActionListener(e -> {
+            try {
+                int lecturerID = Integer.parseInt(
+                    lecturerChoice.getSelectedItem().split(" - ")[0]
+                );
+
+                // Find AssignedToTeach for this lecturer
+                AssignedToTeach assignedToTeach = null;
+                for (AssignedToTeach att : system.getAssignedToTeachList()) {
+                    if (att.getLecturer().getLecturerID() == lecturerID) {
+                        assignedToTeach = att;
+                        break;
+                    }
+                }
+
+                if (assignedToTeach == null) {
+                    JOptionPane.showMessageDialog(
+                        this,
+                        "No courses assigned to this lecturer",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                    );
+                    return;
+                }
+
+                // Capture for use in lambda
+                final AssignedToTeach finalAssigned = assignedToTeach;
+
+                // Run CalculateHoursThread in background
+                new Thread(() -> {
+                    CalculateHoursThread hoursThread = new CalculateHoursThread(finalAssigned);
+                    hoursThread.start();
+                    try {
+                        hoursThread.join(); 
+
+                        // Update UI
+                        SwingUtilities.invokeLater(() -> {
+                            JOptionPane.showMessageDialog(
+                                this,
+                                "Total weekly hours: " + finalAssigned.calculateLecturerWeeklyHours(),
+                                "Lecturer Hours",
+                                JOptionPane.INFORMATION_MESSAGE
+                            );
+                        });
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                }).start();
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Error: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        });
+
+        closeButton.addActionListener(e -> dialog.dispose());
         dialog.setVisible(true);
     }
 
