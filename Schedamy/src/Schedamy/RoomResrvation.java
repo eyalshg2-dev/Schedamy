@@ -58,4 +58,18 @@ public class RoomResrvation {
 	{
 		this.occupancyTime = Duration.between(start, end);
 	}
+	
+	public boolean overlaps(Room otherRoom, Lesson otherLesson)
+	{
+	    if (!room.getRoomID().equals(otherRoom.getRoomID())) {
+	        return false;
+	    }
+
+	    if (!lesson.getLessonDate().equals(otherLesson.getLessonDate())) {
+	        return false;
+	    }
+
+	    return otherLesson.getStartTime().isBefore(lesson.getEndTime()) &&
+	           otherLesson.getEndTime().isAfter(lesson.getStartTime());
+	}
 }

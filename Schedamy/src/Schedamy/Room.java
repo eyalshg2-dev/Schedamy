@@ -2,7 +2,7 @@ package Schedamy;
 
 public class Room {
 
-	private int roomID;
+	private String roomID;
 	private int building;
 	private String roomType; 
 	private int capacity;
@@ -10,17 +10,18 @@ public class Room {
 	private String status;
 
 	//Constructor
-	public Room(int roomID, int building, String roomType, int capacity, String specialEquipment, String status)
+	public Room(String roomID, int building, String roomType, int capacity, String specialEquipment, String status)
 	{
 		this.roomID = roomID;
 		this.building = building;
 		this.roomType = roomType;
 		this.specialEquipment = specialEquipment;
 		this.status = status;
+		this.capacity = capacity;
 	}
 
 	//Get roomID 
-	public int getRoomID()
+	public String getRoomID()
 	{
 		return this.roomID;
 	}
@@ -50,9 +51,14 @@ public class Room {
 	}
 
 	//To String
-	public String toString() 
+	public String toString()
 	{
-		return "		Room Number: " + building + roomID  + "	Room Type: " + roomType + "	Capacity: " + capacity + "	Special Equipment: " + specialEquipment;
+	    return "Room number: " + roomID + "\n" +
+	           "Building: " + building + "\n" +
+	           "Room type: " + roomType + "\n" +
+	           "Capacity: " + capacity + "\n" +
+	           "Special equipment: " + specialEquipment + "\n" +
+	           "Status: " + status;
 	}
 
 	//Get room size

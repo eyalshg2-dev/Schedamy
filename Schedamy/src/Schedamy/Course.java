@@ -15,7 +15,13 @@ public class Course{
 	public Course(int courseID, String courseName, int credits,
 			String courseType, Vector<Lesson> lessons) {
 		this.courseID = courseID;
-		this.lessons = new Vector<>();
+		this.lessons = new Vector<Lesson>();
+		// Create an empty lessons vector for the course.
+		// If a lessons list was provided, copy all lessons into the vector.
+		if (lessons != null) {
+		    this.lessons.addAll(lessons);
+		}
+
 		setCourseName(courseName);
 		setCredits(credits);
 		setCourseType(courseType);

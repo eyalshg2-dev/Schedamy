@@ -5,6 +5,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Vector;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.FileReader;
+import java.io.BufferedReader;
+
 
 public class SchedamySystem 
 {
@@ -73,10 +80,10 @@ public class SchedamySystem
     	lecturers.add(lecturer);
     }
 
-    public void addRoom(int roomNumber, int building,String roomType, int capacity,String equipment)
+    public void addRoom(String roomNumber, int building,String roomType, int capacity,String equipment)
     {
-    	if (roomNumber <= 0)
-    		throw new IllegalArgumentException("Invalid room number");
+    	if (roomNumber == null || roomNumber.isEmpty())
+    	    throw new IllegalArgumentException("Invalid room number");
     	if (building <= 0)
     		throw new IllegalArgumentException("Invalid building");
     	if (capacity <= 0)
@@ -84,7 +91,16 @@ public class SchedamySystem
     	Room room = new Room(roomNumber,building,roomType,capacity,equipment,"AVAILABLE");
     	rooms.add(room);
     }
- 
+    private boolean isRoomAvailable(Room room, Lesson lesson)
+    {
+        for (RoomResrvation reservation : roomReservations) {
+            if (reservation.overlaps(room, lesson)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
     public void addRoomReservation(RoomResrvation roomReservation)
     {
         roomReservations.add(roomReservation);
@@ -108,7 +124,9 @@ public class SchedamySystem
     }
     
     //add lessons to course
-    public void addLessonToCourse(int courseID, int lessonID,LocalDate lessonDate,LocalTime startTime,LocalTime endTime,String status,String teachingMode,boolean labRoomRequired)
+    public void addLessonToCourse(int courseID, int lessonID, LocalDate lessonDate,
+    		LocalTime startTime, LocalTime endTime, String status,
+    		String teachingMode, boolean labRoomRequired, Room room)
     {
     	Course course = findCourseById(courseID);
     	if (course == null)
@@ -124,6 +142,17 @@ public class SchedamySystem
     			}
     		}
     	course.getLessons().add(lesson);
+    	if (room != null) {
+    	    if (!isRoomAvailable(room, lesson)) {
+    	        throw new IllegalArgumentException("This room is already reserved at this time");
+    	    }
+
+    	    lesson.setRoom(room);
+
+    	    roomReservations.add(
+    	        new RoomResrvation(room, lesson, lesson.getDurationTime())
+    	    );
+    	}
     	}
 
     public List<Course> getCourses()
@@ -215,5 +244,146 @@ public class SchedamySystem
         }
 
         return null;
+    }
+    
+    public void saveDataToFile() throws IOException
+    {
+        File file = new File("schedamyData.txt");
+
+        FileWriter fw = new FileWriter(file);
+        BufferedWriter bw = new BufferedWriter(fw);
+
+        bw.write("LECTURERS");
+        bw.newLine();
+
+        for (Lecturer lecturer : lecturers) {
+            bw.write(
+                lecturer.getLecturerID() + "," +
+                lecturer.getFirstName() + "," +
+                lecturer.getLastName()
+            );
+            bw.newLine();
+        }
+
+        bw.write("STUDENT_GROUPS");
+        bw.newLine();
+
+        for (StudentGroup group : studentGroups) {
+            bw.write(
+                group.getGroupID() + "," +
+                group.getDepartment() + "," +
+                group.getStudyYear() + "," +
+                group.getStudentCount() + "," +
+                group.getProgramName()
+            );
+            bw.newLine();
+        }
+
+        bw.write("ROOMS");
+        bw.newLine();
+
+        for (Room room : rooms) {
+            bw.write(
+                room.getRoomID() + "," +
+                room.getBuilding() + "," +
+                room.getRoomType() + "," +
+                room.getCapacity() + "," +
+                room.getSpecialEquipment()
+            );
+            bw.newLine();
+        }
+
+        bw.close();
+    }
+    
+    public void loadDataFromFile() throws IOException
+    {
+        File file = new File("schedamyData.txt");
+
+        if (!file.exists()) {
+            throw new IOException("File does not exist");
+        }
+
+        FileReader fr = new FileReader(file);
+        BufferedReader br = new BufferedReader(fr);
+
+        lecturers.clear();
+        studentGroups.clear();
+        rooms.clear();
+
+        String line;
+        String currentSection = "";
+
+        while ((line = br.readLine()) != null)
+        {
+            if (line.equals("LECTURERS") ||
+                line.equals("STUDENT_GROUPS") ||
+                line.equals("ROOMS"))
+            {
+                currentSection = line;
+                continue;
+            }
+
+            String[] parts = line.split(",", -1);
+
+            if (currentSection.equals("LECTURERS"))
+            {
+                int id = Integer.parseInt(parts[0]);
+                String firstName = parts[1];
+                String lastName = parts[2];
+
+                lecturers.add(
+                    new Lecturer(
+                        id,
+                        firstName,
+                        lastName,
+                        new ArrayList<String>(),
+                        0,
+                        100
+                    )
+                );
+            }
+
+            else if (currentSection.equals("STUDENT_GROUPS"))
+            {
+                int groupID = Integer.parseInt(parts[0]);
+                String department = parts[1];
+                int studyYear = Integer.parseInt(parts[2]);
+                int studentCount = Integer.parseInt(parts[3]);
+                String programName = parts[4];
+
+                studentGroups.add(
+                    new StudentGroup(
+                        groupID,
+                        department,
+                        studyYear,
+                        studentCount,
+                        programName
+                    )
+                );
+            }
+
+            else if (currentSection.equals("ROOMS"))
+            {
+                String roomID = parts[0];
+                int building = Integer.parseInt(parts[1]);
+                String roomType = parts[2];
+                int capacity = Integer.parseInt(parts[3]);
+                String equipment = parts[4];
+
+                rooms.add(
+                    new Room(
+                        roomID,
+                        building,
+                        roomType,
+                        capacity,
+                        equipment,
+                        "AVAILABLE"
+                    )
+                );
+            }
+        }
+
+        br.close();
     }
 }
