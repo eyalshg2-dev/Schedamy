@@ -4,10 +4,11 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+
 
 import java.awt.event.*;
 
@@ -480,8 +481,9 @@ public void actionPerformed(ActionEvent e) {
 		formPanel.add(capacityField);
 		
 		Label equipment = new Label("Special Equipment");
-        TextField equipmentField = new TextField();
-        formPanel.add(equipment);
+		TextField equipmentField = new TextField();
+		equipmentField.setText("NONE");
+		formPanel.add(equipment);
 		formPanel.add(equipmentField);
         
         Choice roomTypeChoice = new Choice();
@@ -503,16 +505,24 @@ public void actionPerformed(ActionEvent e) {
 
         dialog.add(formPanel, BorderLayout.CENTER);
         dialog.add(buttonPanel, BorderLayout.SOUTH);
-
+        
         addButton.addActionListener(e -> {
             try {
-            	system.addRoom(
-            		    roomNumberField.getText(),
-            		    Integer.parseInt(buildingField.getText()),
-            		    roomTypeChoice.getSelectedItem(),
-            		    Integer.parseInt(capacityField.getText()),
-            		    equipmentField.getText()
-            		);
+
+                String specEquipment =
+                    equipmentField.getText().trim();
+
+                if (specEquipment.isEmpty()) {
+                    specEquipment = "NONE";
+                }
+
+                system.addRoom(
+                    roomNumberField.getText(),
+                    Integer.parseInt(buildingField.getText()),
+                    roomTypeChoice.getSelectedItem(),
+                    Integer.parseInt(capacityField.getText()),
+                    specEquipment
+                );
                 JOptionPane.showMessageDialog(
                     this,
                     "Room added successfully!\n" +
@@ -1215,9 +1225,43 @@ public void actionPerformed(ActionEvent e) {
             courseChoice.add(course.getCourseID() + " - " + course.getCourseName());
         }
 
-        TextField dateField = new TextField();      // 2026-05-29
-        TextField startField = new TextField();     // 08:30
-        TextField endField = new TextField();       // 10:00
+        Choice yearChoice = new Choice();
+        yearChoice.add("2026");
+
+        Choice monthChoice = new Choice();
+        for (int i = 1; i <= 12; i++) {
+            monthChoice.add(String.valueOf(i));
+        }
+
+        Choice dayChoice = new Choice();
+        int year = Integer.parseInt(yearChoice.getSelectedItem());
+        int month = Integer.parseInt(monthChoice.getSelectedItem());
+
+        int daysInMonth = YearMonth.of(year, month).lengthOfMonth();
+
+        for (int day = 1; day <= daysInMonth; day++) {
+            dayChoice.add(String.valueOf(day));
+        }
+
+        Choice startHourChoice = new Choice();
+        Choice startMinuteChoice = new Choice();
+        Choice endHourChoice = new Choice();
+        Choice endMinuteChoice = new Choice();
+
+        for (int h = 8; h <= 21; h++) {
+            startHourChoice.add(String.format("%02d", h));
+            endHourChoice.add(String.format("%02d", h));
+        }
+
+        startMinuteChoice.add("00");
+        startMinuteChoice.add("15");
+        startMinuteChoice.add("30");
+        startMinuteChoice.add("45");
+
+        endMinuteChoice.add("00");
+        endMinuteChoice.add("15");
+        endMinuteChoice.add("30");
+        endMinuteChoice.add("45");
 
 
         Choice modeChoice = new Choice();
@@ -1247,15 +1291,27 @@ public void actionPerformed(ActionEvent e) {
         formPanel.add(new Label("Course:"));
         formPanel.add(courseChoice);
 
-        formPanel.add(new Label("Date DD-MM-YYYY:"));
-        formPanel.add(dateField);
+        Panel datePanel = new Panel(new GridLayout(1, 3, 5, 5));
+        datePanel.add(yearChoice);
+        datePanel.add(monthChoice);
+        datePanel.add(dayChoice);
 
-        formPanel.add(new Label("Start HH:mm:"));
-        formPanel.add(startField);
+        formPanel.add(new Label("Date:"));
+        formPanel.add(datePanel);
 
-        formPanel.add(new Label("End HH:mm:"));
-        formPanel.add(endField);
+        Panel startPanel = new Panel(new GridLayout(1, 2, 5, 5));
+        startPanel.add(startHourChoice);
+        startPanel.add(startMinuteChoice);
 
+        formPanel.add(new Label("Start Time:"));
+        formPanel.add(startPanel);
+
+        Panel endPanel = new Panel(new GridLayout(1, 2, 5, 5));
+        endPanel.add(endHourChoice);
+        endPanel.add(endMinuteChoice);
+
+        formPanel.add(new Label("End Time:"));
+        formPanel.add(endPanel);
 
         formPanel.add(new Label("Teaching Mode:"));
         formPanel.add(modeChoice);
@@ -1276,22 +1332,21 @@ public void actionPerformed(ActionEvent e) {
             try {
                 String courseText = courseChoice.getSelectedItem();
                 int courseID = Integer.parseInt(courseText.split(" - ")[0]);
-                String dateText = dateField.getText();
-                String startText = startField.getText();
-                String endText = endField.getText();
+                LocalDate lessonDate = LocalDate.of(
+                	    Integer.parseInt(yearChoice.getSelectedItem()),
+                	    Integer.parseInt(monthChoice.getSelectedItem()),
+                	    Integer.parseInt(dayChoice.getSelectedItem())
+                	);
 
-                if (!dateText.matches("\\d{4}-\\d{2}-\\d{2}"))
-                    throw new IllegalArgumentException("Date must be in format yyyy-mm-dd");
+                	LocalTime startTime = LocalTime.of(
+                	    Integer.parseInt(startHourChoice.getSelectedItem()),
+                	    Integer.parseInt(startMinuteChoice.getSelectedItem())
+                	);
 
-                if (!startText.matches("\\d{2}:\\d{2}"))
-                    throw new IllegalArgumentException("Start time must be in format HH:mm");
-
-                if (!endText.matches("\\d{2}:\\d{2}"))
-                    throw new IllegalArgumentException("End time must be in format HH:mm");
-
-                LocalDate lessonDate = LocalDate.parse(dateText);
-                LocalTime startTime = LocalTime.parse(startText);
-                LocalTime endTime = LocalTime.parse(endText);
+                	LocalTime endTime = LocalTime.of(
+                	    Integer.parseInt(endHourChoice.getSelectedItem()),
+                	    Integer.parseInt(endMinuteChoice.getSelectedItem())
+                	);
 
                 if (lessonDate.isBefore(LocalDate.now()))
                     throw new IllegalArgumentException("Lesson date cannot be in the past");
