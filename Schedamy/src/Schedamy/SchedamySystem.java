@@ -386,4 +386,55 @@ public class SchedamySystem
 
         br.close();
     }
+    //cancel the lesson using Availability thread
+   public void cancelLesson(int courseID, int lessonID, LocalDate newDate,
+    			Object roomLock) {
+    	
+    	//Find the course we wish to cancel
+    	Course course = findCourseById(courseID);
+    	if (course == null) {
+    		throw new IllegalArgumentException("Course not found");
+    	}
+    	
+    	//find the lesson inside the course
+    	Lesson lessonToCancel = null;
+    	for (Lesson lesson : course.getLessons()) {
+    		if (lesson.getLessonID() == lessonID) {
+    			lessonToCancel = lesson;
+    			break;
+    		}
+    	}
+    	
+    	if (lessonToCancel == null) {
+    		throw new IllegalArgumentException("Lesson not found");
+    	}
+    	
+    	//find the lecturer for this course
+    	Lecturer lecturer = null;
+    	for (AssignedToTeach assigned : assignedToTeachList) {
+    		if (assigned.getCourse().equals(course)) {
+    			lecturer = assigned.getLecturer();
+    			break;
+    		}
+    	}
+    	
+    	if (lecturer == null) {
+    		throw new IllegalArgumentException("Lecturer not found for this course");
+    	}
+    	
+    	//cancel the lesson
+    	lessonToCancel.setStatus("CANCELLED");
+    	
+    	// start availabilityThread
+    	Thread availabilityThread = new Thread(new AvailabilityThread(
+    			lecturer,
+    			lessonToCancel,
+    			newDate,
+    			(Vector <Room>) rooms,
+    			roomLock,
+    			(Vector <GroupEnrolment>) groupEnrolments));
+    	
+    	availabilityThread.start();
+
+    }
 }

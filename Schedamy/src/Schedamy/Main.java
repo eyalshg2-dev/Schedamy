@@ -56,126 +56,21 @@ public class Main {
 				break;
 				
 			case 6: 
-				//we need to pick a lecturer
-				System.out.println("Choose a lecturer: ");
-				List<Lecturer> lecturers6 = system.getLecturers();
-				if (lecturers6.isEmpty()) {
-					System.out.println("No lecturers found");
-					break;
-				}
+				System.out.println("Enter course ID: ");
+				int courseID = sc.nextInt();
 				
-				for (int i = 0; i < lecturers6.size(); i++) {
-					System.out.println((i + 1) + ". " + lecturers6.get(i).toString());
-				}
+				System.out.println("Enter lesson ID: ");
+				int lessonID = sc.nextInt();
 				
-				int lecturerChoice = sc.nextInt() - 1;
-				Lecturer selectedLecturer = lecturers6.get(lecturerChoice);
-				
-				// pick a date
-				System.out.println("Enter a date (DD-MM-YYYY): ");
-				LocalDate date = LocalDate.parse(sc.next());
-				
-				//show lessons on the specific date
-				System.out.println("\n--- Lessons on: " + date + "---");
-				List<Lesson> lessonsOnDate = new ArrayList<>();
-				for (Lesson lesson : selectedLecturer.getLessons()) {
-					if(lesson.getLessonDate().equals(date) &&
-							!lesson.getStatus().equals("CANCELLED")) {
-						lessonsOnDate.add(lesson);
-						System.out.println(lessonsOnDate.size() + ". " + lesson.toString());
-					}
-				}
-				
-				if (lessonsOnDate.isEmpty()) {
-					System.out.println("No lessons found on this date");
-					break;
-				}
-				
-				//pick lesson to cancel
-				System.out.println("Choose lesson to cancel: ");
-				int lessonChoice = sc.nextInt() - 1;
-				Lesson selectedLesson = lessonsOnDate.get(lessonChoice);
-				selectedLesson.setStatus("CANCELLED");
-				System.out.println("Lesson cancelled succsefully");
-				
-				//frontal or zoom?
-				System.out.println("Replace with FRONTAL or ZOOM?");
-				String mode = sc.next().toUpperCase();
-				if(!mode.equals("FRONTAL") && !mode.equals("ZOOM")) {
-					System.out.println("Invalid mode, must be FRONTAL or ZOOM");
-					break;
-				}
-				selectedLesson.setTeachingMode(mode);
-				
-				//pick new date
-				System.out.println("Enter a new date to be rescheduled (DD-MM-YYYY): ");
+				System.out.println("Enter new date (DD-MM-YYYY)");
 				LocalDate newDate = LocalDate.parse(sc.next());
 				
-				try {
-					Thread availabilityThread = new Thread(new AvailabilityThread(
-							selectedLecturer,
-							selectedLesson,
-							newDate,
-							(Vector<Room>) system.getRooms(),
-						     sharedRoomLock,
-						     (Vector<GroupEnrolment>) system.getGroupEnrolments()
-						     ));
-					availabilityThread.start();
-					availabilityThread.join();
-					
-				} catch (InterruptedException e) {
-					System.out.println("Thread interrupted: " + e.getMessage());
-				}
-				break;
+				system.cancelLesson(courseID, lessonID, newDate, sharedRoomLock);
 				
 			case 7: 
 				break;
 				
 			case 8: 
-				System.out.println("Choose a lecturer: ");
-				List<Lecturer> lecturers8 = system.getLecturers();
-				if (lecturers8.isEmpty()) {
-					System.out.println("No lecturers found");
-					break;
-				}
-				
-				
-				for (int i = 0; i < lecturers8.size(); i++) {
-                    System.out.println((i + 1) + ". " + lecturers8.get(i).toString());
-                }
-				
-                int lecturerChoice8 = sc.nextInt() - 1;
-                Lecturer selectedLecturer8 = lecturers8.get(lecturerChoice8);
-
-                
-                System.out.println("\n--- Timetable for: " + selectedLecturer8.getFirstName()
-                        + " " + selectedLecturer8.getLastName() + " ---");
-                for (Lesson lesson : selectedLecturer8.getLessons()) {
-                    System.out.println(lesson.toString());
-                }
-
-                
-                AssignedToTeach assignedToTeach = null;
-                for (AssignedToTeach att : system.getAssignedToTeachList()) {
-                    if (att.getLecturer().getLecturerID() == selectedLecturer8.getLecturerID()) {
-                        assignedToTeach = att;
-                        break;
-                    }
-                }
-
-                if (assignedToTeach == null) {
-                    System.out.println("No courses assigned to this lecturer");
-                    break;
-                }
-
-                try {
-                    CalculateHoursThread hoursThread = new CalculateHoursThread(assignedToTeach);
-                    hoursThread.start();
-                    hoursThread.join();
-                    
-                } catch (InterruptedException e) {
-                    System.out.println("Thread interrupted: " + e.getMessage());
-                }
 				break;
 				
 			case 9: 
@@ -185,7 +80,7 @@ public class Main {
 				break;
 
 			case 11:
-				//////////////Save data
+				
 				sc.close();
 				System.exit(0);
 			default:

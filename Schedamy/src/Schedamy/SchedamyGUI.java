@@ -7,6 +7,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import java.awt.event.*;
 
 // Main GUI class of the Schedamy system.
@@ -28,6 +30,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
     
     // The main system object that stores and manages all data.
     private SchedamySystem system;
+    private final Object sharedRoomLock = new Object();
     
     // Constructor - creates the main window and initializes the system.
     public SchedamyGUI() {
@@ -217,7 +220,6 @@ public void actionPerformed(ActionEvent e) {
     if (command.equals("Save Data")) {
         try {
             system.saveDataToFile();
-
             JOptionPane.showMessageDialog(
                 this,
                 "Data saved successfully!",
@@ -1245,7 +1247,7 @@ public void actionPerformed(ActionEvent e) {
         formPanel.add(new Label("Course:"));
         formPanel.add(courseChoice);
 
-        formPanel.add(new Label("Date yyyy-mm-dd:"));
+        formPanel.add(new Label("Date DD-MM-YYYY:"));
         formPanel.add(dateField);
 
         formPanel.add(new Label("Start HH:mm:"));
