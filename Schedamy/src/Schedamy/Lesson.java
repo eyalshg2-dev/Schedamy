@@ -165,8 +165,8 @@ public class Lesson {
 	}
 	
 	public String toString() {
-		return "lessonID=" + lessonID + "lessonDate=" + lessonDate + "startTime=" + startTime +"endTime=" + endTime +
-			   "status=" + status + "teachingMode=" + teachingMode + "labRoomRequired=" + labRoomRequired + "room=" + room ;
+		return "lessonID= " + lessonID + " lesson Date= " + lessonDate + " start Time= " + startTime +" end Time= " + endTime +
+			   " status= " + status + " teaching Mode= " + teachingMode + "labRoom Required  =" + labRoomRequired + " room= " + room ;
 	}
 }
 	

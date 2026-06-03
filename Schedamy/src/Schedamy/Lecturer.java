@@ -64,8 +64,8 @@ public class Lecturer {
 	//To String
 public String toString() 
 	{
-	    return "Lecturer ID: " + lecturerID + "\n" +"Name: " + firstName + " " + lastName + "\n" +"Specializations: " + specializations + "\n" +
-	           "FTE: " + FTE + "\n" +"Teaching Score: " + teachingScore;
+	    return "Lecturer ID: " + lecturerID  +" Name: " + firstName + " " + lastName + "\n" +"Specializations: " + specializations + "\n" +
+	           "FTE: " + FTE + " Teaching Score: " + teachingScore;
 	}
 	
 	// calculate how many hours difference exists

@@ -422,6 +422,11 @@ public void actionPerformed(ActionEvent e) {
 
         addButton.addActionListener(e -> {
             try {
+            	 if (!idField.getText().matches("\\d+"))
+                     throw new IllegalArgumentException("Lecturer ID must contain only digits");
+
+                 if (!teachingScoreField.getText().matches("\\d+(\\.\\d+)?"))
+                     throw new IllegalArgumentException("Teaching score must be a positive number");
                 int id = Integer.parseInt(idField.getText());
                 String firstName = capitalizeFirstLetter(firstNameField.getText());
                 String lastName = capitalizeFirstLetter(lastNameField.getText());
@@ -508,9 +513,16 @@ public void actionPerformed(ActionEvent e) {
         
         addButton.addActionListener(e -> {
             try {
+            	if (!roomNumberField.getText().matches("\\d+"))
+            	    throw new IllegalArgumentException("Room number must be a number");
 
-                String specEquipment =
-                    equipmentField.getText().trim();
+            	if (!buildingField.getText().matches("\\d+"))
+            	    throw new IllegalArgumentException("Building must be a number");
+
+            	if (!capacityField.getText().matches("\\d+"))
+            	    throw new IllegalArgumentException("Capacity must be a number");
+
+                String specEquipment =equipmentField.getText().trim();
 
                 if (specEquipment.isEmpty()) {
                     specEquipment = "NONE";
@@ -561,20 +573,15 @@ public void actionPerformed(ActionEvent e) {
 	    courseTypeChoice.add("elective");
 	    Choice lecturerChoice = new Choice();
 
-	    for (Lecturer lecturer : system.getLecturers()) {
-	        lecturerChoice.add(
-	            lecturer.getLecturerID() + " - " +
-	            lecturer.getFirstName() + " " +
-	            lecturer.getLastName()
-	        );
+	    for (Lecturer lecturer : system.getLecturers())
+	    {
+	        lecturerChoice.add(lecturer.getLecturerID() + " - " +lecturer.getFirstName() + " " +lecturer.getLastName());
 	    }
 	    Choice groupChoice = new Choice();
 
-	    for (StudentGroup group : system.getStudentGroups()) {
-	        groupChoice.add(
-	            group.getGroupID() + " - " +
-	            group.getDepartment()
-	        );
+	    for (StudentGroup group : system.getStudentGroups()) 
+	    {
+	        groupChoice.add(group.getGroupID() +"-" +group.getDepartment() +"  Year-" +group.getStudyYear() +" - " +group.getProgramName());
 	    }
 	    Panel namePanel = new Panel(new BorderLayout());
 	    namePanel.add(new Label("Course Name:"), BorderLayout.WEST);
@@ -617,9 +624,12 @@ public void actionPerformed(ActionEvent e) {
 	        	String lecturerText = lecturerChoice.getSelectedItem();
 	        	String groupText = groupChoice.getSelectedItem();
 	        	int lecturerID = Integer.parseInt(lecturerText.split(" - ")[0]);
-	        	int groupID = Integer.parseInt(groupText.split(" - ")[0]);
-	        	system.addCourse(courseID,capitalizeFirstLetter(courseNameField.getText()),Integer.parseInt(creditsField.getText()),courseTypeChoice.getSelectedItem(),lecturerID,groupID);;
+	        	int groupID = Integer.parseInt(groupText.split("-")[0]);
+	        	if (!creditsField.getText().matches("\\d+"))
+	        	    throw new IllegalArgumentException("Credits must be positive a number");
 
+	        	system.addCourse(courseID,capitalizeFirstLetter(courseNameField.getText()),Integer.parseInt(creditsField.getText()),courseTypeChoice.getSelectedItem(),lecturerID,groupID);
+	        
 	            JOptionPane.showMessageDialog(this,
 	                "Course added successfully!\nTotal courses: " + system.getCourses().size() + "\n"+ "Course ID "+ nextCourseID);
 	            dialog.dispose();
@@ -700,6 +710,8 @@ public void actionPerformed(ActionEvent e) {
 	      // Add button action
 	    addButton.addActionListener(e -> {
 	        try {
+	        	if (!studentCountField.getText().matches("\\d+"))
+	        	    throw new IllegalArgumentException("Student count must be a positive number");
 	        system.addStudentGroup(nextGroupID++,departmentChoice.getSelectedItem(),Integer.parseInt(studyYearChoice.getSelectedItem()),Integer.parseInt(studentCountField.getText()),programChoice.getSelectedItem());
 	            //success and error massages
 	            JOptionPane.showMessageDialog(
@@ -1214,7 +1226,7 @@ public void actionPerformed(ActionEvent e) {
         dialog.setLayout(new BorderLayout());
         dialog.setSize(500, 350);
 
-        Panel formPanel = new Panel(new GridLayout(6, 2, 5, 5));
+        Panel formPanel = new Panel(new GridLayout(7, 2, 5, 5));
 
         Choice courseChoice = new Choice();
         
@@ -1268,6 +1280,7 @@ public void actionPerformed(ActionEvent e) {
         modeChoice.add("FRONTAL");
         modeChoice.add("ZOOM");
         modeChoice.add("HYBRID");
+        Checkbox labCheckbox = new Checkbox("Lab Required");
         Choice roomChoice = new Choice();
         roomChoice.setEnabled(true);
         modeChoice.addItemListener(e -> {
@@ -1279,8 +1292,9 @@ public void actionPerformed(ActionEvent e) {
             else
                 roomChoice.setEnabled(true);
         });
-        for (Room room : system.getRooms()) {
-            roomChoice.add(room.getRoomID() + " - " + room.toString());
+        for (Room room : system.getRooms()) 
+        {
+            roomChoice.add(room.getRoomID() +" - Capacity: " +room.getCapacity());
             roomsList.add(room);
         }
 
@@ -1312,11 +1326,12 @@ public void actionPerformed(ActionEvent e) {
 
         formPanel.add(new Label("End Time:"));
         formPanel.add(endPanel);
-
+        formPanel.add(new Label("Lab Required:"));
+        formPanel.add(labCheckbox);
         formPanel.add(new Label("Teaching Mode:"));
         formPanel.add(modeChoice);
         formPanel.add(new Label("Room:"));
-        formPanel.add(roomChoice);
+        formPanel.add(roomChoice); 
 
         Panel buttonPanel = new Panel(new GridLayout(1, 2, 5, 5));
         Button addButton = new Button("Add");
@@ -1367,7 +1382,7 @@ public void actionPerformed(ActionEvent e) {
                 	    endTime,
                 	    "SCHEDULED",
                 	    modeChoice.getSelectedItem(),
-                	    false,
+                	    labCheckbox.getState(),
                 	    selectedRoom
                 	);
                 JOptionPane.showMessageDialog(

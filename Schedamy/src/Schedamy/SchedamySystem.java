@@ -34,12 +34,60 @@ public class SchedamySystem
         assignedToTeachList = new ArrayList<AssignedToTeach>();
     }
 
+    public List<Course> getCourses()
+    {
+        return courses;
+    }
+
+    public List<Lecturer> getLecturers()
+    {
+        return lecturers;
+    }
+
+    public List<Room> getRooms()
+    {
+        return rooms;
+    }
+
+    public List<RoomResrvation> getRoomReservations()
+    {
+        return roomReservations;
+    }
+
+    public List<StudentGroup> getStudentGroups()
+    {
+        return studentGroups;
+    }
+
+    public List<GroupEnrolment> getGroupEnrolments()
+    {
+        return groupEnrolments;
+    }
+
+    public List<AssignedToTeach> getAssignedToTeachList()
+    {
+        return assignedToTeachList;
+    }
+    //find lecturer by id
+    private Lecturer findLecturerById(int lecturerID) {
+        for (Lecturer lecturer : lecturers) {
+            if (lecturer.getLecturerID() == lecturerID)
+                return lecturer;
+        }
+
+        return null;
+    }
+    
     public void addCourse(int courseID, String courseName,int credits, String courseType,int lecturerID, int groupID)
     {
-    	if (courseName == null || courseName.isEmpty())
-    		throw new IllegalArgumentException("Invalid course name");
+    	if (courseName == null || courseName.trim().isEmpty())
+    	    throw new IllegalArgumentException("Course name cannot be empty");
+
+    	if (courseName.matches("\\d+"))
+    	    throw new IllegalArgumentException("Course name cannot contain only numbers");
+
     	if (credits <= 0)
-    		throw new IllegalArgumentException("Invalid credits");
+    	    throw new IllegalArgumentException("Credits must be greater than 0");
     	Course course = new Course(courseID,courseName,credits,courseType,new Vector<Lesson>());
     	
     	Lecturer lecturer = findLecturerById(lecturerID);
@@ -66,10 +114,10 @@ public class SchedamySystem
     	        throw new IllegalArgumentException("This ID already exists");
     	}
     	// First name only letters
-    	if (!firstName.matches("[a-zA-Z]+"))
+    	if (!firstName.matches("[a-zA-Z ]+"))
     		throw new IllegalArgumentException("First name must contain only letters");
     	// Last name only letters
-    	if (!lastName.matches("[a-zA-Z]+"))
+    	if (!lastName.matches("[a-zA-Z ]+"))
     		throw new IllegalArgumentException("Last name must contain only letters");
     	Lecturer lecturer = new Lecturer(id,firstName,lastName,specializations,teachingScore,fte);
     	// FTE Between 0-100
@@ -132,6 +180,11 @@ public class SchedamySystem
     	if (course == null)
     		throw new IllegalArgumentException("Course not found");
     	Lesson lesson = new Lesson(lessonID,lessonDate,startTime,endTime,status,teachingMode,labRoomRequired,new Vector<StudentGroup>());
+    	StudentGroup group = getGroupForCourse(course);
+    	if (room != null &&group != null &&room.getCapacity()< group.getStudentCount())
+    	{
+    	    throw new IllegalArgumentException("Room is too small for this student group");
+    	}
     	for (Lesson existingLesson : course.getLessons())
     	{
     		if (existingLesson.getLessonDate().equals(lesson.getLessonDate()))
@@ -142,62 +195,18 @@ public class SchedamySystem
     			}
     		}
     	course.getLessons().add(lesson);
-    	if (room != null) {
-    	    if (!isRoomAvailable(room, lesson)) {
+    	if (room != null)
+    	{
+    	    if (!isRoomAvailable(room, lesson))
+    	    {
     	        throw new IllegalArgumentException("This room is already reserved at this time");
     	    }
-
     	    lesson.setRoom(room);
 
-    	    roomReservations.add(
-    	        new RoomResrvation(room, lesson, lesson.getDurationTime())
-    	    );
-    	}
+    	    roomReservations.add(new RoomResrvation(room, lesson, lesson.getDurationTime()));
+    	    }
     	}
 
-    public List<Course> getCourses()
-    {
-        return courses;
-    }
-
-    public List<Lecturer> getLecturers()
-    {
-        return lecturers;
-    }
-
-    public List<Room> getRooms()
-    {
-        return rooms;
-    }
-
-    public List<RoomResrvation> getRoomReservations()
-    {
-        return roomReservations;
-    }
-
-    public List<StudentGroup> getStudentGroups()
-    {
-        return studentGroups;
-    }
-
-    public List<GroupEnrolment> getGroupEnrolments()
-    {
-        return groupEnrolments;
-    }
-
-    public List<AssignedToTeach> getAssignedToTeachList()
-    {
-        return assignedToTeachList;
-    }
-    //find lecturer by id
-    private Lecturer findLecturerById(int lecturerID) {
-        for (Lecturer lecturer : lecturers) {
-            if (lecturer.getLecturerID() == lecturerID)
-                return lecturer;
-        }
-
-        return null;
-    }
     //find student group by id
     private StudentGroup findStudentGroupById(int groupID) {
         for (StudentGroup group : studentGroups) {
@@ -241,6 +250,19 @@ public class SchedamySystem
         {
             if (course.getCourseID() == courseID)
                 return course;
+        }
+
+        return null;
+    }
+    //get student group for course
+    private StudentGroup getGroupForCourse(Course course)
+    {
+        for (GroupEnrolment enrolment : groupEnrolments)
+        {
+            if (enrolment.getCourse().equals(course))
+            {
+                return enrolment.getGroup();
+            }
         }
 
         return null;
