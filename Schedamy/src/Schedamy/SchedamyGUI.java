@@ -39,6 +39,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         // Create the main system object.
         this.system = system;
+        updateNextIDs();
 
         // Set the size of the main window.
         setSize(500, 350);
@@ -55,6 +56,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
                 System.exit(0);
             }
         });
+    }
+ // Updates the next available IDs for courses and student groups
+    private void updateNextIDs() {
+        nextCourseID = system.getCourses().size() + 1;
+        nextGroupID = system.getStudentGroups().size() + 1;
     }
  // Builds the main menu bar 
  private void buildMenuBar() {
@@ -241,6 +247,7 @@ public void actionPerformed(ActionEvent e) {
     if (command.equals("Load Data")) {
         try {
             system.loadDataFromFile();
+            updateNextIDs();
 
             JOptionPane.showMessageDialog(
                 this,
@@ -617,10 +624,10 @@ public void actionPerformed(ActionEvent e) {
 
 	    dialog.add(formPanel, BorderLayout.CENTER);
 	    dialog.add(buttonPanel, BorderLayout.SOUTH);
-	   int courseID = nextCourseID++;
+	  
 	    addButton.addActionListener(e -> {
 	        try {
-	        	 
+	        	 int courseID = nextCourseID; 
 	        	String lecturerText = lecturerChoice.getSelectedItem();
 	        	String groupText = groupChoice.getSelectedItem();
 	        	int lecturerID = Integer.parseInt(lecturerText.split(" - ")[0]);
@@ -631,7 +638,7 @@ public void actionPerformed(ActionEvent e) {
 	        	system.addCourse(courseID,capitalizeFirstLetter(courseNameField.getText()),Integer.parseInt(creditsField.getText()),courseTypeChoice.getSelectedItem(),lecturerID,groupID);
 	        
 	            JOptionPane.showMessageDialog(this,
-	                "Course added successfully!\nTotal courses: " + system.getCourses().size() + "\n"+ "Course ID "+ nextCourseID);
+	                "Course added successfully!\nTotal courses: " + system.getCourses().size());
 	            dialog.dispose();
 	            
 
@@ -716,9 +723,7 @@ public void actionPerformed(ActionEvent e) {
 	            //success and error massages
 	            JOptionPane.showMessageDialog(
 	                this,
-	                "Student group added successfully!\n" +
-	                "Group ID: " + nextGroupID + "\n" + "\n" +
-	                "Total groups: " + system.getStudentGroups().size(),
+	                "Student group added successfully!\n",
 	                "Success",JOptionPane.INFORMATION_MESSAGE);
 	            // Close dialog window
 	            dialog.dispose();
