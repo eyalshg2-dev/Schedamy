@@ -84,20 +84,11 @@ public class Lesson {
 		}
 	}
 	
-	public synchronized void setStartTime(LocalTime startTime) {
+	public synchronized void setTime(LocalTime startTime, LocalTime endTime) {
 
 	    if (startTime == null) {
 	        throw new IllegalArgumentException("Start time cannot be null");
 	    }
-
-	    if (!endTime.isAfter(startTime)) {
-	        throw new IllegalArgumentException("Start time must be before end time");
-	    }
-
-	    this.startTime = startTime;
-	}
-	
-	public synchronized void setEndTime(LocalTime endTime) {
 
 	    if (endTime == null) {
 	        throw new IllegalArgumentException("End time cannot be null");
@@ -107,6 +98,7 @@ public class Lesson {
 	        throw new IllegalArgumentException("End time must be after start time");
 	    }
 
+	    this.startTime = startTime;
 	    this.endTime = endTime;
 	}
 	

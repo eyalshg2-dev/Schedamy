@@ -617,10 +617,10 @@ public void actionPerformed(ActionEvent e) {
 
 	    dialog.add(formPanel, BorderLayout.CENTER);
 	    dialog.add(buttonPanel, BorderLayout.SOUTH);
-
+	   int courseID = nextCourseID++;
 	    addButton.addActionListener(e -> {
 	        try {
-	        	int courseID = nextCourseID++;
+	        	 
 	        	String lecturerText = lecturerChoice.getSelectedItem();
 	        	String groupText = groupChoice.getSelectedItem();
 	        	int lecturerID = Integer.parseInt(lecturerText.split(" - ")[0]);
@@ -974,8 +974,7 @@ public void actionPerformed(ActionEvent e) {
 	            }
 
 	            selectedLesson.setLessonDate(newDate);
-	            selectedLesson.setStartTime(newStart);
-	            selectedLesson.setEndTime(newEnd);
+	            selectedLesson.setTime(newStart, newEnd);
 	            selectedLesson.setTeachingMode(modeChoice.getSelectedItem());
 	            selectedLesson.setStatus("RESCHEDULED");
 
