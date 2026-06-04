@@ -173,13 +173,13 @@ public class SchedamySystem
     
     //add lessons to course
     public void addLessonToCourse(int courseID, int lessonID, LocalDate lessonDate,
-    		LocalTime startTime, LocalTime endTime, String status,
+    		LocalTime localDate, LocalTime localDate2, String status,
     		String teachingMode, boolean labRoomRequired, Room room)
     {
     	Course course = findCourseById(courseID);
     	if (course == null)
     		throw new IllegalArgumentException("Course not found");
-    	Lesson lesson = new Lesson(lessonID,lessonDate,startTime,endTime,status,teachingMode,labRoomRequired,new Vector<StudentGroup>());
+    	Lesson lesson = new Lesson(lessonID,lessonDate,localDate,localDate2,status,teachingMode,labRoomRequired,new Vector<StudentGroup>());
     	StudentGroup group = getGroupForCourse(course);
     	if (room != null &&group != null &&room.getCapacity()< group.getStudentCount())
     	{
@@ -195,6 +195,7 @@ public class SchedamySystem
     			}
     		}
     	course.getLessons().add(lesson);
+    	
     	if (room != null)
     	{
     	    if (!isRoomAvailable(room, lesson))
@@ -202,7 +203,7 @@ public class SchedamySystem
     	        throw new IllegalArgumentException("This room is already reserved at this time");
     	    }
     	    lesson.setRoom(room);
-
+    	    room.setStatus("SCHEDULED");
     	    roomReservations.add(new RoomResrvation(room, lesson, lesson.getDurationTime()));
     	    }
     	}

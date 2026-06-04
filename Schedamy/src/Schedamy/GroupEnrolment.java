@@ -36,8 +36,8 @@ public class GroupEnrolment
 
     //To string
     public String toString()
-    {
-        return "Priority Level: " + priorityLevel + "Attendance Required: " + attendanceRequired + "Group: " + group.getGroupID() +"Course: " + course.getCourseName();
+    { 
+        return "Priority Level: " + priorityLevel + " Attendance Required: " + attendanceRequired + " Group: " + group.getGroupID() +" Course: " + course.getCourseName();
     }
     
     //Calculation if is mandatory

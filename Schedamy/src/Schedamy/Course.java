@@ -106,6 +106,6 @@ public class Course{
 		}
 	}
 	public String toString() {
-		return "courseID= " + courseID +" courseName= " + courseName +" credits= " + credits + " \n" +"courseType= " + courseType +"amount of lessons= " + lessons.size();
+		return "courseID= " + courseID + "\n" + "courseName= " + courseName + "\n" +"credits= " + credits + "\n" + "courseType= " + courseType + "\n" + "amount of lessons= " + lessons.size();
 	}
 }

@@ -1,6 +1,9 @@
 LECTURERS
-123456789,Eyal,Shigris
+123456789,Drake,Bell
+345678912,Josh,Peck
 STUDENT_GROUPS
-1,Electrical Engineering,1,50,Morning
+1,Computer Engineering,3,35,Morning
+2,Electrical Engineering,2,28,Evening
 ROOMS
-112,27,Classroom,50,NONE
+101,3,Classroom,40,NONE
+102,3,Computer Lab,3,Computers

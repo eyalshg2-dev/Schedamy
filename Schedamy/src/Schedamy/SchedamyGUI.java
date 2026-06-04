@@ -34,11 +34,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
     private final Object sharedRoomLock = new Object();
     
     // Constructor - creates the main window and initializes the system.
-    public SchedamyGUI() {
+    public SchedamyGUI(SchedamySystem system) {
         super("Schedamy System");
 
         // Create the main system object.
-        system = new SchedamySystem();
+        this.system = system;
 
         // Set the size of the main window.
         setSize(500, 350);
@@ -951,6 +951,27 @@ public void actionPerformed(ActionEvent e) {
 	            if (!newEnd.isAfter(newStart)) {
 	                throw new IllegalArgumentException("End time must be after start time");
 	            }
+	            
+	            for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
+	            	for (Lesson otherLesson : enrolment.getCourse().getLessons()) {
+	            		//skip the lesson we are rescheduling
+	            		if (otherLesson.getLessonID() == selectedLesson.getLessonID()) {
+	            			continue;
+	            		}
+	            		//skip the lesson that is cancelled
+	            		if (otherLesson.getStatus().equalsIgnoreCase("CANCELLED")) {
+	            			continue;
+	            		}
+	            		//check if the lesson has the same date and if it overlaps
+	            		if (otherLesson.getLessonDate().equals(newDate)) {
+	            			boolean overlap = newStart.isBefore(otherLesson.getEndTime()) &&
+	            					newEnd.isAfter(otherLesson.getStartTime());
+	            			if (overlap) {
+	            				throw new IllegalArgumentException("Cannot reschedule at this time and room " + newDate);
+	            			}
+	            		}
+	            	}
+	            }
 
 	            selectedLesson.setLessonDate(newDate);
 	            selectedLesson.setStartTime(newStart);
@@ -1156,10 +1177,6 @@ public void actionPerformed(ActionEvent e) {
         return text.substring(0, 1).toUpperCase() + text.substring(1);
     }
 	
-    public static void main(String[] args)
-    {
-        new SchedamyGUI();
-    }
     private void openLecturersView() {
         String text = "";
 

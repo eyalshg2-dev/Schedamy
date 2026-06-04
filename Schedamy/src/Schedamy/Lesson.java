@@ -165,8 +165,12 @@ public class Lesson {
 	}
 	
 	public String toString() {
-		return "lessonID= " + lessonID + " lesson Date= " + lessonDate + " start Time= " + startTime +" end Time= " + endTime +
-			   " status= " + status + " teaching Mode= " + teachingMode + "labRoom Required  =" + labRoomRequired + " room= " + (room != null ? room.getRoomID() : "No room assigned");
+		return "lessonID = " + lessonID + "\n" + " lesson Date = " + lessonDate + "\n" + " start Time= " + startTime + "\n" +
+			   " end Time= " + endTime + "\n" +
+			   " status = " + status + "\n" +
+			   " teaching Mode= " + teachingMode + "\n" +
+			   " labRoom Required = " + labRoomRequired + "\n" +
+			   " room = " + (room != null ? room.getRoomID() : "No room assigned");
 	}
 }
 	
