@@ -452,9 +452,9 @@ public class SchedamySystem
     			lecturer,
     			lessonToCancel,
     			newDate,
-    			(Vector <Room>) rooms,
+    			new Vector<>(rooms),
     			roomLock,
-    			(Vector <GroupEnrolment>) groupEnrolments));
+    			new Vector<>(groupEnrolments), true));
     	
     	availabilityThread.start();
 

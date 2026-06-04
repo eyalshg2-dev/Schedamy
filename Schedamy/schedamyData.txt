@@ -1,3 +1,6 @@
 LECTURERS
+123456789,Eyal,Shigris
 STUDENT_GROUPS
+1,Electrical Engineering,1,50,Morning
 ROOMS
+112,27,Classroom,50,NONE

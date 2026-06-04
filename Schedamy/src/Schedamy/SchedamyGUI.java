@@ -745,10 +745,12 @@ public void actionPerformed(ActionEvent e) {
 
 	    // This vector keeps  Lesson objects in the same order as the Choice list.
 	    Vector<Lesson> lessonsList = new Vector<Lesson>();
+	    Vector<Integer> courseIDs = new Vector<Integer>();
 
 	    for (Course course : system.getCourses()) {
 	        for (Lesson lesson : course.getLessons()) {
-
+	        	if (!lesson.getStatus().equalsIgnoreCase("CANCELLED")&&
+	        		!lesson.getStatus().equalsIgnoreCase("RESCHEDULED")) {
 	            lessonChoice.add(
 	                course.getCourseID() + " - " +
 	                course.getCourseName() + " | Lesson " +
@@ -758,6 +760,8 @@ public void actionPerformed(ActionEvent e) {
 	            );
 
 	            lessonsList.add(lesson);
+	            courseIDs.add(course.getCourseID());
+	        	}
 	        }
 	    }
 
@@ -794,8 +798,11 @@ public void actionPerformed(ActionEvent e) {
 	            // Get the selected Lesson directly by index
 	            int selectedIndex = lessonChoice.getSelectedIndex();
 	            Lesson selectedLesson = lessonsList.get(selectedIndex);
-
-	            selectedLesson.setStatus("CANCELLED");
+	            int courseID = courseIDs.get(selectedIndex);
+	            
+	            LocalDate newDate = selectedLesson.getLessonDate().plusWeeks(1);
+	            
+	            system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate, sharedRoomLock);
 
 	            JOptionPane.showMessageDialog(
 	                this,
@@ -840,7 +847,6 @@ public void actionPerformed(ActionEvent e) {
 	                lesson.getLessonDate() + " " +
 	                lesson.getStartTime()
 	            );
-
 	            lessonsList.add(lesson);
 	        }
 	    }
@@ -1149,6 +1155,7 @@ public void actionPerformed(ActionEvent e) {
         text = text.trim().toLowerCase();
         return text.substring(0, 1).toUpperCase() + text.substring(1);
     }
+	
     public static void main(String[] args)
     {
         new SchedamyGUI();
@@ -1408,6 +1415,17 @@ public void actionPerformed(ActionEvent e) {
 
         dialog.setVisible(true);
     }
+    
+    private String getFriendlyStatus(String status) {
+    	if (status == null) return "Unknown";
+    	switch (status.toUpperCase()) {
+    	case "SCHEDULED": return "SCHEDULED";
+    	case "AVAILABLE": return "SCHEDULED";
+    	case "CANCELLED": return "NEEDS TO RESCHEDULE";
+    	case "RESCHEDULED": return "RESCHEDULED";
+    	default: return status;
+    	}
+    }
     private void openLessonsView()
     {
         String text = "";
@@ -1416,7 +1434,10 @@ public void actionPerformed(ActionEvent e) {
             text += "Course: " + course.getCourseName() + "\n";
 
             for (Lesson lesson : course.getLessons()) {
-                text += lesson.toString() + "\n";
+            	String display = lesson.toString().replace(
+            			"status= " + lesson.getStatus(),
+            			"status= " + getFriendlyStatus(lesson.getStatus()));
+                text += display + "\n";
             }
 
             text += "\n";

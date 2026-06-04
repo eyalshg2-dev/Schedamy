@@ -15,16 +15,19 @@ public class AvailabilityThread implements Runnable {
 	private Vector<Room> rooms;
 	private final Vector<GroupEnrolment> groupEnrolment;
 	private final Object roomLock;
+	private boolean isCancellation;
 	
 	public AvailabilityThread(Lecturer lecturer, Lesson lesson, 
 							  LocalDate date, Vector<Room> rooms,
-							  Object roomLock, Vector<GroupEnrolment> groupEnrolment) {
+							  Object roomLock, Vector<GroupEnrolment> groupEnrolment,
+							  boolean isCancellation) {
 		this.lecturer = lecturer;
 		this.lesson = lesson;
 		this.date = date;
 		this.rooms = rooms;
 		this.roomLock = roomLock;
 		this.groupEnrolment = groupEnrolment;
+		this.isCancellation = isCancellation;
 	}
 	
 	public void run() {
@@ -69,6 +72,7 @@ public class AvailabilityThread implements Runnable {
 		private void handleFrontal() {
 			synchronized (roomLock) {
 				Room availableRoom = null;
+				
 				for(Room room : rooms) {
 					if("AVAILABLE".equals(room.getStatus())) {
 						availableRoom = room;
@@ -79,7 +83,9 @@ public class AvailabilityThread implements Runnable {
 					availableRoom.setStatus("RESCHEDULED");
 					lesson.setLessonDate(date);
 					lesson.setRoom(availableRoom);
-					lesson.setStatus("RESCHEDULED");
+					if (!isCancellation) {
+						lesson.setStatus("RESCHEDULED");
+					}
 					System.out.println("[FRONTAL] Rescheduled on: " + date 
 							+ " | Room: " + availableRoom.getRoomID());
 				} else {
@@ -93,7 +99,9 @@ public class AvailabilityThread implements Runnable {
 			synchronized (lesson) {
 				if(!"RESCHEDULED".equals(lesson.getStatus())) {
 					lesson.setLessonDate(date);
-					lesson.setStatus("RESCHEDULED");
+					if (!isCancellation) {
+						lesson.setStatus("RESCHEDULED");
+					}
 					System.out.println("[ZOOM] Rescheduled on: " + date +
 							 " - all groups available");
 				}	

@@ -166,7 +166,7 @@ public class Lesson {
 	
 	public String toString() {
 		return "lessonID= " + lessonID + " lesson Date= " + lessonDate + " start Time= " + startTime +" end Time= " + endTime +
-			   " status= " + status + " teaching Mode= " + teachingMode + "labRoom Required  =" + labRoomRequired + " room= " + room ;
+			   " status= " + status + " teaching Mode= " + teachingMode + "labRoom Required  =" + labRoomRequired + " room= " + (room != null ? room.getRoomID() : "No room assigned");
 	}
 }
 	
