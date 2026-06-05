@@ -18,7 +18,7 @@
 			ArrayList<String> specs1 = new ArrayList<>();
 			specs1.add("Java");
 			specs1.add("Software Engineering");
-			system.addLecturer(123456789, "Drake", "Bell", specs1, 90, 0.1);
+			system.addLecturer(123456789, "Drake", "Bell", specs1, 90, 1.0);
 			
 			ArrayList<String> specs2 = new ArrayList<>();
 			specs2.add("Algorithms");
@@ -37,14 +37,14 @@
 			system.addLessonToCourse(1, 1,
 					LocalDate.of(2026, 6, 10),
 					LocalTime.of(10, 0),
-					LocalTime.of(12, 0, 0),
+					LocalTime.of(12, 15),
 					"SCHEDULED", "FRONTAL", false,
 					system.getRooms().get(0));
 			
 			system.addLessonToCourse(2, 2,
 					LocalDate.of(2026, 6, 11), 
 					LocalTime.of(14, 0), 
-					LocalTime.of(16, 0), 
+					LocalTime.of(16, 15), 
 					"SCHEDULED", "ZOOM", false, null);
 			
 			System.out.println("=== Schedamy System Initialized ===\n");

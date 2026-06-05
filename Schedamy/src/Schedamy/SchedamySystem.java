@@ -460,4 +460,31 @@ public class SchedamySystem
     	availabilityThread.start();
 
     }
+   //get lecturer total hours
+   public double calculateLecturerActualHours(Lecturer lecturer) {
+	    double actualHours = 0;
+
+	    for (AssignedToTeach assigned : assignedToTeachList) {
+	        if (assigned.getLecturer().equals(lecturer)) {
+	            actualHours += assigned.calculateLecturerHours();
+	        }
+	    }
+
+	    return actualHours;
+	}
+   //GET ROOM LOAD
+   public double calculateRoomLoad(Room room)
+   {
+       double totalLoad = 0;
+
+       for (RoomResrvation reservation : roomReservations)
+       {
+           if (reservation.getRoom().equals(room))
+           {
+               totalLoad += reservation.getOccupancyTime().toMinutes() / 45;
+           }
+       }
+
+       return totalLoad;
+   }
 }

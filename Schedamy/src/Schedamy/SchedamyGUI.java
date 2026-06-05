@@ -28,6 +28,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
     private Menu manageMenu;
     private Menu viewMenu;
     private Menu helpMenu;
+    private Menu optionsMenu;
+    private PopupMenu extraPopup;
     
     // The main system object that stores and manages all data.
     private SchedamySystem system;
@@ -72,12 +74,16 @@ public class SchedamyGUI extends Frame implements ActionListener {
      buildFileMenu();
      buildManageMenu();
      buildViewMenu();
+     buildOptionsMenu();
+     buildExtraPopup();
      buildHelpMenu();
+     
 
      // Add menus to the menu bar.
      menuBar.add(fileMenu);
      menuBar.add(manageMenu);
      menuBar.add(viewMenu);
+     menuBar.add(optionsMenu);
      menuBar.add(helpMenu);
 
      // Attach the menu bar to the main window.
@@ -197,6 +203,9 @@ private void buildViewMenu() {
 
  viewMenu.add(timetableMenu);
 }
+
+
+
 
 //Builds the "Help" menu.
 //This menu contains general information about the system.
@@ -352,7 +361,22 @@ public void actionPerformed(ActionEvent e) {
     if (command.equals("Student Group Timetable")) {
         openStudentGroupTimetableDialog();
     }
+    //options in popupmanu
+    if (command.equals("Extra Options")) {
+        extraPopup.show(this, 180, 100);
+    }
+    if (command.equals("Calculate Lecturer Load")) {
+        openLecturerLoadDialog();
+    }
+    if (command.equals("Calculate Student Load")) {
+        openStudentLoadDialog();
+    }
+    if (command.equals("Calculate Room Load")) {
+        openRoomLoadDialog();
+    }
+
 }
+
     private void openAddLecturerDialog() {
 
     // Create a pop-up dialog window for adding a new lecturer
@@ -1475,5 +1499,131 @@ public void actionPerformed(ActionEvent e) {
             JOptionPane.INFORMATION_MESSAGE
         );
     }
+    // options  in popupmanu
+    private void buildOptionsMenu() {
+        optionsMenu = new Menu("Options");
 
+        MenuItem extraOptionsItem = new MenuItem("Extra Options");
+        extraOptionsItem.addActionListener(this);
+
+        optionsMenu.add(extraOptionsItem);
+    }
+    private void buildExtraPopup() {
+        extraPopup = new PopupMenu();
+
+        MenuItem lecturerLoadItem = new MenuItem("Calculate Lecturer Load");
+        MenuItem studentLoadItem = new MenuItem("Calculate Student Load");
+        MenuItem roomLoadItem = new MenuItem("Calculate Room Load");
+        
+        lecturerLoadItem.addActionListener(this);
+        roomLoadItem.addActionListener(this);
+        studentLoadItem.addActionListener(this);
+
+        extraPopup.add(lecturerLoadItem);
+        extraPopup.add(studentLoadItem);  
+        extraPopup.add(roomLoadItem);
+
+        add(extraPopup);
+    }
+    //lecturer load
+    private void openLecturerLoadDialog()
+    {
+
+        Choice lecturerChoice = new Choice();
+
+        for (Lecturer lecturer : system.getLecturers()) {
+            lecturerChoice.add(lecturer.getLecturerID() + " - " +
+                    lecturer.getFirstName() + " " + lecturer.getLastName());
+        }
+        int result = JOptionPane.showConfirmDialog(this,lecturerChoice,"Choose Lecturer",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
+            int index = lecturerChoice.getSelectedIndex();
+            Lecturer lecturer = system.getLecturers().get(index);
+            double actualHours = system.calculateLecturerActualHours(lecturer);
+            double requiredHours = lecturer.getFTE() * 40;
+            double diff = requiredHours - actualHours;
+
+            JOptionPane.showMessageDialog(this,
+                    "Lecturer: " + lecturer.getFirstName() + " " + lecturer.getLastName() +
+                    "\nRequired load: " + requiredHours +
+                    "\nActual load: " + actualHours +"\nDifference: " + diff);
+        }
+    }
+    //student load
+    private void openStudentLoadDialog() {
+
+        Choice groupChoice = new Choice();
+
+        for (StudentGroup group : system.getStudentGroups()) {
+            groupChoice.add(
+                    group.getGroupID() + " - " +
+                    group.getDepartment() + " Year " +
+                    group.getStudyYear() + " - " +
+                    group.getProgramName()
+            );
+        }
+
+        int result = JOptionPane.showConfirmDialog(
+                this,
+                groupChoice,
+                "Choose Student Group",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result == JOptionPane.OK_OPTION) {
+
+            StudentGroup group =
+                    system.getStudentGroups().get(groupChoice.getSelectedIndex());
+
+            ArrayList<GroupEnrolment> groupCourses = new ArrayList<GroupEnrolment>();
+
+            for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
+                if (enrolment.getGroup().equals(group)) {
+                    groupCourses.add(enrolment);
+                }
+            }
+
+            GroupEnrolment[] enrolments =
+                    groupCourses.toArray(new GroupEnrolment[groupCourses.size()]);
+
+            int totalHours = group.calculateTotalHours(enrolments);
+            boolean overloaded = group.isScheduleOverloaded(enrolments);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Student Group: " + group.getDepartment() +
+                    " Year " + group.getStudyYear() +
+                    "\nProgram: " + group.getProgramName() +
+                    "\nTotal load: " + totalHours +
+                    "\nOverloaded: " + overloaded
+            );
+        }
+    }
+    //get room load
+    private void openRoomLoadDialog()
+    {
+        Choice roomChoice = new Choice();
+
+        for (Room room : system.getRooms()) 
+        {
+        	roomChoice.add(room.getRoomID());
+        }
+
+        int result = JOptionPane.showConfirmDialog(this,roomChoice,"Choose Room",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
+
+            Room room = system.getRooms().get(roomChoice.getSelectedIndex());
+            double load = system.calculateRoomLoad(room);
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Room: " + room.getRoomID() +
+                    "\nBuilding: " + room.getBuilding() +
+                    "\nSize: " + room.classifyRoomSize() +
+                    "\nAcademic Hours: " + load);
+        }
+    }
 }

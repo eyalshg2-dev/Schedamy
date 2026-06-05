@@ -54,7 +54,7 @@ public class StudentGroup
     //To string
     public String toString()
     {
-        return "Group ID: " + groupID + "Department: " + department + "Study Year: " + studyYear + "Student Count: " + studentCount + "Program Name: " + programName;
+        return "Group ID: " + groupID + " Department: " + department + " Study Year: " + studyYear + " Student Count: " + studentCount + " Program Name: " + programName;
     }
 
   //calculate hours in course
@@ -82,27 +82,17 @@ public class StudentGroup
         return totalHours;
     }
     
-    //calculate if the schedule over loaded
+ // Check if the schedule is overloaded
     public boolean isScheduleOverloaded(GroupEnrolment[] enrolments)
     {
-    	int totalHours = calculateTotalHours(enrolments);
-    	if(programName.equals("Evening"))
-    	{
-    		if(totalHours > 15)
-    		{
-    			System.out.println("The group schedule is overloaded");
-    			return true;
-    		}
-    		System.out.println("The group schedule is not overloaded");
-    		return false;
-    		}
-    	if(totalHours > 30)
-    	{
-    		System.out.println("The group schedule is overloaded");
-    		return true;
-    		}
-    	System.out.println("The group schedule is not overloaded");
-    	 return false;
+        int totalHours = calculateTotalHours(enrolments);
+
+        if (programName.equals("Evening"))
+        {
+            return totalHours > 15;
+        }
+
+        return totalHours > 30;
     }
     
 

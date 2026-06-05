@@ -53,9 +53,9 @@ public class Room {
 	//To String
 	public String toString()
 	{
-	    return "Room number: " + roomID + "\n" +
-	           "Building: " + building + 
-	           " Room type: " + roomType + "\n" +
+	    return "Room number: " + roomID + 
+	           " Building: " + building + "\n" +
+	           " Room type: " + roomType +
 	           "Capacity: " + capacity + 
 	           " Special equipment: " + specialEquipment +
 	           " Status: " + status;

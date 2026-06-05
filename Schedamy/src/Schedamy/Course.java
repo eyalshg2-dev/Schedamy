@@ -29,13 +29,16 @@ public class Course{
 	
 	// calculate the total hours by iterating through the lessons
 	public synchronized double calculateCourseHours() {
-		double totalHours = 0;
-		
-		for (Lesson lesson : lessons) {
-			totalHours += lesson.getDurationTime().toMinutes() /60.0;
-		}
-		
-		return totalHours;
+	    double totalHours = 0;
+
+	    for (Lesson lesson : lessons) {
+	        if (lesson.getStatus().equals("SCHEDULED") ||
+	            lesson.getStatus().equals("RESCHEDULED")) {
+	            totalHours += lesson.getDurationTime().toMinutes() / 45;
+	        }
+	    }
+
+	    return totalHours;
 	}
 	
 	
