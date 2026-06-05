@@ -229,7 +229,7 @@ public class SchedamySystem
 
                 info += "Lecturer: " +
                         lecturer.getFirstName() + " " +
-                        lecturer.getLastName();
+                        lecturer.getLastName() + "\n";
             }
         }
 
@@ -237,10 +237,16 @@ public class SchedamySystem
         {
             if (enrolment.getCourse().equals(course))
             {
-                info += "\n Student Group: " +
-                        enrolment.getGroup().getDepartment()+ "Year :" + enrolment.getGroup().getStudyYear();
+                StudentGroup group = enrolment.getGroup();
+
+                info += "Student Group: " +
+                        group.getDepartment() +
+                        ", Year " + group.getStudyYear() +
+                        ", Program: " + group.getProgramName() + "\n";
             }
         }
+
+        info += "-------------------------";
 
         return info;
     }
@@ -283,7 +289,9 @@ public class SchedamySystem
             bw.write(
                 lecturer.getLecturerID() + "," +
                 lecturer.getFirstName() + "," +
-                lecturer.getLastName()
+                lecturer.getLastName() + "," +
+                lecturer.getTeachingScore() + "," +
+                lecturer.getFTE()
             );
             bw.newLine();
         }
@@ -311,14 +319,75 @@ public class SchedamySystem
                 room.getBuilding() + "," +
                 room.getRoomType() + "," +
                 room.getCapacity() + "," +
-                room.getSpecialEquipment()
+                room.getSpecialEquipment() + "," +
+                room.getStatus()
             );
             bw.newLine();
         }
 
+        bw.write("COURSES");
+        bw.newLine();
+
+        for (Course course : courses) {
+            bw.write(
+                course.getCourseID() + "," +
+                course.getCourseName() + "," +
+                course.getCredits() + "," +
+                course.getCourseType()
+            );
+            bw.newLine();
+        }
+
+        bw.write("ASSIGNED_TO_TEACH");
+        bw.newLine();
+
+        for (AssignedToTeach assigned : assignedToTeachList) {
+            bw.write(
+                assigned.getLecturer().getLecturerID() + "," +
+                assigned.getCourse().getCourseID()
+            );
+            bw.newLine();
+        }
+
+        bw.write("GROUP_ENROLMENTS");
+        bw.newLine();
+
+        for (GroupEnrolment enrolment : groupEnrolments) {
+            bw.write(
+                enrolment.getGroup().getGroupID() + "," +
+                enrolment.getCourse().getCourseID()
+            );
+            bw.newLine();
+        }
+
+        bw.write("LESSONS");
+        bw.newLine();
+
+        for (Course course : courses) {
+            for (Lesson lesson : course.getLessons()) {
+                String roomID = "NONE";
+
+                if (lesson.getRoom() != null) {
+                    roomID = lesson.getRoom().getRoomID();
+                }
+
+                bw.write(
+                    course.getCourseID() + "," +
+                    lesson.getLessonID() + "," +
+                    lesson.getLessonDate() + "," +
+                    lesson.getStartTime() + "," +
+                    lesson.getEndTime() + "," +
+                    lesson.getStatus() + "," +
+                    lesson.getTeachingMode() + "," +
+                    lesson.isLabRoomRequired() + "," +
+                    roomID
+                );
+                bw.newLine();
+            }
+        }
+
         bw.close();
     }
-    
     public void loadDataFromFile() throws IOException
     {
         File file = new File("schedamyData.txt");
@@ -333,6 +402,10 @@ public class SchedamySystem
         lecturers.clear();
         studentGroups.clear();
         rooms.clear();
+        courses.clear();
+        assignedToTeachList.clear();
+        groupEnrolments.clear();
+        roomReservations.clear();
 
         String line;
         String currentSection = "";
@@ -341,7 +414,11 @@ public class SchedamySystem
         {
             if (line.equals("LECTURERS") ||
                 line.equals("STUDENT_GROUPS") ||
-                line.equals("ROOMS"))
+                line.equals("ROOMS") ||
+                line.equals("COURSES") ||
+                line.equals("ASSIGNED_TO_TEACH") ||
+                line.equals("GROUP_ENROLMENTS") ||
+                line.equals("LESSONS"))
             {
                 currentSection = line;
                 continue;
@@ -354,6 +431,8 @@ public class SchedamySystem
                 int id = Integer.parseInt(parts[0]);
                 String firstName = parts[1];
                 String lastName = parts[2];
+                double teachingScore = Double.parseDouble(parts[3]);
+                double fte = Double.parseDouble(parts[4]);
 
                 lecturers.add(
                     new Lecturer(
@@ -361,8 +440,8 @@ public class SchedamySystem
                         firstName,
                         lastName,
                         new ArrayList<String>(),
-                        0,
-                        100
+                        teachingScore,
+                        fte
                     )
                 );
             }
@@ -393,6 +472,7 @@ public class SchedamySystem
                 String roomType = parts[2];
                 int capacity = Integer.parseInt(parts[3]);
                 String equipment = parts[4];
+                String status = parts[5];
 
                 rooms.add(
                     new Room(
@@ -401,13 +481,127 @@ public class SchedamySystem
                         roomType,
                         capacity,
                         equipment,
-                        "AVAILABLE"
+                        status
                     )
                 );
+            }
+
+            else if (currentSection.equals("COURSES"))
+            {
+                int courseID = Integer.parseInt(parts[0]);
+                String courseName = parts[1];
+                int credits = Integer.parseInt(parts[2]);
+                String courseType = parts[3];
+
+                courses.add(
+                    new Course(
+                        courseID,
+                        courseName,
+                        credits,
+                        courseType,
+                        new Vector<Lesson>()
+                    )
+                );
+            }
+
+            else if (currentSection.equals("ASSIGNED_TO_TEACH"))
+            {
+                int lecturerID = Integer.parseInt(parts[0]);
+                int courseID = Integer.parseInt(parts[1]);
+
+                Lecturer lecturer = findLecturerById(lecturerID);
+                Course course = findCourseById(courseID);
+
+                if (lecturer != null && course != null) {
+                    assignedToTeachList.add(
+                        new AssignedToTeach(lecturer, course)
+                    );
+                }
+            }
+
+            else if (currentSection.equals("GROUP_ENROLMENTS"))
+            {
+                int groupID = Integer.parseInt(parts[0]);
+                int courseID = Integer.parseInt(parts[1]);
+
+                StudentGroup group = findGroupById(groupID);
+                Course course = findCourseById(courseID);
+
+                if (group != null && course != null) {
+                    groupEnrolments.add(
+                        new GroupEnrolment(group, course)
+                    );
+                }
+            }
+
+            else if (currentSection.equals("LESSONS"))
+            {
+                int courseID = Integer.parseInt(parts[0]);
+                int lessonID = Integer.parseInt(parts[1]);
+                LocalDate date = LocalDate.parse(parts[2]);
+                LocalTime start = LocalTime.parse(parts[3]);
+                LocalTime end = LocalTime.parse(parts[4]);
+                String status = parts[5];
+                String mode = parts[6];
+                boolean labRequired = Boolean.parseBoolean(parts[7]);
+                String roomID = parts[8];
+
+                Course course = findCourseById(courseID);
+                Room room = null;
+
+                if (!roomID.equals("NONE")) {
+                    room = findRoomById(roomID);
+                }
+
+                if (course != null) {
+                    Lesson lesson = new Lesson(
+                        lessonID,
+                        date,
+                        start,
+                        end,
+                        status,
+                        mode,
+                        labRequired,
+                        new Vector<StudentGroup>()
+                    );
+
+                    lesson.setRoom(room);
+                    course.addLesson(lesson);
+                    if (room != null) {
+                        roomReservations.add(
+                            new RoomResrvation(
+                                room,
+                                lesson,
+                                lesson.getDurationTime()
+                            )
+                        );
+                    }
+                }
             }
         }
 
         br.close();
+    }
+    private StudentGroup findGroupById(int groupID)
+    {
+        for (StudentGroup group : studentGroups) {
+            if (group.getGroupID() == groupID) {
+                return group;
+            }
+        }
+
+        return null;
+    }
+
+    private Room findRoomById(String roomID)
+    {
+        for (Room room : rooms) {
+            if (room.getRoomID().equals(roomID)) {
+                return room;
+            }
+        }
+
+        return null;
     }
     //cancel the lesson using Availability thread
    public void cancelLesson(int courseID, int lessonID, LocalDate newDate,

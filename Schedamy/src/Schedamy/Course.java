@@ -108,7 +108,14 @@ public class Course{
 			throw new IllegalArgumentException("Lesson not found");
 		}
 	}
-	public String toString() {
-		return "courseID= " + courseID + "\n" + "courseName= " + courseName + "\n" +"credits= " + credits + "\n" + "courseType= " + courseType + "\n" + "amount of lessons= " + lessons.size();
+	
+	public String toString() 
+	{
+	    return "Course ID: " + courseID + "\n" +
+	           "Course Name: " + courseName + "\n" +
+	           "Credits: " + credits + "\n" +
+	           "Course Type: " + courseType + "\n" +
+	           "Number of Lessons: " + lessons.size() + "\n";
 	}
+	
 }

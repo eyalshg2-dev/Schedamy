@@ -51,11 +51,17 @@ public class StudentGroup
         return this.programName;
     }
     
-    //To string
+    //toString
     public String toString()
     {
-        return "Group ID: " + groupID + " Department: " + department + " Study Year: " + studyYear + " Student Count: " + studentCount + " Program Name: " + programName;
+        return "Group ID: " + groupID + "\n" +
+               "Department: " + department + "\n" +
+               "Study Year: " + studyYear + "\n" +
+               "Program Name: " + programName + "\n" +
+               "Student Count: " + studentCount + "\n" +
+               "-------------------------";
     }
+  
 
   //calculate hours in course
     public int calculateTotalHours(GroupEnrolment[] enrolments)

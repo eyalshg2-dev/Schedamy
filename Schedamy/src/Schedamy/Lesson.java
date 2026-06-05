@@ -156,13 +156,20 @@ public class Lesson {
 	    return students;
 	}
 	
-	public String toString() {
-		return "lessonID = " + lessonID + "\n" + " lesson Date = " + lessonDate + "\n" + " start Time= " + startTime + "\n" +
-			   " end Time= " + endTime + "\n" +
-			   " status = " + status + "\n" +
-			   " teaching Mode= " + teachingMode + "\n" +
-			   " labRoom Required = " + labRoomRequired + "\n" +
-			   " room = " + (room != null ? room.getRoomID() : "No room assigned");
+	// toString
+	public String toString() 
+	{
+	    return "Lesson ID: " + lessonID + "\n" +
+	           "Date: " + lessonDate + "\n" +
+	           "Start Time: " + startTime + "\n" +
+	           "End Time: " + endTime + "\n" +
+	           "Status: " + status + "\n" +
+	           "Teaching Mode: " + teachingMode + "\n" +
+	           "Lab Room Required: " + labRoomRequired + "\n" +
+	           "Room: " + (room != null ? room.getRoomID() : "No room assigned") + "\n" +
+	           "-------------------------";
 	}
+	
+	
 }
 	

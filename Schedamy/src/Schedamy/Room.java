@@ -53,13 +53,15 @@ public class Room {
 	//To String
 	public String toString()
 	{
-	    return "Room number: " + roomID + 
-	           " Building: " + building + "\n" +
-	           " Room type: " + roomType +
-	           "Capacity: " + capacity + 
-	           " Special equipment: " + specialEquipment +
-	           " Status: " + status;
+	    return "Room Number: " + roomID + "\n" +
+	           "Building: " + building + "\n" +
+	           "Room Type: " + roomType + "\n" +
+	           "Capacity: " + capacity + "\n" +
+	           "Room Size: " + classifyRoomSize() + "\n" +
+	           "Special Equipment: " + specialEquipment + "\n" +
+	           "-------------------------";
 	}
+	
 
 	//Get room size
 	public String classifyRoomSize()

@@ -44,8 +44,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
         updateNextIDs();
 
         // Set the size of the main window.
-        setSize(500, 350);
-
+        setSize(750, 500);
+        setLocationRelativeTo(null);
+        
         // Build and attach the menu bar to the window.
         buildMenuBar();
 
@@ -67,6 +68,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
  // Builds the main menu bar 
  private void buildMenuBar() {
 
+	
+	 
      // Create the main menu bar object.
      menuBar = new MenuBar();
 
@@ -861,7 +864,7 @@ public void actionPerformed(ActionEvent e) {
 	{
 	    Dialog dialog = new Dialog(this, "Reschedule Lesson", true);
 	    dialog.setLayout(new BorderLayout());
-	    dialog.setSize(520, 320);
+	    dialog.setSize(600, 300);
 
 	    Panel formPanel = new Panel(new GridLayout(6, 2, 5, 5));
 
@@ -880,9 +883,56 @@ public void actionPerformed(ActionEvent e) {
 	        }
 	    }
 
-	    TextField dateField = new TextField();
-	    TextField startField = new TextField();
-	    TextField endField = new TextField();
+	    Choice yearChoice = new Choice();
+	    yearChoice.add("2026");
+
+	    Choice monthChoice = new Choice();
+	    for (int i = 1; i <= 12; i++) {
+	        monthChoice.add(String.valueOf(i));
+	    }
+
+	    Choice dayChoice = new Choice();
+
+	    int year = Integer.parseInt(yearChoice.getSelectedItem());
+	    int month = Integer.parseInt(monthChoice.getSelectedItem());
+	    int daysInMonth = YearMonth.of(year, month).lengthOfMonth();
+
+	    for (int day = 1; day <= daysInMonth; day++) {
+	        dayChoice.add(String.valueOf(day));
+	    }
+
+	    monthChoice.addItemListener(ev -> {
+	        dayChoice.removeAll();
+
+	        int selectedYear = Integer.parseInt(yearChoice.getSelectedItem());
+	        int selectedMonth = Integer.parseInt(monthChoice.getSelectedItem());
+
+	        int days = YearMonth.of(selectedYear, selectedMonth).lengthOfMonth();
+
+	        for (int day = 1; day <= days; day++) {
+	            dayChoice.add(String.valueOf(day));
+	        }
+	    });
+
+	    Choice startHourChoice = new Choice();
+	    Choice startMinuteChoice = new Choice();
+	    Choice endHourChoice = new Choice();
+	    Choice endMinuteChoice = new Choice();
+
+	    for (int h = 8; h <= 21; h++) {
+	        startHourChoice.add(String.format("%02d", h));
+	        endHourChoice.add(String.format("%02d", h));
+	    }
+
+	    startMinuteChoice.add("00");
+	    startMinuteChoice.add("15");
+	    startMinuteChoice.add("30");
+	    startMinuteChoice.add("45");
+
+	    endMinuteChoice.add("00");
+	    endMinuteChoice.add("15");
+	    endMinuteChoice.add("30");
+	    endMinuteChoice.add("45");
 
 	    Choice modeChoice = new Choice();
 	    modeChoice.add("FRONTAL");
@@ -892,21 +942,34 @@ public void actionPerformed(ActionEvent e) {
 	    Choice roomChoice = new Choice();
 
 	    for (Room room : system.getRooms()) {
-	        roomChoice.add(room.getRoomID() + " - " + room.toString());
+	    	roomChoice.add(room.getRoomID() + " - Capacity: " + room.getCapacity());
 	    }
 
 	    formPanel.add(new Label("Lesson:"));
 	    formPanel.add(lessonChoice);
 
-	    formPanel.add(new Label("New Date yyyy-mm-dd:"));
-	    formPanel.add(dateField);
+	    Panel datePanel = new Panel(new GridLayout(1, 3, 5, 5));
+	    datePanel.add(yearChoice);
+	    datePanel.add(monthChoice);
+	    datePanel.add(dayChoice);
 
-	    formPanel.add(new Label("New Start HH:mm:"));
-	    formPanel.add(startField);
+	    formPanel.add(new Label("New Date:"));
+	    formPanel.add(datePanel);
 
-	    formPanel.add(new Label("New End HH:mm:"));
-	    formPanel.add(endField);
+	    Panel startPanel = new Panel(new GridLayout(1, 2, 5, 5));
+	    startPanel.add(startHourChoice);
+	    startPanel.add(startMinuteChoice);
 
+	    formPanel.add(new Label("New Start Time:"));
+	    formPanel.add(startPanel);
+
+	    Panel endPanel = new Panel(new GridLayout(1, 2, 5, 5));
+	    endPanel.add(endHourChoice);
+	    endPanel.add(endMinuteChoice);
+
+	    formPanel.add(new Label("New End Time:"));
+	    formPanel.add(endPanel);
+	    
 	    formPanel.add(new Label("Teaching Mode:"));
 	    formPanel.add(modeChoice);
 
@@ -939,39 +1002,21 @@ public void actionPerformed(ActionEvent e) {
 
 	            int selectedIndex = lessonChoice.getSelectedIndex();
 	            Lesson selectedLesson = lessonsList.get(selectedIndex);
+	            LocalDate newDate = LocalDate.of(
+	            	    Integer.parseInt(yearChoice.getSelectedItem()),
+	            	    Integer.parseInt(monthChoice.getSelectedItem()),
+	            	    Integer.parseInt(dayChoice.getSelectedItem())
+	            	);
 
-	            String dateText = dateField.getText().trim();
-	            String startText = startField.getText().trim();
-	            String endText = endField.getText().trim();
+	            	LocalTime newStart = LocalTime.of(
+	            	    Integer.parseInt(startHourChoice.getSelectedItem()),
+	            	    Integer.parseInt(startMinuteChoice.getSelectedItem())
+	            	);
 
-	            if (dateText.length() != 10 ||
-	            	    dateText.charAt(4) != '-' ||
-	            	    dateText.charAt(7) != '-') {
-
-	            	    throw new IllegalArgumentException(
-	            	        "Date must be in format yyyy-mm-dd"
-	            	    );
-	            	}
-
-	            if (startText.length() != 5 ||
-	            	    startText.charAt(2) != ':') {
-
-	            	    throw new IllegalArgumentException(
-	            	        "Start time must be in format HH:mm"
-	            	    );
-	            	}
-
-	            if (endText.length() != 5 ||
-	            	    startText.charAt(2) != ':') {
-
-	            	    throw new IllegalArgumentException(
-	            	        "End time must be in format HH:mm"
-	            	    );
-	            	}
-
-	            LocalDate newDate = LocalDate.parse(dateText);
-	            LocalTime newStart = LocalTime.parse(startText);
-	            LocalTime newEnd = LocalTime.parse(endText);
+	            	LocalTime newEnd = LocalTime.of(
+	            	    Integer.parseInt(endHourChoice.getSelectedItem()),
+	            	    Integer.parseInt(endMinuteChoice.getSelectedItem())
+	            	);
 
 	            if (newDate.isBefore(LocalDate.now())) {
 	                throw new IllegalArgumentException("Lesson date cannot be in the past");
@@ -1063,6 +1108,8 @@ public void actionPerformed(ActionEvent e) {
 	    dialog.add(formPanel, BorderLayout.CENTER);
 	    dialog.add(buttonPanel, BorderLayout.SOUTH);
 
+	    
+	   
 	    showButton.addActionListener(e -> {
 	        try {
 	            if (lecturerChoice.getItemCount() == 0) {
@@ -1071,33 +1118,36 @@ public void actionPerformed(ActionEvent e) {
 
 	            Lecturer selectedLecturer =
 	                lecturersList.get(lecturerChoice.getSelectedIndex());
+	            
+	            String text = "Lecturer: " +
+	            	    selectedLecturer.getFirstName() + " " +
+	            	    selectedLecturer.getLastName() +
+	            	    " (ID: " + selectedLecturer.getLecturerID() + ")\n\n";
+	           
+		            text += "--------------------------------------------------------------------------------\n";
 
-	            String text = "";
+		            boolean foundLesson = false;
 
-	            for (AssignedToTeach assigned : system.getAssignedToTeachList()) {
-	                if (assigned.getLecturer().equals(selectedLecturer)) {
-	                    Course course = assigned.getCourse();
+		            for (AssignedToTeach assigned : system.getAssignedToTeachList()) {
+		                if (assigned.getLecturer().equals(selectedLecturer)) {
+		                    Course course = assigned.getCourse();
 
-	                    text += "Course: " + course.getCourseName() + "\n";
+		                    for (Lesson lesson : course.getLessons()) {
+		                        if (!lesson.getStatus().equals("CANCELLED")) {
+		                            text += buildLessonRow(course, lesson);
+		                            foundLesson = true;
+		                        }
+		                    }
+		                }
+		            }
 
-	                    for (Lesson lesson : course.getLessons()) {
-	                        text += lesson.toString() + "\n";
-	                    }
+		            if (!foundLesson) {
+		                text += "No lessons found for this lecturer.";
+		            }
 
-	                    text += "\n";
-	                }
-	            }
-
-	            if (text.isEmpty()) {
-	                text = "No lessons found for this lecturer.";
-	            }
-
-	            JOptionPane.showMessageDialog(
-	                this,
-	                text,
-	                "Lecturer Timetable",
-	                JOptionPane.INFORMATION_MESSAGE
-	            );
+	          
+	            showTextDialog("Lecturer Timetable", text);
+	         
 
 	        } catch (Exception ex) {
 	            JOptionPane.showMessageDialog(this,
@@ -1154,32 +1204,36 @@ public void actionPerformed(ActionEvent e) {
 	            StudentGroup selectedGroup =
 	                groupsList.get(groupChoice.getSelectedIndex());
 
-	            String text = "";
+	            String text = "Student Group: " +
+	                selectedGroup.getGroupID() + " - " +
+	                selectedGroup.getDepartment() + ", " +
+	                " Year " + selectedGroup.getStudyYear() + ", " + selectedGroup.getProgramName() +
+	                ", (" + selectedGroup.getStudentCount() + " students)\n\n";
+
+	            
+	           
+	            text += "--------------------------------------------------------------------------------\n";
+
+	            boolean foundLesson = false;
 
 	            for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
 	                if (enrolment.getGroup().equals(selectedGroup)) {
 	                    Course course = enrolment.getCourse();
 
-	                    text += "Course: " + course.getCourseName() + "\n";
-
 	                    for (Lesson lesson : course.getLessons()) {
-	                        text += lesson.toString() + "\n";
+	                        if (!lesson.getStatus().equals("CANCELLED")) {
+	                            text += buildLessonRow(course, lesson);
+	                            foundLesson = true;
+	                        }
 	                    }
-
-	                    text += "\n";
 	                }
 	            }
 
-	            if (text.isEmpty()) {
-	                text = "No lessons found for this student group.";
+	            if (!foundLesson) {
+	                text += "No lessons found for this student group.";
 	            }
 
-	            JOptionPane.showMessageDialog(
-	                this,
-	                text,
-	                "Student Group Timetable",
-	                JOptionPane.INFORMATION_MESSAGE
-	            );
+	            showTextDialog("Student Group Timetable", text);
 
 	        } catch (Exception ex) {
 	            JOptionPane.showMessageDialog(
@@ -1190,7 +1244,6 @@ public void actionPerformed(ActionEvent e) {
 	            );
 	        }
 	    });
-
 	    closeButton.addActionListener(e -> dialog.dispose());
 
 	    dialog.setVisible(true);
@@ -1205,24 +1258,21 @@ public void actionPerformed(ActionEvent e) {
         return text.substring(0, 1).toUpperCase() + text.substring(1);
     }
 	
-    private void openLecturersView() {
-        String text = "";
+	private void openLecturersView()
+	{
+	    String text = "";
 
-        for (Lecturer lecturer : system.getLecturers()) {
-            text += lecturer.toString() + "\n\n";
-        }
+	    for (Lecturer lecturer : system.getLecturers()) {
+	        text += lecturer.toString() + "\n\n";
+	    }
 
-        if (text.isEmpty()) {
-            text = "No lecturers found.";
-        }
+	    if (text.isEmpty()) {
+	        text = "No lecturers found.";
+	    }
 
-        JOptionPane.showMessageDialog(
-            this,
-            text,
-            "Lecturers",
-            JOptionPane.INFORMATION_MESSAGE
-        );
-    }
+	    showTextDialog("Lecturers", text);
+	}
+  
     private void openCoursesView() {
         String text = "";
 
@@ -1235,12 +1285,7 @@ public void actionPerformed(ActionEvent e) {
         if (text.isEmpty()) {
             text = "No courses found.";
         }
-        JOptionPane.showMessageDialog(
-            this,
-            text,
-            "Courses",
-            JOptionPane.INFORMATION_MESSAGE
-        );
+        showTextDialog("Courses", text);
     }
     private void openStudentGroupsView()
     {
@@ -1250,28 +1295,24 @@ public void actionPerformed(ActionEvent e) {
         }
         if (text.isEmpty())
             text = "No student groups found.";
-        JOptionPane.showMessageDialog(
-            this,
-            text,
-            "Student Groups",
-            JOptionPane.INFORMATION_MESSAGE
-        );
+
+        showTextDialog("Student Groups", text);
     }
     private void openRoomsView()
     {
         String text = "";
+
         for (Room room : system.getRooms()) {
             text += room.toString() + "\n\n";
         }
-        if (text.isEmpty())
+
+        if (text.isEmpty()) {
             text = "No rooms found.";
-        JOptionPane.showMessageDialog(
-            this,
-            text,
-            "Rooms",
-            JOptionPane.INFORMATION_MESSAGE
-        );
+        }
+
+        showTextDialog("Rooms", text);
     }
+  
     private void openAddLessonDialog()
     {
         Dialog dialog = new Dialog(this, "Add Lesson", true);
@@ -1350,10 +1391,7 @@ public void actionPerformed(ActionEvent e) {
             roomsList.add(room);
         }
 
-        Choice labChoice = new Choice();
-        labChoice.add("false");
-        labChoice.add("true");
-
+        
         formPanel.add(new Label("Course:"));
         formPanel.add(courseChoice);
 
@@ -1492,12 +1530,7 @@ public void actionPerformed(ActionEvent e) {
             text = "No lessons found.";
         }
 
-        JOptionPane.showMessageDialog(
-            this,
-            text,
-            "Lessons",
-            JOptionPane.INFORMATION_MESSAGE
-        );
+        showTextDialog("Lessons", text);
     }
     // options  in popupmanu
     private void buildOptionsMenu() {
@@ -1625,5 +1658,41 @@ public void actionPerformed(ActionEvent e) {
                     "\nSize: " + room.classifyRoomSize() +
                     "\nAcademic Hours: " + load);
         }
+    }
+    //helpers
+    
+    private String buildLessonRow(Course course, Lesson lesson)
+    {
+        String roomText = "Zoom";
+
+        if (lesson.getRoom() != null) {
+            roomText = lesson.getRoom().getRoomID();
+        }
+
+        return "Course: " + course.getCourseName() + "\n" +
+               "Date: " + lesson.getLessonDate() + "\n" +
+               "Time: " + lesson.getStartTime() + " - " + lesson.getEndTime() + "\n" +
+               "Room: " + roomText + "\n" +
+               "Mode: " + lesson.getTeachingMode() + "\n" +
+               "Status: " + lesson.getStatus() + "\n" +
+               "------------------------------\n";
+    }
+    private void showTextDialog(String title, String text)
+    {
+        Dialog dialog = new Dialog(this, title, true);
+        dialog.setLayout(new BorderLayout());
+        dialog.setSize(600, 450);
+
+        TextArea textArea = new TextArea(text);
+        
+        textArea.setEditable(false);
+
+        Button closeButton = new Button("Close");
+        closeButton.addActionListener(e -> dialog.dispose());
+
+        dialog.add(textArea, BorderLayout.CENTER);
+        dialog.add(closeButton, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
     }
 }

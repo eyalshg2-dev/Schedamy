@@ -48,10 +48,19 @@ public class RoomResrvation {
 	}
 
 	//To String 
+
+	
 	public String toString()
 	{
-		return room.toString() + lesson.toString() + "	Occupancy Time: " + occupancyTime;
+	    return "Room Reservation\n" +
+	           "Room: " + room.getRoomID() + "\n" +
+	           "Lesson ID: " + lesson.getLessonID() + "\n" +
+	           "Date: " + lesson.getLessonDate() + "\n" +
+	           "Time: " + lesson.getStartTime() + " - " + lesson.getEndTime() + "\n" +
+	           "Occupancy Time: " + occupancyTime.toMinutes() + " minutes\n" +
+	           "-------------------------";
 	}
+	
 
 	//Calculate the occupancy time
 	public void calculationOccupancyTime(LocalDateTime start,LocalDateTime end)
