@@ -1,6 +1,7 @@
 package Schedamy;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Vector;
 
 public class AvailabilityThread implements Runnable {
@@ -16,6 +17,8 @@ public class AvailabilityThread implements Runnable {
 	private final Vector<GroupEnrolment> groupEnrolment;
 	private final Object roomLock;
 	private boolean isCancellation;
+	private LocalTime startTime;
+	private LocalTime endTime;
 	
 	public AvailabilityThread(Lecturer lecturer, Lesson lesson, 
 							  LocalDate date, Vector<Room> rooms,
@@ -28,6 +31,8 @@ public class AvailabilityThread implements Runnable {
 		this.roomLock = roomLock;
 		this.groupEnrolment = groupEnrolment;
 		this.isCancellation = isCancellation;
+		this.startTime = lesson.getStartTime();
+		this.endTime = lesson.getEndTime();
 	}
 	
 	public void run() {
@@ -57,11 +62,16 @@ public class AvailabilityThread implements Runnable {
 				 }	
 			 }
 			
+			Thread.sleep(1000);
+			
 			if("FRONTAL".equals(lesson.getTeachingMode())) {
+				System.out.println("Searching for available room...");
 				handleFrontal();
 			} else {
 				handleZoom();
 			}
+			
+			System.out.println("Search Complete!");
 			
 		} catch(Exception e) {
 			System.out.println("Error: " + e.getMessage());
@@ -86,10 +96,11 @@ public class AvailabilityThread implements Runnable {
 					if (!isCancellation) {
 						lesson.setStatus("RESCHEDULED");
 					}
-					System.out.println("[FRONTAL] Rescheduled on: " + date 
-							+ " | Room: " + availableRoom.getRoomID());
+					System.out.println("Suggested Reschedule on: " + date 
+							+ " from " + startTime + " to " +
+							endTime + " | Room: " + availableRoom.getRoomID());
 				} else {
-					System.out.println("[FRONTAL] No available room on : " + date);
+					System.out.println("No available room on : " + date);
 				}
 			}
 		}
@@ -103,7 +114,7 @@ public class AvailabilityThread implements Runnable {
 						lesson.setStatus("RESCHEDULED");
 					}
 					System.out.println("[ZOOM] Rescheduled on: " + date +
-							 " - all groups available");
+							 " from " + startTime + " to " + endTime + " - all groups available");
 				}	
 			 }
 		  }   
