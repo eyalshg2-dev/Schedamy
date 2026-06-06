@@ -1629,7 +1629,33 @@ public void actionPerformed(ActionEvent e) {
                 int index = lecturerChoice.getSelectedIndex();
                 Lecturer lecturer = system.getLecturers().get(index);
 
-                // Find AssignedToTeach for this lecturer
+                double actualHours = system.calculateLecturerActualHours(lecturer);
+
+                if (actualHours == 0) {
+                    JOptionPane.showMessageDialog(this,
+                        "This lecturer has no assigned courses or no scheduled lessons.",
+                        "Info",
+                        JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
+                double requiredHours = lecturer.getRequiredHours();
+                double diff = requiredHours - actualHours;
+                
+
+                /*
+                  This version uses CalculateHoursThread with only one
+                  AssignedToTeach object, and calculates  hours of
+                  only one course, even if the lecturer teaches several courses.
+                 
+                 SchedamySystem calculateLecturerActualHours() checks all AssignedToTeach objects and sums
+                 hours of every course that belongs to this lecturer,
+                 to give lecturer's real total teaching load.
+                 We can think if there is any other way, if we want to use the thread. 
+                 (Now there is no use for CalculateHoursThread)
+                 */
+                
+                /* Find AssignedToTeach for this lecturer
                 AssignedToTeach assigned = null;
                 for (AssignedToTeach a : system.getAssignedToTeachList()) {
                     if (a.getLecturer().equals(lecturer)) {
@@ -1654,11 +1680,11 @@ public void actionPerformed(ActionEvent e) {
                 CalculateHoursThread thread = new CalculateHoursThread(assigned);
                 thread.start();
                 thread.join(); // wait for result
-
                 double actualHours = thread.getTotalHours();
-                double requiredHours = lecturer.getFTE() * 40;
-                double diff = requiredHours - actualHours;
+                double requiredHours = lecturer.getRequiredHours();
+                double diff = requiredHours - actualHours;*/
 
+         
                 JOptionPane.showMessageDialog(this,
                     "Lecturer: " + lecturer.getFirstName() + " " + lecturer.getLastName() +
                     "\nRequired load: " + requiredHours +
@@ -1667,12 +1693,16 @@ public void actionPerformed(ActionEvent e) {
                     "Lecturer Load Result",
                     JOptionPane.INFORMATION_MESSAGE);
 
-            } catch (InterruptedException ex) {
-                JOptionPane.showMessageDialog(this,
-                    "Error: " + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Error: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                    );
             }
         }
+   
     }
     //student load
     private void openStudentLoadDialog() {

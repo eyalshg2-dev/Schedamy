@@ -60,7 +60,14 @@ public class Lecturer {
 	{
 		return this.FTE;
 	}
-	    
+
+	public double getRequiredHours()
+	{
+	    return FTE * FULL_TIME_HOURS;
+	}
+
+	
+	
 	//To String
 	public String toString() 
 	{
@@ -72,26 +79,6 @@ public class Lecturer {
 	           "-------------------------";
 	}
 
-	
-	// calculate how many hours difference exists
-	public double calculateWeeklyLoadDiff()
-	{
-		double requiredHours = FTE*FULL_TIME_HOURS;
-		double actualHours = calculateLecturerWeeklyHours();
-		return requiredHours-actualHours;
-	}	
-	
-	private double calculateLecturerWeeklyHours() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	//  did Lecturer meet required workload?
-	public boolean hasRequiredHours()
-	{
-			return (calculateWeeklyLoadDiff()<=0);
-			
-	}
-	
 	
 	public Vector<Lesson> getLessons() {
 		return lessons;

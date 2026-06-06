@@ -677,6 +677,8 @@ public class SchedamySystem
 
 	    return actualHours;
 	}
+   
+  
    //GET ROOM LOAD
    public double calculateRoomLoad(Room room)
    {
