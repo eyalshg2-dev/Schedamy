@@ -216,6 +216,8 @@ public class SchedamySystem
         }
         return null;
     }
+    
+    
     //get lecturer name and student group for course
     public String getCourseInfo(Course course)
     {
@@ -230,6 +232,7 @@ public class SchedamySystem
                 info += "Lecturer: " +
                         lecturer.getFirstName() + " " +
                         lecturer.getLastName() + "\n";
+                info += "\n";
             }
         }
 
@@ -239,14 +242,13 @@ public class SchedamySystem
             {
                 StudentGroup group = enrolment.getGroup();
 
-                info += "Student Group: " +
+                info += "Student Group:\n" +
                         group.getDepartment() +
-                        ", Year " + group.getStudyYear() +
-                        ", Program: " + group.getProgramName() + "\n";
-            }
-        }
+                        " (Year " + group.getStudyYear() +
+                        ", " + group.getProgramName() + ")\n";
+                }
 
-        info += "-------------------------";
+        }
 
         return info;
     }

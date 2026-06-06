@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 
 import java.awt.event.*;
 
-// Main GUI class of the Schedamy system.
+// Main GUI class of  Schedamy system.
 // This class creates the main window, menus, dialogs and user actions.
 public class SchedamyGUI extends Frame implements ActionListener {
 	
@@ -64,6 +64,18 @@ public class SchedamyGUI extends Frame implements ActionListener {
     private void updateNextIDs() {
         nextCourseID = system.getCourses().size() + 1;
         nextGroupID = system.getStudentGroups().size() + 1;
+
+        int maxLessonID = 0;
+
+        for (Course course : system.getCourses()) {
+            for (Lesson lesson : course.getLessons()) {
+                if (lesson.getLessonID() > maxLessonID) {
+                    maxLessonID = lesson.getLessonID();
+                }
+            }
+        }
+
+        nextLessonID = maxLessonID + 1;
     }
  // Builds the main menu bar 
  private void buildMenuBar() {
@@ -1273,20 +1285,30 @@ public void actionPerformed(ActionEvent e) {
 	    showTextDialog("Lecturers", text);
 	}
   
-    private void openCoursesView() {
-        String text = "";
+	private void openCoursesView() {
+	    String text = "";
 
-        for (Course course : system.getCourses()) {
-            text += course.toString();
-            text +=  system.getCourseInfo(course);
-            text += "\n\n";
-        }
+	    for (Course course : system.getCourses()) {
+	        text += "-----------------------------------------------------------\n";
+	        text += course.getCourseName() + "\n";
+	        text += "-----------------------------------------------------------\n\n";
 
-        if (text.isEmpty()) {
-            text = "No courses found.";
-        }
-        showTextDialog("Courses", text);
-    }
+	        text += "Course ID: " + course.getCourseID() + "\n";
+	        text += "Credits: " + course.getCredits() + "\n";
+	        text += "Type: " + course.getCourseType() + "\n";
+	        text += "Number of lessons: " + course.getLessons().size() + "\n";
+	        text += "\n";
+	        text += system.getCourseInfo(course);
+
+	        text += "\n\n";
+	    }
+
+	    if (text.isEmpty()) {
+	        text = "No courses found.";
+	    }
+
+	    showTextDialog("Courses", text);
+	}
     private void openStudentGroupsView()
     {
         String text = "";
@@ -1513,14 +1535,40 @@ public void actionPerformed(ActionEvent e) {
     {
         String text = "";
 
-        for (Course course : system.getCourses()) {
-            text += "Course: " + course.getCourseName() + "\n";
+        for (Course course : system.getCourses())
+        {
+            if (course.getLessons().isEmpty()) {
+                continue;
+            }
 
-            for (Lesson lesson : course.getLessons()) {
-            	String display = lesson.toString().replace(
-            			"status= " + lesson.getStatus(),
-            			"status= " + getFriendlyStatus(lesson.getStatus()));
-                text += display + "\n";
+            text += "------------------------------------------------\n";
+            text += course.getCourseName() + "\n";
+            text += "------------------------------------------------\n\n";
+
+            for (Lesson lesson : course.getLessons())
+            {
+                text += "Lesson #" + lesson.getLessonID() + "\n\n";
+
+                text += "Date: " +
+                        lesson.getLessonDate() + "\n";
+
+                text += "Time: " +
+                        lesson.getStartTime() +
+                        " - " +
+                        lesson.getEndTime() + "\n";
+
+                text += "Room: " +
+                        (lesson.getRoom() != null ?
+                         lesson.getRoom().getRoomID() :
+                         "Zoom") + "\n";
+
+                text += "Mode: " +
+                        lesson.getTeachingMode() + "\n";
+
+                text += "Status: " +
+                        getFriendlyStatus(lesson.getStatus()) + "\n";
+
+                text += "\n----------------------------------------\n\n";
             }
 
             text += "\n";

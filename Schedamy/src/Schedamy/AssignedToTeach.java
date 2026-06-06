@@ -7,7 +7,7 @@ public class AssignedToTeach
 private Lecturer lecturer;
 private Course course;
 
-//Constructor
+//Constructor 
 public AssignedToTeach (Lecturer lecturer,Course course)
 {
 	this.lecturer = lecturer;
