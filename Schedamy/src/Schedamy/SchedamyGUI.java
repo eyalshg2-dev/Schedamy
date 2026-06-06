@@ -654,7 +654,7 @@ public void actionPerformed(ActionEvent e) {
 	  
 	    addButton.addActionListener(e -> {
 	        try {
-	        	 int courseID = nextCourseID; 
+	        	int courseID = nextCourseID; 
 	        	String lecturerText = lecturerChoice.getSelectedItem();
 	        	String groupText = groupChoice.getSelectedItem();
 	        	int lecturerID = Integer.parseInt(lecturerText.split(" - ")[0]);
@@ -806,7 +806,7 @@ public void actionPerformed(ActionEvent e) {
 	    formPanel.add(reasonField);
 
 	    Panel buttonPanel = new Panel(new GridLayout(1, 2, 5, 5));
-	    Button cancelLessonButton = new Button("Cancel Lesson");
+	    Button cancelLessonButton = new Button("Cancel");
 	    Button closeButton = new Button("Close");
 
 	    buttonPanel.add(cancelLessonButton);
@@ -842,9 +842,13 @@ public void actionPerformed(ActionEvent e) {
 	                "Success",
 	                JOptionPane.INFORMATION_MESSAGE
 	            );
+	            
 
 	            dialog.dispose();
-
+	            
+	            openRescheduleLessonDialog();
+	            
+	            
 	        } catch (Exception ex) {
 	            JOptionPane.showMessageDialog(
 	                this,
@@ -1558,9 +1562,9 @@ public void actionPerformed(ActionEvent e) {
 
         add(extraPopup);
     }
+    
     //lecturer load
-    private void openLecturerLoadDialog()
-    {
+    private void openLecturerLoadDialog() {
 
         Choice lecturerChoice = new Choice();
 
@@ -1568,19 +1572,58 @@ public void actionPerformed(ActionEvent e) {
             lecturerChoice.add(lecturer.getLecturerID() + " - " +
                     lecturer.getFirstName() + " " + lecturer.getLastName());
         }
-        int result = JOptionPane.showConfirmDialog(this,lecturerChoice,"Choose Lecturer",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
+
+        int result = JOptionPane.showConfirmDialog(this, lecturerChoice, "Choose Lecturer",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
-            int index = lecturerChoice.getSelectedIndex();
-            Lecturer lecturer = system.getLecturers().get(index);
-            double actualHours = system.calculateLecturerActualHours(lecturer);
-            double requiredHours = lecturer.getFTE() * 40;
-            double diff = requiredHours - actualHours;
+            try {
+                int index = lecturerChoice.getSelectedIndex();
+                Lecturer lecturer = system.getLecturers().get(index);
 
-            JOptionPane.showMessageDialog(this,
+                // Find AssignedToTeach for this lecturer
+                AssignedToTeach assigned = null;
+                for (AssignedToTeach a : system.getAssignedToTeachList()) {
+                    if (a.getLecturer().equals(lecturer)) {
+                        assigned = a;
+                        break;
+                    }
+                }
+
+                if (assigned == null) {
+                    JOptionPane.showMessageDialog(this,
+                        "This lecturer has no assigned courses.",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Show calculating message
+                JOptionPane.showMessageDialog(this,
+                    "Calculating hours for " + lecturer.getFirstName() + "...\nPlease wait.",
+                    "Calculating", JOptionPane.INFORMATION_MESSAGE);
+
+                // Start the thread
+                CalculateHoursThread thread = new CalculateHoursThread(assigned);
+                thread.start();
+                thread.join(); // wait for result
+
+                double actualHours = thread.getTotalHours();
+                double requiredHours = lecturer.getFTE() * 40;
+                double diff = requiredHours - actualHours;
+
+                JOptionPane.showMessageDialog(this,
                     "Lecturer: " + lecturer.getFirstName() + " " + lecturer.getLastName() +
                     "\nRequired load: " + requiredHours +
-                    "\nActual load: " + actualHours +"\nDifference: " + diff);
+                    "\nActual load: " + actualHours +
+                    "\nDifference: " + diff,
+                    "Lecturer Load Result",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (InterruptedException ex) {
+                JOptionPane.showMessageDialog(this,
+                    "Error: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
     //student load

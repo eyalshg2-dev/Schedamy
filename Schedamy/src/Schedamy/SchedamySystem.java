@@ -79,7 +79,17 @@ public class SchedamySystem
     }
     
     public void addCourse(int courseID, String courseName,int credits, String courseType,int lecturerID, int groupID)
-    {
+    {	
+    	for (Course existing : courses) {
+    		if (existing.getCourseName().equalsIgnoreCase(courseName)) {
+    			for (GroupEnrolment enrolment : groupEnrolments) {
+    				if (enrolment.getCourse().equals(existing) &&
+    					enrolment.getGroup().getGroupID() == groupID) {
+    					throw new IllegalArgumentException ("This course already assigned to this student group");
+    				}
+    			}	
+    		}
+    	}
     	if (courseName == null || courseName.trim().isEmpty())
     	    throw new IllegalArgumentException("Course name cannot be empty");
 
@@ -652,7 +662,6 @@ public class SchedamySystem
     			new Vector<>(groupEnrolments), true));
     	
     	availabilityThread.start();
-
     }
    //get lecturer total hours
    public double calculateLecturerActualHours(Lecturer lecturer) {
