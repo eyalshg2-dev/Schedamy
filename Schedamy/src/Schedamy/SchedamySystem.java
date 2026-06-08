@@ -186,6 +186,7 @@ public class SchedamySystem
     		LocalTime localDate, LocalTime localDate2, String status,
     		String teachingMode, boolean labRoomRequired, Room room)
     {
+    	
     	Course course = findCourseById(courseID);
     	if (course == null)
     		throw new IllegalArgumentException("Course not found");
@@ -194,6 +195,7 @@ public class SchedamySystem
     	if (room != null &&group != null &&room.getCapacity()< group.getStudentCount())
     	{
     	    throw new IllegalArgumentException("Room is too small for this student group");
+    	    
     	}
     	for (Lesson existingLesson : course.getLessons())
     	{
@@ -201,7 +203,7 @@ public class SchedamySystem
     		{
     			boolean overlap = !lesson.getStartTime().isAfter(existingLesson.getEndTime()) && !lesson.getEndTime().isBefore(existingLesson.getStartTime());
     			if (overlap)
-    				throw new IllegalArgumentException("This course already has a lesson at this time");
+    				throw new IllegalArgumentException("Time slot unavailable");
     			}
     		}
     	
@@ -216,6 +218,49 @@ public class SchedamySystem
     	    room.setStatus("SCHEDULED");
     	    roomReservations.add(new RoomResrvation(room, lesson, lesson.getDurationTime()));
     	    }
+    	
+    	StudentGroup group1 = getGroupForCourse(course);
+    	if (group1 != null) {
+    	    for (GroupEnrolment enrolment : groupEnrolments) {
+    	        if (enrolment.getGroup().equals(group1) &&
+    	            !enrolment.getCourse().equals(course)) {
+    	            for (Lesson existingLesson : enrolment.getCourse().getLessons()) {
+    	                if (existingLesson.getStatus().equalsIgnoreCase("CANCELLED"))
+    	                    continue;
+    	                if (existingLesson.getLessonDate().equals(lesson.getLessonDate())) {
+    	                    boolean overlap = !lesson.getStartTime().isAfter(existingLesson.getEndTime()) &&
+    	                                     !lesson.getEndTime().isBefore(existingLesson.getStartTime());
+    	                    if (overlap) {
+    	                        throw new IllegalArgumentException(
+    	                            "Student group already has a lesson at this time in another course"
+    	                        );
+    	                    }
+    	                }
+    	            }
+    	        }
+    	    }
+    	}
+    	
+    	// Check conflicts for the same lecturer
+    	for (AssignedToTeach assigned : assignedToTeachList) {
+    	    if (assigned.getLecturer().equals(getLecturerForCourse(course)) &&
+    	        !assigned.getCourse().equals(course)) {
+    	        for (Lesson existingLesson : assigned.getCourse().getLessons()) {
+    	            if (existingLesson.getStatus().equalsIgnoreCase("CANCELLED"))
+    	                continue;
+    	            if (existingLesson.getLessonDate().equals(lesson.getLessonDate())) {
+    	                boolean overlap = !lesson.getStartTime().isAfter(existingLesson.getEndTime()) &&
+    	                                 !lesson.getEndTime().isBefore(existingLesson.getStartTime());
+    	                if (overlap) {
+    	                    throw new IllegalArgumentException(
+    	                        "Lecturer already has a lesson at this time in another course"
+    	                    );
+    	                }
+    	            }
+    	        }
+    	    }
+    	}
+    	
     	course.getLessons().add(lesson);
     	}
 
@@ -694,4 +739,13 @@ public class SchedamySystem
 
        return totalLoad;
    }
+   
+   private Lecturer getLecturerForCourse(Course course) {
+	    for (AssignedToTeach assigned : assignedToTeachList) {
+	        if (assigned.getCourse().equals(course)) {
+	            return assigned.getLecturer();
+	        }
+	    }
+	    return null;
+	}
 }

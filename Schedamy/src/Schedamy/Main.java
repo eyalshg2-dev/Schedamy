@@ -31,7 +31,7 @@
 			
 			//Sample courses
 			system.addCourse(1, "Physics", 3, "mandatory", 123456789, 1);
-			system.addCourse(2, "Algorithms", 4, "mandatory", 345678912, 2);
+			system.addCourse(2, "Algorithms", 4, "mandatory", 234567891, 2);
 			
 			//sample lessons
 			system.addLessonToCourse(1, 1,
@@ -43,8 +43,8 @@
 			
 			system.addLessonToCourse(2, 2,
 					LocalDate.of(2026, 6, 11), 
-					LocalTime.of(14, 0), 
-					LocalTime.of(16, 15), 
+					LocalTime.of(10, 0), 
+					LocalTime.of(12, 15), 
 					"SCHEDULED", "ZOOM", false, null);
 			
 			System.out.println("=== Schedamy System Initialized ===\n");

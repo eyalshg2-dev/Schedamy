@@ -88,5 +88,13 @@ public class Lecturer {
 	public void addLesson(Lesson lesson) {
 		lessons.add(lesson);
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+	    if (this == obj) return true;
+	    if (obj == null || getClass() != obj.getClass()) return false;
+	    Lecturer other = (Lecturer) obj;
+	    return this.lecturerID == other.lecturerID;
+	}
 
 }

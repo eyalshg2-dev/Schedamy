@@ -677,7 +677,7 @@ public void actionPerformed(ActionEvent e) {
 	        	    throw new IllegalArgumentException("Credits must be positive a number");
 
 	        	system.addCourse(courseID,capitalizeFirstLetter(courseNameField.getText()),Integer.parseInt(creditsField.getText()),courseTypeChoice.getSelectedItem(),lecturerID,groupID);
-	        
+	        	courseID++;
 	            JOptionPane.showMessageDialog(this,
 	                "Course added successfully!\nTotal courses: " + system.getCourses().size());
 	            dialog.dispose();
@@ -1549,7 +1549,6 @@ public void actionPerformed(ActionEvent e) {
                 	double requiredHours = assigned.getLecturer().getRequiredHours();
                 	
                 	if(totalHours > requiredHours) {
-
                 	    Lesson addedLesson = assigned.getCourse().getLessons().get(
                 	            assigned.getCourse().getLessons().size() - 1
                 	    );

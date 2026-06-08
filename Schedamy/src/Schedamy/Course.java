@@ -118,4 +118,12 @@ public class Course{
 	           "Number of Lessons: " + lessons.size() + "\n";
 	}
 	
+	@Override
+	public boolean equals(Object obj) {
+	    if (this == obj) return true;
+	    if (obj == null || getClass() != obj.getClass()) return false;
+	    Course other = (Course) obj;
+	    return this.courseID == other.courseID;
+	}
+	
 }
