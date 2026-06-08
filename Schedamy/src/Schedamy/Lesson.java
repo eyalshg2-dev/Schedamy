@@ -2,7 +2,10 @@ package Schedamy;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Vector;
+import java.time.format.DateTimeFormatter;
+
 
 public class Lesson {
 	
@@ -159,8 +162,10 @@ public class Lesson {
 	// toString
 	public String toString() 
 	{
+		DateTimeFormatter formatter = 
+				DateTimeFormatter.ofPattern("dd-MM-yyyy");
 	    return "Lesson ID: " + lessonID + "\n" +
-	           "Date: " + lessonDate + "\n" +
+	           "Date: " + lessonDate.format(formatter) + "\n" +
 	           "Start Time: " + startTime + "\n" +
 	           "End Time: " + endTime + "\n" +
 	           "Status: " + status + "\n" +

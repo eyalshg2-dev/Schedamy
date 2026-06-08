@@ -199,7 +199,7 @@ public class SchedamySystem
     	{
     		if (existingLesson.getLessonDate().equals(lesson.getLessonDate()))
     		{
-    			boolean overlap =lesson.getStartTime().isBefore(existingLesson.getEndTime()) &&lesson.getEndTime().isAfter(existingLesson.getStartTime());
+    			boolean overlap = !lesson.getStartTime().isAfter(existingLesson.getEndTime()) && !lesson.getEndTime().isBefore(existingLesson.getStartTime());
     			if (overlap)
     				throw new IllegalArgumentException("This course already has a lesson at this time");
     			}

@@ -8,6 +8,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.JOptionPane;
+import java.time.format.DateTimeFormatter;
 
 
 import java.awt.event.*;
@@ -34,6 +35,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
     // The main system object that stores and manages all data.
     private SchedamySystem system;
     private final Object sharedRoomLock = new Object();
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     
     // Constructor - creates the main window and initializes the system.
     public SchedamyGUI(SchedamySystem system) {
@@ -799,7 +801,7 @@ public void actionPerformed(ActionEvent e) {
 	                course.getCourseID() + " - " +
 	                course.getCourseName() + " | Lesson " +
 	                lesson.getLessonID() + " | " +
-	                lesson.getLessonDate() + " " +
+	                lesson.getLessonDate().format(DATE_FORMAT) + " " +
 	                lesson.getStartTime()    	
 	            );
 
@@ -892,7 +894,7 @@ public void actionPerformed(ActionEvent e) {
 	            lessonChoice.add(
 	                course.getCourseName() + " | Lesson " +
 	                lesson.getLessonID() + " | " +
-	                lesson.getLessonDate() + " " +
+	                lesson.getLessonDate().format(DATE_FORMAT) + " " +
 	                lesson.getStartTime()
 	            );
 	            lessonsList.add(lesson);
@@ -922,7 +924,6 @@ public void actionPerformed(ActionEvent e) {
 
 	        int selectedYear = Integer.parseInt(yearChoice.getSelectedItem());
 	        int selectedMonth = Integer.parseInt(monthChoice.getSelectedItem());
-
 	        int days = YearMonth.of(selectedYear, selectedMonth).lengthOfMonth();
 
 	        for (int day = 1; day <= days; day++) {
@@ -956,18 +957,20 @@ public void actionPerformed(ActionEvent e) {
 	    modeChoice.add("HYBRID");
 
 	    Choice roomChoice = new Choice();
-
+	    
+	    Vector<Room> roomsList = new Vector<Room>();
 	    for (Room room : system.getRooms()) {
 	    	roomChoice.add(room.getRoomID() + " - Capacity: " + room.getCapacity());
+	    	roomsList.add(room);
 	    }
 
 	    formPanel.add(new Label("Lesson:"));
 	    formPanel.add(lessonChoice);
 
 	    Panel datePanel = new Panel(new GridLayout(1, 3, 5, 5));
-	    datePanel.add(yearChoice);
-	    datePanel.add(monthChoice);
 	    datePanel.add(dayChoice);
+	    datePanel.add(monthChoice);
+	    datePanel.add(yearChoice);
 
 	    formPanel.add(new Label("New Date:"));
 	    formPanel.add(datePanel);
@@ -1042,6 +1045,30 @@ public void actionPerformed(ActionEvent e) {
 	                throw new IllegalArgumentException("End time must be after start time");
 	            }
 	            
+	            if (!modeChoice.getSelectedItem().equals("ZOOM")) {
+	                Room selectedRoom = roomsList.get(roomChoice.getSelectedIndex());
+	                for (Course c : system.getCourses()) {
+	                    for (Lesson otherLesson : c.getLessons()) {
+	                        if (otherLesson.getLessonID() == selectedLesson.getLessonID())
+	                            continue;
+	                        if (otherLesson.getStatus().equalsIgnoreCase("CANCELLED"))
+	                            continue;
+	                        if (otherLesson.getRoom() != null &&
+	                            otherLesson.getRoom().getRoomID().equals(selectedRoom.getRoomID()) &&
+	                            otherLesson.getLessonDate().equals(newDate)) {
+	                            boolean overlap = !newStart.isAfter(otherLesson.getEndTime()) &&
+	                                              !newEnd.isBefore(otherLesson.getStartTime());
+	                            if (overlap) {
+	                                throw new IllegalArgumentException(
+	                                    "Room " + selectedRoom.getRoomID() +
+	                                    " is already occupied at this time"
+	                                );
+	                            }
+	                        }
+	                    }
+	                }
+	            }
+	            
 	            for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
 	            	for (Lesson otherLesson : enrolment.getCourse().getLessons()) {
 	            		//skip the lesson we are rescheduling
@@ -1057,7 +1084,7 @@ public void actionPerformed(ActionEvent e) {
 	            			boolean overlap = newStart.isBefore(otherLesson.getEndTime()) &&
 	            					newEnd.isAfter(otherLesson.getStartTime());
 	            			if (overlap) {
-	            				throw new IllegalArgumentException("Cannot reschedule at this time and room " + newDate);
+	            				throw new IllegalArgumentException("Cannot reschedule at this time and room " + newDate.format(DATE_FORMAT));
 	            			}
 	            		}
 	            	}
@@ -1422,9 +1449,9 @@ public void actionPerformed(ActionEvent e) {
         formPanel.add(courseChoice);
 
         Panel datePanel = new Panel(new GridLayout(1, 3, 5, 5));
-        datePanel.add(yearChoice);
-        datePanel.add(monthChoice);
         datePanel.add(dayChoice);
+        datePanel.add(monthChoice);
+        datePanel.add(yearChoice);
 
         formPanel.add(new Label("Date:"));
         formPanel.add(datePanel);
@@ -1466,7 +1493,7 @@ public void actionPerformed(ActionEvent e) {
                 LocalDate lessonDate = LocalDate.of(
                 	    Integer.parseInt(yearChoice.getSelectedItem()),
                 	    Integer.parseInt(monthChoice.getSelectedItem()),
-                	    Integer.parseInt(dayChoice.getSelectedItem())
+                		Integer.parseInt(dayChoice.getSelectedItem())
                 	);
 
                 	LocalTime startTime = LocalTime.of(
@@ -1501,6 +1528,39 @@ public void actionPerformed(ActionEvent e) {
                 	    labCheckbox.getState(),
                 	    selectedRoom
                 	);
+                
+                AssignedToTeach assigned = null;
+                for (AssignedToTeach a : system.getAssignedToTeachList()) {
+                	if (a.getCourse().getCourseID() == courseID) {
+                		assigned = a;
+                		break;
+                	}
+                }
+                
+                //CalculateHoursThread thread for checking if a lecturer is overloading after adding a lesson
+                if (assigned != null) {
+                	AssignedToTeach finalAssigned = assigned;
+                	CalculateHoursThread thread = new CalculateHoursThread(finalAssigned);
+                	thread.start();
+                	thread.join();
+                	
+                	double totalHours = thread.getTotalHours();
+                	double requiredHours = assigned.getLecturer().getRequiredHours();
+                	
+                	if(totalHours > requiredHours) {
+                		assigned.getCourse().getLessons().remove(assigned.getCourse().getLessons().size() - 1);
+                		nextLessonID--;
+                		
+                		JOptionPane.showMessageDialog(this, 
+                				"Warning: " + assigned.getLecturer().getFirstName() + " " +
+                				assigned.getLecturer().getLastName() +
+                				" is now overloaded!\nTotalHours: " + totalHours + 
+                				"\nRequired hours: " + requiredHours, 
+                				"Overloaded warning",
+                				JOptionPane.WARNING_MESSAGE);
+                		return;
+                	}
+                }
                 JOptionPane.showMessageDialog(
                     this,
                     "Lesson added successfully!",
@@ -1554,7 +1614,7 @@ public void actionPerformed(ActionEvent e) {
                 text += "Lesson #" + lesson.getLessonID() + "\n\n";
 
                 text += "Date: " +
-                        lesson.getLessonDate() + "\n";
+                        lesson.getLessonDate().format(DATE_FORMAT) + "\n";
 
                 text += "Time: " +
                         lesson.getStartTime() +
@@ -1791,7 +1851,7 @@ public void actionPerformed(ActionEvent e) {
         }
 
         return "Course: " + course.getCourseName() + "\n" +
-               "Date: " + lesson.getLessonDate() + "\n" +
+               "Date: " + lesson.getLessonDate().format(DATE_FORMAT) + "\n" +
                "Time: " + lesson.getStartTime() + " - " + lesson.getEndTime() + "\n" +
                "Room: " + roomText + "\n" +
                "Mode: " + lesson.getTeachingMode() + "\n" +
