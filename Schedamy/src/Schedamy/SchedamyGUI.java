@@ -1084,7 +1084,8 @@ public void actionPerformed(ActionEvent e) {
 	            			boolean overlap = newStart.isBefore(otherLesson.getEndTime()) &&
 	            					newEnd.isAfter(otherLesson.getStartTime());
 	            			if (overlap) {
-	            				throw new IllegalArgumentException("Cannot reschedule at this time and room " + newDate.format(DATE_FORMAT));
+	            				throw new IllegalArgumentException("Cannot reschedule: room, lecturer, or student group is unavailable at this time\"\r\n"
+	            						 + newDate.format(DATE_FORMAT));
 	            			}
 	            		}
 	            	}
@@ -1548,17 +1549,32 @@ public void actionPerformed(ActionEvent e) {
                 	double requiredHours = assigned.getLecturer().getRequiredHours();
                 	
                 	if(totalHours > requiredHours) {
-                		assigned.getCourse().getLessons().remove(assigned.getCourse().getLessons().size() - 1);
-                		nextLessonID--;
-                		
-                		JOptionPane.showMessageDialog(this, 
-                				"Warning: " + assigned.getLecturer().getFirstName() + " " +
-                				assigned.getLecturer().getLastName() +
-                				" is now overloaded!\nTotalHours: " + totalHours + 
-                				"\nRequired hours: " + requiredHours, 
-                				"Overloaded warning",
-                				JOptionPane.WARNING_MESSAGE);
-                		return;
+
+                	    Lesson addedLesson = assigned.getCourse().getLessons().get(
+                	            assigned.getCourse().getLessons().size() - 1
+                	    );
+
+                	    system.getRoomReservations().removeIf(
+                	            reservation -> reservation.getLesson().equals(addedLesson)
+                	    );
+
+                	    if (addedLesson.getRoom() != null) {
+                	        addedLesson.getRoom().setStatus("AVAILABLE");
+                	    }
+
+                	    assigned.getCourse().getLessons().remove(addedLesson);
+
+                	    nextLessonID--;
+
+                	    JOptionPane.showMessageDialog(this, 
+                	            "Warning: " + assigned.getLecturer().getFirstName() + " " +
+                	            assigned.getLecturer().getLastName() +
+                	            " is now overloaded!\nTotalHours: " + totalHours + 
+                	            "\nRequired hours: " + requiredHours, 
+                	            "Overloaded warning",
+                	            JOptionPane.WARNING_MESSAGE);
+
+                	    return;
                 	}
                 }
                 JOptionPane.showMessageDialog(

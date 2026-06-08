@@ -204,7 +204,6 @@ public class SchedamySystem
     				throw new IllegalArgumentException("This course already has a lesson at this time");
     			}
     		}
-    	course.getLessons().add(lesson);
     	
     	if (room != null)
     	{
@@ -212,10 +211,12 @@ public class SchedamySystem
     	    {
     	        throw new IllegalArgumentException("This room is already reserved at this time");
     	    }
+    	   
     	    lesson.setRoom(room);
     	    room.setStatus("SCHEDULED");
     	    roomReservations.add(new RoomResrvation(room, lesson, lesson.getDurationTime()));
     	    }
+    	course.getLessons().add(lesson);
     	}
 
     //find student group by id
@@ -298,13 +299,13 @@ public class SchedamySystem
         bw.newLine();
 
         for (Lecturer lecturer : lecturers) {
-            bw.write(
-                lecturer.getLecturerID() + "," +
-                lecturer.getFirstName() + "," +
-                lecturer.getLastName() + "," +
-                lecturer.getTeachingScore() + "," +
-                lecturer.getFTE()
-            );
+        	bw.write(
+        		    lecturer.getLecturerID() + "," +
+        		    lecturer.getFirstName() + "," +
+        		    lecturer.getLastName() + "," +
+        		    lecturer.getTeachingScore() + "," +
+        		    lecturer.getFTE() + "," +
+        		    String.join(";", lecturer.getSpecializations()));
             bw.newLine();
         }
 
@@ -445,17 +446,16 @@ public class SchedamySystem
                 String lastName = parts[2];
                 double teachingScore = Double.parseDouble(parts[3]);
                 double fte = Double.parseDouble(parts[4]);
+                ArrayList<String> specializations = new ArrayList<String>();
 
-                lecturers.add(
-                    new Lecturer(
-                        id,
-                        firstName,
-                        lastName,
-                        new ArrayList<String>(),
-                        teachingScore,
-                        fte
-                    )
-                );
+                String[] specs = parts[5].split(";");
+
+                for (String spec : specs)
+                {
+                    specializations.add(spec);
+                }
+
+                lecturers.add(new Lecturer(id,firstName,lastName,specializations,teachingScore,fte));
             }
 
             else if (currentSection.equals("STUDENT_GROUPS"))
@@ -576,7 +576,7 @@ public class SchedamySystem
                         labRequired,
                         new Vector<StudentGroup>()
                     );
-
+                    
                     lesson.setRoom(room);
                     course.addLesson(lesson);
                     if (room != null) {

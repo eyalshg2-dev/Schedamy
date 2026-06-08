@@ -16,13 +16,13 @@
 			
 			//Sample lecturers
 			ArrayList<String> specs1 = new ArrayList<>();
-			specs1.add("Java");
-			specs1.add("Software Engineering");
+			specs1.add("Signals");
+			specs1.add("Physics");
 			system.addLecturer(123456789, "Drake", "Bell", specs1, 90, 1.0);
 			
 			ArrayList<String> specs2 = new ArrayList<>();
 			specs2.add("Algorithms");
-			specs2.add("Mathematics");
+			specs2.add("Electronics");
 			system.addLecturer(345678912, "Josh", "Peck", specs2, 80, 0.75);
 			
 			//sample student groups
@@ -30,7 +30,7 @@
 			system.addStudentGroup(2, "Electrical Engineering", 2, 28, "Evening");
 			
 			//Sample courses
-			system.addCourse(1, "Software Engineering", 3, "mandatory", 123456789, 1);
+			system.addCourse(1, "Physics", 3, "mandatory", 123456789, 1);
 			system.addCourse(2, "Algorithms", 4, "mandatory", 345678912, 2);
 			
 			//sample lessons
