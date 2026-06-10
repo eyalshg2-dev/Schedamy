@@ -320,7 +320,7 @@ public class SchedamySystem
         return null;
     }
     //get student group for course
-    private StudentGroup getGroupForCourse(Course course)
+    public StudentGroup getGroupForCourse(Course course)
     {
         for (GroupEnrolment enrolment : groupEnrolments)
         {
@@ -581,7 +581,7 @@ public class SchedamySystem
                 int groupID = Integer.parseInt(parts[0]);
                 int courseID = Integer.parseInt(parts[1]);
 
-                StudentGroup group = findGroupById(groupID);
+                StudentGroup group = findStudentGroupById(groupID);
                 Course course = findCourseById(courseID);
 
                 if (group != null && course != null) {
@@ -639,17 +639,6 @@ public class SchedamySystem
 
         br.close();
     }
-    private StudentGroup findGroupById(int groupID)
-    {
-        for (StudentGroup group : studentGroups) {
-            if (group.getGroupID() == groupID) {
-                return group;
-            }
-        }
-
-        return null;
-    }
-
     private Room findRoomById(String roomID)
     {
         for (Room room : rooms) {
@@ -684,14 +673,7 @@ public class SchedamySystem
     	}
     	
     	//find the lecturer for this course
-    	Lecturer lecturer = null;
-    	for (AssignedToTeach assigned : assignedToTeachList) {
-    		if (assigned.getCourse().equals(course)) {
-    			lecturer = assigned.getLecturer();
-    			break;
-    		}
-    	}
-    	
+    	Lecturer lecturer = getLecturerForCourse(course);
     	if (lecturer == null) {
     		throw new IllegalArgumentException("Lecturer not found for this course");
     	}
@@ -740,7 +722,7 @@ public class SchedamySystem
        return totalLoad;
    }
    
-   private Lecturer getLecturerForCourse(Course course) {
+   public Lecturer getLecturerForCourse(Course course) {
 	    for (AssignedToTeach assigned : assignedToTeachList) {
 	        if (assigned.getCourse().equals(course)) {
 	            return assigned.getLecturer();

@@ -2228,8 +2228,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	                throw new IllegalArgumentException("End time must be after start time");
 	            }
 	            
+	            Room selectedRoom = roomsList.get(roomChoice.getSelectedIndex());
 	            if (!modeChoice.getSelectedItem().equals("ZOOM")) {
-	                Room selectedRoom = roomsList.get(roomChoice.getSelectedIndex());
+	                
 	                for (Course c : system.getCourses()) {
 	                    for (Lesson otherLesson : c.getLessons()) {
 	                        if (otherLesson.getLessonID() == selectedLesson.getLessonID())
@@ -2241,11 +2242,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	                            otherLesson.getLessonDate().equals(newDate)) {
 	                            boolean overlap = !newStart.isAfter(otherLesson.getEndTime()) &&
 	                                              !newEnd.isBefore(otherLesson.getStartTime());
-	                            if (overlap) {
+	                            if (overlap) 
+	                            {
 	                                throw new IllegalArgumentException(
 	                                    "Room " + selectedRoom.getRoomID() +
-	                                    " is already occupied at this time"
-	                                );
+	                                    " is already occupied at this time");
 	                            }
 	                        }
 	                    }
@@ -2258,6 +2259,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	            		if (otherLesson.getLessonID() == selectedLesson.getLessonID()) {
 	            			continue;
 	            		}
+	            		  if (selectedRoom != null && enrolment.getGroup().getStudentCount() > selectedRoom.getCapacity())
+                        	{
+                        	    throw new IllegalArgumentException("Room is too small for this student group");
+                        	    
+                        	}
+	            	
 	            		//skip the lesson that is cancelled
 	            		if (otherLesson.getStatus().equalsIgnoreCase("CANCELLED")) {
 	            			continue;
@@ -2834,10 +2841,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
             if (course.getLessons().isEmpty()) {
                 continue;
             }
+            Lecturer lecturer = system.getLecturerForCourse(course);
+            StudentGroup group = system.getGroupForCourse(course);
 
-            text += "------------------------------------------------\n";
-            text += course.getCourseName() + "\n";
-            text += "------------------------------------------------\n\n";
+            text += "------------------------------------------------------------------------------------------------------\n";
+            text += course.getCourseName() +" | Lecturer: " +lecturer.getFirstName() + " " +lecturer.getLastName() +" | Group: " +group.getDepartment() +" Year " +group.getStudyYear() +"\n";
+            text += "------------------------------------------------------------------------------------------------------\n\n";
 
             for (Lesson lesson : course.getLessons())
             {
