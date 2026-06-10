@@ -725,10 +725,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
         for (Course course : system.getCourses()) {
             if (!courseNames.contains(course.getCourseName())) {
                 courseNames.add(course.getCourseName());
-
+                Lecturer lecturer = system.getLecturerForCourse(course);
+                StudentGroup group = system.getGroupForCourse(course);
                 Button button = createDashboardButton(course.getCourseName());
                 button.setPreferredSize(new Dimension(250, 90));
-                button.setActionCommand("LESSONS_COURSE_NAME_" + course.getCourseName());
+                button.setActionCommand("LESSONS_COURSE_NAME_" + course.getCourseName()+" | lecturer: " +lecturer.getFirstName() + " " +lecturer.getLastName() +" | student group:  " +group.getDepartment() +" year: " +group.getStudyYear());
 
                 coursesPanel.add(button);
             }
@@ -753,7 +754,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         clearMainPanel();
 
         Label title = new Label("Lessons - " + courseName, Label.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 28));
+        title.setFont(new Font("Arial", Font.BOLD, 15));
 
         Panel lessonsPanel = new Panel(new GridLayout(0, 1, 20, 20));
         lessonsPanel.setBackground(new Color(245, 247, 250));
