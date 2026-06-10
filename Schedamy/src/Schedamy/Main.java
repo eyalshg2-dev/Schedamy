@@ -31,7 +31,7 @@
 			
 			//Sample courses
 			system.addCourse(1, "Physics", 3, "mandatory", 123456789, 1);
-			system.addCourse(2, "Algorithms", 4, "mandatory", 234567891, 2);
+			system.addCourse(2, "Algorithms", 4, "mandatory", 345678912, 2);
 			
 			//sample lessons
 			system.addLessonToCourse(1, 1,

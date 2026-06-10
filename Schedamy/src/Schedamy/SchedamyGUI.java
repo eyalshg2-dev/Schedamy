@@ -37,11 +37,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
     private final Object sharedRoomLock = new Object();
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     
+    private Panel mainPanel;
+    
     // Constructor - creates the main window and initializes the system.
     public SchedamyGUI(SchedamySystem system) {
         super("Schedamy System");
 
-        // Create the main system object.
         this.system = system;
         updateNextIDs();
 
@@ -52,6 +53,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
         // Build and attach the menu bar to the window.
         buildMenuBar();
 
+        buildMainPanel();
+        
         // Show the main window.
         setVisible(true);
 
@@ -62,14 +65,1084 @@ public class SchedamyGUI extends Frame implements ActionListener {
             }
         });
     }
- // Updates the next available IDs for courses and student groups
-    private void updateNextIDs() {
-        nextCourseID = system.getCourses().size() + 1;
-        nextGroupID = system.getStudentGroups().size() + 1;
+    
+    private void buildMainPanel() {
+        setLayout(new BorderLayout());
 
+        mainPanel = new Panel(new BorderLayout(20, 20));
+        mainPanel.setBackground(new Color(245, 247, 250));
+
+        // Header
+        Panel headerPanel = new Panel(new GridLayout(3, 1));
+        headerPanel.setBackground(new Color(245, 247, 250));
+
+        Label titleLabel = new Label("Schedamy", Label.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 34));
+
+        Label subtitleLabel = new Label("College Scheduling Management System", Label.CENTER);
+        subtitleLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+
+        Label descriptionLabel = new Label(
+            "Manage courses, lecturers, rooms, student groups and weekly schedules",
+            Label.CENTER
+        );
+        descriptionLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        headerPanel.add(titleLabel);
+        headerPanel.add(subtitleLabel);
+        headerPanel.add(descriptionLabel);
+
+        // Center buttons
+        Panel cardsPanel = new Panel(new GridLayout(3, 3, 18, 18));
+        cardsPanel.setBackground(new Color(245, 247, 250));
+
+        cardsPanel.add(createDashboardButton("Courses"));
+        cardsPanel.add(createDashboardButton("Lecturers"));
+        cardsPanel.add(createDashboardButton("Rooms"));
+        cardsPanel.add(createDashboardButton("Student Groups"));
+        cardsPanel.add(createDashboardButton("Lessons"));
+        cardsPanel.add(createDashboardButton("Scheduling"));
+        cardsPanel.add(createDashboardButton("Reports"));
+
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+        mainPanel.add(cardsPanel, BorderLayout.CENTER);
+
+        add(mainPanel, BorderLayout.CENTER);
+    }
+    
+    private Button createDashboardButton(String text) {
+        Button button = new Button(text);
+        button.setFont(new Font("Arial", Font.BOLD, 16));
+        button.setBackground(new Color(230, 235, 242));
+        button.setForeground(new Color(30, 45, 70));
+        button.setActionCommand(text);
+        button.addActionListener(this);
+        return button;
+    }
+    
+    private void clearMainPanel() {
+        remove(mainPanel);
+
+        mainPanel = new Panel(new BorderLayout(20, 20));
+        mainPanel.setBackground(new Color(245, 247, 250));
+
+        add(mainPanel, BorderLayout.CENTER);
+        validate();
+        repaint();
+    }
+
+    private void showCoursesDashboard() {
+        clearMainPanel();
+
+        Label title = new Label("Courses", Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel coursesPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        coursesPanel.setBackground(new Color(245, 247, 250));
+
+        ArrayList<String> courseNames = new ArrayList<String>();
+
+        for (Course course : system.getCourses()) {
+            if (!courseNames.contains(course.getCourseName())) {
+                courseNames.add(course.getCourseName());
+
+                Button button = createDashboardButton(course.getCourseName());
+                button.setPreferredSize(new Dimension(250, 90));
+                button.setActionCommand("COURSE_NAME_" + course.getCourseName());
+                coursesPanel.add(button);
+            }
+        }
+
+        Button backButton = createDashboardButton("Back to Home");
+        backButton.setActionCommand("HOME");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(coursesPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showCourseDetailsByName(String courseName) {
+        clearMainPanel();
+
+        Label title = new Label(courseName, Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel detailsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        detailsPanel.setBackground(new Color(245, 247, 250));
+
+        boolean found = false;
+
+        for (Course course : system.getCourses()) {
+            if (course.getCourseName().equals(courseName)) {
+
+                found = true;
+
+                String lecturerText = "No lecturer";
+                String groupText = "No student group";
+
+                for (AssignedToTeach assigned : system.getAssignedToTeachList()) {
+                    if (assigned.getCourse().getCourseID() == course.getCourseID()) {
+                        Lecturer lecturer = assigned.getLecturer();
+                        lecturerText = lecturer.getFirstName() + " " + lecturer.getLastName();
+                        break;
+                    }
+                }
+
+                for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
+                    if (enrolment.getCourse().getCourseID() == course.getCourseID()) {
+                        StudentGroup group = enrolment.getGroup();
+                        groupText = group.getDepartment() +
+                                " | Year " + group.getStudyYear() +
+                                " | " + group.getProgramName();
+                        break;
+                    }
+                }
+
+                Panel card = new Panel(new GridLayout(3, 1));
+                card.setPreferredSize(new Dimension(650, 90));
+                card.setBackground(Color.WHITE);
+
+                Label groupLabel = new Label(groupText, Label.CENTER);
+                groupLabel.setFont(new Font("Arial", Font.BOLD, 14));
+
+                Label lecturerLabel = new Label("Lecturer: " + lecturerText, Label.CENTER);
+                lecturerLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+                Label detailsLabel = new Label(
+                        "Credits: " + course.getCredits() +
+                        " | " + course.getCourseType() +
+                        " | Lessons: " + course.getLessons().size(),
+                        Label.CENTER
+                );
+                detailsLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+                card.add(groupLabel);
+                card.add(lecturerLabel);
+                card.add(detailsLabel);
+
+                detailsPanel.add(card);
+            }
+        }
+
+        if (!found) {
+            detailsPanel.add(new Label("No course details found.", Label.CENTER));
+        }
+
+        Button backButton = createDashboardButton("Back to Courses");
+        backButton.setActionCommand("Courses");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(detailsPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+  
+    private void showLecturersDashboard() {
+        clearMainPanel();
+
+        Label title = new Label("Lecturers", Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel lecturersPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        lecturersPanel.setBackground(new Color(245, 247, 250));
+
+        for (Lecturer lecturer : system.getLecturers()) {
+            String name = lecturer.getFirstName() + " " + lecturer.getLastName();
+
+            Button button = createDashboardButton(name);
+            button.setPreferredSize(new Dimension(250, 90));
+            button.setActionCommand("LECTURER_DETAILS_" + lecturer.getLecturerID());
+
+            lecturersPanel.add(button);
+        }
+
+        Button backButton = createDashboardButton("Back to Home");
+        backButton.setActionCommand("HOME");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(lecturersPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showLecturerDetails(int lecturerID) {
+        clearMainPanel();
+
+        Lecturer selectedLecturer = null;
+
+        for (Lecturer lecturer : system.getLecturers()) {
+            if (lecturer.getLecturerID() == lecturerID) {
+                selectedLecturer = lecturer;
+                break;
+            }
+        }
+
+        if (selectedLecturer == null) {
+            JOptionPane.showMessageDialog(this, "Lecturer not found");
+            return;
+        }
+
+        Label title = new Label(
+                selectedLecturer.getFirstName() + " " + selectedLecturer.getLastName(),
+                Label.CENTER
+        );
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel detailsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        detailsPanel.setBackground(new Color(245, 247, 250));
+
+        Panel infoCard = new Panel(new GridLayout(3, 1));
+        infoCard.setPreferredSize(new Dimension(650, 90));
+        infoCard.setBackground(Color.WHITE);
+
+        Label idLabel = new Label("Lecturer ID: " + selectedLecturer.getLecturerID(), Label.CENTER);
+        idLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        Label scoreLabel = new Label(
+                "Teaching Score: " + selectedLecturer.getTeachingScore() +
+                " | FTE: " + selectedLecturer.getFTE(),
+                Label.CENTER
+        );
+        scoreLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        Label specsLabel = new Label(
+                "Specializations: " + selectedLecturer.getSpecializations(),
+                Label.CENTER
+        );
+        specsLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        infoCard.add(idLabel);
+        infoCard.add(scoreLabel);
+        infoCard.add(specsLabel);
+
+        detailsPanel.add(infoCard);
+
+        for (AssignedToTeach assigned : system.getAssignedToTeachList()) {
+            if (assigned.getLecturer().getLecturerID() == selectedLecturer.getLecturerID()) {
+                Course course = assigned.getCourse();
+
+                Panel courseCard = new Panel(new GridLayout(3, 1));
+                courseCard.setPreferredSize(new Dimension(650, 90));
+                courseCard.setBackground(Color.WHITE);
+
+                Label courseLabel = new Label(course.getCourseName(), Label.CENTER);
+                courseLabel.setFont(new Font("Arial", Font.BOLD, 14));
+
+                Label courseDetailsLabel = new Label(
+                        "Credits: " + course.getCredits() +
+                        " | " + course.getCourseType() +
+                        " | Lessons: " + course.getLessons().size(),
+                        Label.CENTER
+                );
+                courseDetailsLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+                Label hoursLabel = new Label(
+                        "Course hours: " + course.calculateCourseHours(),
+                        Label.CENTER
+                );
+                hoursLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+                courseCard.add(courseLabel);
+                courseCard.add(courseDetailsLabel);
+                courseCard.add(hoursLabel);
+
+                detailsPanel.add(courseCard);
+            }
+        }
+
+        Button backButton = createDashboardButton("Back to Lecturers");
+        backButton.setActionCommand("Lecturers");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(detailsPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showRoomsDashboard() {
+        clearMainPanel();
+
+        Label title = new Label("Rooms", Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel roomsPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        roomsPanel.setBackground(new Color(245, 247, 250));
+
+        for (Room room : system.getRooms()) {
+            Button button = createDashboardButton("Room " + room.getRoomID());
+            button.setPreferredSize(new Dimension(250, 90));
+            button.setActionCommand("ROOM_DETAILS_" + room.getRoomID());
+            roomsPanel.add(button);
+        }
+
+        Button backButton = createDashboardButton("Back to Home");
+        backButton.setActionCommand("HOME");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(roomsPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showRoomDetails(String roomID) {
+        clearMainPanel();
+
+        Room selectedRoom = null;
+
+        for (Room room : system.getRooms()) {
+            if (room.getRoomID().equals(roomID)) {
+                selectedRoom = room;
+                break;
+            }
+        }
+
+        if (selectedRoom == null) {
+            JOptionPane.showMessageDialog(this, "Room not found");
+            return;
+        }
+
+        Label title = new Label("Room " + selectedRoom.getRoomID(), Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel detailsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        detailsPanel.setBackground(new Color(245, 247, 250));
+
+        Panel infoCard = new Panel(new GridLayout(5, 1));
+        infoCard.setPreferredSize(new Dimension(650, 130));
+        infoCard.setBackground(Color.WHITE);
+
+        Label buildingLabel = new Label("Building: " + selectedRoom.getBuilding(), Label.CENTER);
+        buildingLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        Label typeLabel = new Label("Type: " + selectedRoom.getRoomType(), Label.CENTER);
+        typeLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        Label capacityLabel = new Label("Capacity: " + selectedRoom.getCapacity(), Label.CENTER);
+        capacityLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        Label sizeLabel = new Label("Room Size: " + selectedRoom.classifyRoomSize(), Label.CENTER);
+        sizeLabel.setFont(new Font("Arial", Font.BOLD, 14));
+
+        Label equipmentLabel = new Label("Equipment: " + selectedRoom.getSpecialEquipment(), Label.CENTER);
+        equipmentLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        infoCard.add(buildingLabel);
+        infoCard.add(typeLabel);
+        infoCard.add(capacityLabel);
+        infoCard.add(sizeLabel);
+        infoCard.add(equipmentLabel);
+
+        detailsPanel.add(infoCard);
+
+        Button backButton = createDashboardButton("Back to Rooms");
+        backButton.setActionCommand("Rooms");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(detailsPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showStudentGroupsDashboard() {
+        clearMainPanel();
+
+        Label title = new Label("Student Groups", Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel groupsPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        groupsPanel.setBackground(new Color(245, 247, 250));
+
+        for (StudentGroup group : system.getStudentGroups()) {
+            Button button = createDashboardButton(
+                group.getDepartment() + " | Year " + group.getStudyYear()
+            );
+
+            button.setPreferredSize(new Dimension(250, 90));
+            button.setActionCommand("GROUP_DETAILS_" + group.getGroupID());
+
+            groupsPanel.add(button);
+        }
+
+        Button backButton = createDashboardButton("Back to Home");
+        backButton.setActionCommand("HOME");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(groupsPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showStudentGroupDetails(int groupID) {
+        clearMainPanel();
+
+        StudentGroup selectedGroup = null;
+
+        for (StudentGroup group : system.getStudentGroups()) {
+            if (group.getGroupID() == groupID) {
+                selectedGroup = group;
+                break;
+            }
+        }
+
+        if (selectedGroup == null) {
+            JOptionPane.showMessageDialog(this, "Student group not found");
+            return;
+        }
+
+        Label title = new Label(
+            selectedGroup.getDepartment() + " | Year " + selectedGroup.getStudyYear(),
+            Label.CENTER
+        );
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel detailsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        detailsPanel.setBackground(new Color(245, 247, 250));
+
+        Panel infoCard = new Panel(new GridLayout(3, 1));
+        infoCard.setPreferredSize(new Dimension(650, 90));
+        infoCard.setBackground(Color.WHITE);
+
+        Label idLabel = new Label("Group ID: " + selectedGroup.getGroupID(), Label.CENTER);
+        idLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        Label programLabel = new Label(
+            "Program: " + selectedGroup.getProgramName() +
+            " | Students: " + selectedGroup.getStudentCount(),
+            Label.CENTER
+        );
+        programLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        Label departmentLabel = new Label(
+            "Department: " + selectedGroup.getDepartment(),
+            Label.CENTER
+        );
+        departmentLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        infoCard.add(idLabel);
+        infoCard.add(programLabel);
+        infoCard.add(departmentLabel);
+
+        detailsPanel.add(infoCard);
+
+        for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
+            if (enrolment.getGroup().getGroupID() == selectedGroup.getGroupID()) {
+                Course course = enrolment.getCourse();
+
+                Panel courseCard = new Panel(new GridLayout(3, 1));
+                courseCard.setPreferredSize(new Dimension(650, 90));
+                courseCard.setBackground(Color.WHITE);
+
+                Label courseLabel = new Label(course.getCourseName(), Label.CENTER);
+                courseLabel.setFont(new Font("Arial", Font.BOLD, 14));
+
+                Label detailsLabel = new Label(
+                    "Credits: " + course.getCredits() +
+                    " | " + course.getCourseType() +
+                    " | Lessons: " + course.getLessons().size(),
+                    Label.CENTER
+                );
+                detailsLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+                Label attendanceLabel = new Label(
+                    "Attendance Required: " + enrolment.isAttendanceRequired(),
+                    Label.CENTER
+                );
+                attendanceLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+                courseCard.add(courseLabel);
+                courseCard.add(detailsLabel);
+                courseCard.add(attendanceLabel);
+
+                detailsPanel.add(courseCard);
+            }
+        }
+
+        Button backButton = createDashboardButton("Back to Student Groups");
+        backButton.setActionCommand("Student Groups");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(detailsPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showLessonsDashboard() {
+        clearMainPanel();
+
+        Label title = new Label("Lessons", Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel optionsPanel = new Panel(new GridLayout(2, 2, 20, 20));
+        optionsPanel.setBackground(new Color(245, 247, 250));
+
+        Button byCourse = createDashboardButton("By Course");
+        byCourse.setActionCommand("LESSONS_BY_COURSE");
+
+        Button byLecturer = createDashboardButton("By Lecturer");
+        byLecturer.setActionCommand("LESSONS_BY_LECTURER");
+
+        Button byRoom = createDashboardButton("By Room");
+        byRoom.setActionCommand("LESSONS_BY_ROOM");
+
+        Button byGroup = createDashboardButton("By Student Group");
+        byGroup.setActionCommand("LESSONS_BY_GROUP");
+
+        optionsPanel.add(byCourse);
+        optionsPanel.add(byLecturer);
+        optionsPanel.add(byRoom);
+        optionsPanel.add(byGroup);
+
+        Button backButton = createDashboardButton("Back to Home");
+        backButton.setActionCommand("HOME");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+        mainPanel.add(optionsPanel, BorderLayout.CENTER);
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    private Color getLessonStatusColor(String status) {
+        if (status == null) {
+            return Color.WHITE;
+        }
+
+        if (status.equalsIgnoreCase("SCHEDULED")) {
+            return Color.WHITE;
+        }
+
+        if (status.equalsIgnoreCase("RESCHEDULED")) {
+            return new Color(220, 235, 255);
+        }
+
+        if (status.equalsIgnoreCase("CANCELLED")) {
+            return new Color(255, 225, 225);
+        }
+
+        return Color.WHITE;
+    }
+    
+    private Panel createLessonCard(Course course, Lesson lesson) {
+        Panel card = new Panel(new GridLayout(4, 1));
+        card.setPreferredSize(new Dimension(650, 110));
+        card.setBackground(getLessonStatusColor(lesson.getStatus()));
+
+        String roomText = "Zoom";
+        if (lesson.getRoom() != null) {
+            roomText = "Room " + lesson.getRoom().getRoomID();
+        }
+
+        Label courseLabel = new Label(course.getCourseName(), Label.CENTER);
+        courseLabel.setFont(new Font("Arial", Font.BOLD, 14));
+
+        Label dateLabel = new Label(
+            lesson.getLessonDate().format(DATE_FORMAT) +
+            " | " + lesson.getStartTime() + " - " + lesson.getEndTime(),
+            Label.CENTER
+        );
+        dateLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        Label placeLabel = new Label(
+            roomText + " | " + lesson.getTeachingMode(),
+            Label.CENTER
+        );
+        placeLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        Label statusLabel = new Label(
+            "Status: " + getFriendlyStatus(lesson.getStatus()),
+            Label.CENTER
+        );
+        statusLabel.setFont(new Font("Arial", Font.PLAIN, 13));
+
+        card.add(courseLabel);
+        card.add(dateLabel);
+        card.add(placeLabel);
+        card.add(statusLabel);
+
+        return card;
+    }
+    
+    private void showLessonsByCourseSelection() {
+        clearMainPanel();
+
+        Label title = new Label("Lessons By Course", Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel coursesPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        coursesPanel.setBackground(new Color(245, 247, 250));
+
+        ArrayList<String> courseNames = new ArrayList<String>();
+
+        for (Course course : system.getCourses()) {
+            if (!courseNames.contains(course.getCourseName())) {
+                courseNames.add(course.getCourseName());
+
+                Button button = createDashboardButton(course.getCourseName());
+                button.setPreferredSize(new Dimension(250, 90));
+                button.setActionCommand("LESSONS_COURSE_NAME_" + course.getCourseName());
+
+                coursesPanel.add(button);
+            }
+        }
+
+        Button backButton = createDashboardButton("Back to Lessons");
+        backButton.setActionCommand("Lessons");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(coursesPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showLessonsOfCourseName(String courseName) {
+        clearMainPanel();
+
+        Label title = new Label("Lessons - " + courseName, Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        lessonsPanel.setBackground(new Color(245, 247, 250));
+
+        boolean foundLessons = false;
+
+        for (Course course : system.getCourses()) {
+            if (course.getCourseName().equals(courseName)) {
+                for (Lesson lesson : course.getLessons()) {
+                    lessonsPanel.add(createLessonCard(course, lesson));
+                    foundLessons = true;
+                }
+            }
+        }
+
+        if (!foundLessons) {
+            lessonsPanel.add(new Label("No lessons found for this course.", Label.CENTER));
+        }
+
+        Button backButton = createDashboardButton("Back to Courses");
+        backButton.setActionCommand("LESSONS_BY_COURSE");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(lessonsPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showLessonsByLecturerSelection() {
+        clearMainPanel();
+
+        Label title = new Label("Lessons By Lecturer", Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel lecturersPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        lecturersPanel.setBackground(new Color(245, 247, 250));
+
+        for (Lecturer lecturer : system.getLecturers()) {
+            String lecturerName = lecturer.getFirstName() + " " + lecturer.getLastName();
+
+            Button button = createDashboardButton(lecturerName);
+            button.setPreferredSize(new Dimension(250, 90));
+            button.setActionCommand("LESSONS_LECTURER_" + lecturer.getLecturerID());
+
+            lecturersPanel.add(button);
+        }
+
+        Button backButton = createDashboardButton("Back to Lessons");
+        backButton.setActionCommand("Lessons");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(lecturersPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showLessonsOfLecturer(int lecturerID) {
+        clearMainPanel();
+
+        Lecturer selectedLecturer = null;
+
+        for (Lecturer lecturer : system.getLecturers()) {
+            if (lecturer.getLecturerID() == lecturerID) {
+                selectedLecturer = lecturer;
+                break;
+            }
+        }
+
+        if (selectedLecturer == null) {
+            JOptionPane.showMessageDialog(this, "Lecturer not found");
+            return;
+        }
+
+        Label title = new Label(
+            "Lessons - " + selectedLecturer.getFirstName() + " " + selectedLecturer.getLastName(),
+            Label.CENTER
+        );
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        lessonsPanel.setBackground(new Color(245, 247, 250));
+
+        boolean foundLesson = false;
+
+        for (AssignedToTeach assigned : system.getAssignedToTeachList()) {
+            if (assigned.getLecturer().getLecturerID() == selectedLecturer.getLecturerID()) {
+                Course course = assigned.getCourse();
+
+                for (Lesson lesson : course.getLessons()) {
+                    lessonsPanel.add(createLessonCard(course, lesson));
+                    foundLesson = true;
+                }
+            }
+        }
+
+        if (!foundLesson) {
+            lessonsPanel.add(new Label("No lessons found for this lecturer.", Label.CENTER));
+        }
+
+        Button backButton = createDashboardButton("Back to Lecturers");
+        backButton.setActionCommand("LESSONS_BY_LECTURER");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(lessonsPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showLessonsByRoomSelection() {
+        clearMainPanel();
+
+        Label title = new Label("Lessons By Room", Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel roomsPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        roomsPanel.setBackground(new Color(245, 247, 250));
+
+        for (Room room : system.getRooms()) {
+            Button button = createDashboardButton("Room " + room.getRoomID());
+            button.setPreferredSize(new Dimension(250, 90));
+            button.setActionCommand("LESSONS_ROOM_" + room.getRoomID());
+
+            roomsPanel.add(button);
+        }
+
+        Button backButton = createDashboardButton("Back to Lessons");
+        backButton.setActionCommand("Lessons");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(roomsPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showLessonsOfRoom(String roomID) {
+        clearMainPanel();
+
+        Room selectedRoom = null;
+
+        for (Room room : system.getRooms()) {
+            if (room.getRoomID().equals(roomID)) {
+                selectedRoom = room;
+                break;
+            }
+        }
+
+        if (selectedRoom == null) {
+            JOptionPane.showMessageDialog(this, "Room not found");
+            return;
+        }
+
+        Label title = new Label("Lessons - Room " + selectedRoom.getRoomID(), Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        lessonsPanel.setBackground(new Color(245, 247, 250));
+
+        boolean foundLesson = false;
+
+        for (Course course : system.getCourses()) {
+            for (Lesson lesson : course.getLessons()) {
+                if (lesson.getRoom() != null &&
+                    lesson.getRoom().getRoomID().equals(selectedRoom.getRoomID())) {
+
+                    lessonsPanel.add(createLessonCard(course, lesson));
+                    foundLesson = true;
+                }
+            }
+        }
+
+        if (!foundLesson) {
+            lessonsPanel.add(new Label("No lessons found for this room.", Label.CENTER));
+        }
+
+        Button backButton = createDashboardButton("Back to Rooms");
+        backButton.setActionCommand("LESSONS_BY_ROOM");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(lessonsPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showLessonsByGroupSelection() {
+        clearMainPanel();
+
+        Label title = new Label("Lessons By Student Group", Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel groupsPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        groupsPanel.setBackground(new Color(245, 247, 250));
+
+        for (StudentGroup group : system.getStudentGroups()) {
+            Button button = createDashboardButton(
+                group.getDepartment() + " | Year " + group.getStudyYear()
+            );
+
+            button.setPreferredSize(new Dimension(250, 90));
+            button.setActionCommand("LESSONS_GROUP_" + group.getGroupID());
+
+            groupsPanel.add(button);
+        }
+
+        Button backButton = createDashboardButton("Back to Lessons");
+        backButton.setActionCommand("Lessons");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(groupsPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showLessonsOfStudentGroup(int groupID) {
+        clearMainPanel();
+
+        StudentGroup selectedGroup = null;
+
+        for (StudentGroup group : system.getStudentGroups()) {
+            if (group.getGroupID() == groupID) {
+                selectedGroup = group;
+                break;
+            }
+        }
+
+        if (selectedGroup == null) {
+            JOptionPane.showMessageDialog(this, "Student group not found");
+            return;
+        }
+
+        Label title = new Label(
+            "Lessons - " + selectedGroup.getDepartment() +
+            " | Year " + selectedGroup.getStudyYear(),
+            Label.CENTER
+        );
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        lessonsPanel.setBackground(new Color(245, 247, 250));
+
+        boolean foundLesson = false;
+
+        for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
+            if (enrolment.getGroup().getGroupID() == selectedGroup.getGroupID()) {
+                Course course = enrolment.getCourse();
+
+                for (Lesson lesson : course.getLessons()) {
+                    lessonsPanel.add(createLessonCard(course, lesson));
+                    foundLesson = true;
+                }
+            }
+        }
+
+        if (!foundLesson) {
+            lessonsPanel.add(new Label("No lessons found for this student group.", Label.CENTER));
+        }
+
+        Button backButton = createDashboardButton("Back to Student Groups");
+        backButton.setActionCommand("LESSONS_BY_GROUP");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.add(lessonsPanel);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showSchedulingDashboard() {
+        clearMainPanel();
+
+        Label title = new Label("Scheduling", Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel optionsPanel = new Panel(new GridLayout(3, 1, 20, 20));
+        optionsPanel.setBackground(new Color(245, 247, 250));
+
+        Button addLessonButton = createDashboardButton("Add Lesson");
+        addLessonButton.setActionCommand("Add Lesson");
+
+        Button cancelLessonButton = createDashboardButton("Cancel Lesson");
+        cancelLessonButton.setActionCommand("Cancel Lesson");
+
+        Button rescheduleLessonButton = createDashboardButton("Reschedule Lesson");
+        rescheduleLessonButton.setActionCommand("Reschedule Lesson");
+
+
+        optionsPanel.add(addLessonButton);
+        optionsPanel.add(cancelLessonButton);
+        optionsPanel.add(rescheduleLessonButton);
+       
+
+        Button backButton = createDashboardButton("Back to Home");
+        backButton.setActionCommand("HOME");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+        mainPanel.add(optionsPanel, BorderLayout.CENTER);
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+    private void showReportsDashboard() {
+        clearMainPanel();
+
+        Label title = new Label("Reports", Label.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+
+        Panel optionsPanel = new Panel(new GridLayout(3, 1, 20, 20));
+        optionsPanel.setBackground(new Color(245, 247, 250));
+
+        Button lecturerLoadButton = createDashboardButton("Lecturer Load");
+        lecturerLoadButton.setActionCommand("Calculate Lecturer Load");
+
+        Button studentLoadButton = createDashboardButton("Student Group Load");
+        studentLoadButton.setActionCommand("Calculate Student Load");
+
+        Button roomLoadButton = createDashboardButton("Room Load");
+        roomLoadButton.setActionCommand("Calculate Room Load");
+
+
+
+        optionsPanel.add(lecturerLoadButton);
+        optionsPanel.add(studentLoadButton);
+        optionsPanel.add(roomLoadButton);
+       
+        Button backButton = createDashboardButton("Back to Home");
+        backButton.setActionCommand("HOME");
+
+        mainPanel.add(title, BorderLayout.NORTH);
+        mainPanel.add(optionsPanel, BorderLayout.CENTER);
+        mainPanel.add(backButton, BorderLayout.SOUTH);
+
+        validate();
+        repaint();
+    }
+    
+ // Updates the next available IDs for courses and student groups
+    
+    private void updateNextIDs() {
+        int maxCourseID = 0;
+        int maxGroupID = 0;
         int maxLessonID = 0;
 
         for (Course course : system.getCourses()) {
+            if (course.getCourseID() > maxCourseID) {
+                maxCourseID = course.getCourseID();
+            }
+
             for (Lesson lesson : course.getLessons()) {
                 if (lesson.getLessonID() > maxLessonID) {
                     maxLessonID = lesson.getLessonID();
@@ -77,10 +1150,20 @@ public class SchedamyGUI extends Frame implements ActionListener {
             }
         }
 
+        for (StudentGroup group : system.getStudentGroups()) {
+            if (group.getGroupID() > maxGroupID) {
+                maxGroupID = group.getGroupID();
+            }
+        }
+
+        nextCourseID = maxCourseID + 1;
+        nextGroupID = maxGroupID + 1;
         nextLessonID = maxLessonID + 1;
     }
+
+    
  // Builds the main menu bar 
- private void buildMenuBar() {
+    private void buildMenuBar() {
 
 	
 	 
@@ -108,7 +1191,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
  }
 
  // Creates the "File" menu and its menu items.
- private void buildFileMenu() {
+    private void buildFileMenu() {
      fileMenu = new Menu("File");
 
      // Create menu items with keyboard shortcuts.
@@ -137,7 +1220,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
      fileMenu.add(exitItem);
  }
 //Builds the "Manage" menu and all management actions.
-private void buildManageMenu() {
+    private void buildManageMenu() {
 
   manageMenu = new Menu("Manage");
 
@@ -176,7 +1259,7 @@ private void buildManageMenu() {
 
 //Builds the "View" menu 
 //This menu displays information stored in the system.
-private void buildViewMenu() {
+    private void buildViewMenu() {
 
  viewMenu = new Menu("View");
 
@@ -222,11 +1305,9 @@ private void buildViewMenu() {
 }
 
 
-
-
 //Builds the "Help" menu.
 //This menu contains general information about the system.
-private void buildHelpMenu() {
+    private void buildHelpMenu() {
 
  helpMenu = new Menu("Help");
 
@@ -240,11 +1321,31 @@ private void buildHelpMenu() {
 }
 
 @Override
-public void actionPerformed(ActionEvent e) {
+	public void actionPerformed(ActionEvent e) {
 
     // Get the text of the menu item that was clicked.
     String command = e.getActionCommand();
 
+    System.out.println("Clicked command: " + command);
+    
+    if (command.equals("Courses")) {
+        showCoursesDashboard();
+        return;
+    }
+
+    if (command.equals("HOME")) {
+        remove(mainPanel);
+        buildMainPanel();
+        validate();
+        repaint();
+        return;
+    }
+
+    if (command.startsWith("COURSE_NAME_")) {
+        String courseName = command.replace("COURSE_NAME_", "");
+        showCourseDetailsByName(courseName);
+        return;
+    }
     // File menu actions.
     if (command.equals("Exit")) {
         System.exit(0);
@@ -336,29 +1437,99 @@ public void actionPerformed(ActionEvent e) {
         openAddLecturerDialog();
     }
 
-    if (command.equals("Add Lesson")) {
-        openAddLessonDialog();
+    if (command.equals("Lessons")) {
+        showLessonsDashboard();
+        return;
+    }
+    if (command.startsWith("LESSONS_COURSE_NAME_")) {
+        String courseName = command.replace("LESSONS_COURSE_NAME_", "");
+        showLessonsOfCourseName(courseName);
+        return;
+    } 
+    
+    if (command.equals("LESSONS_BY_COURSE")) {
+        showLessonsByCourseSelection();
+        return;
+    }
+    
+    if (command.startsWith("LESSONS_LECTURER_")) {
+        int lecturerID = Integer.parseInt(command.replace("LESSONS_LECTURER_", ""));
+        showLessonsOfLecturer(lecturerID);
+        return;
+    }
+
+    if (command.equals("LESSONS_BY_LECTURER")) {
+        showLessonsByLecturerSelection();
+        return;
+    }
+    
+    if (command.startsWith("LESSONS_ROOM_")) {
+        String roomID = command.replace("LESSONS_ROOM_", "");
+        showLessonsOfRoom(roomID);
+        return;
+    }
+
+    if (command.equals("LESSONS_BY_ROOM")) {
+        showLessonsByRoomSelection();
+        return;
+    }
+    if (command.startsWith("LESSONS_GROUP_")) {
+        int groupID = Integer.parseInt(command.replace("LESSONS_GROUP_", ""));
+        showLessonsOfStudentGroup(groupID);
+        return;
+    }
+
+    if (command.equals("LESSONS_BY_GROUP")) {
+        showLessonsByGroupSelection();
+        return;
     }
 
     // View dialogs.
+    
+    if (command.startsWith("LECTURER_DETAILS_")) {
+        int lecturerID = Integer.parseInt(command.replace("LECTURER_DETAILS_", ""));
+        showLecturerDetails(lecturerID);
+        return;
+    }
+    
     if (command.equals("Lecturers")) {
-        openLecturersView();
+        showLecturersDashboard();
+        return;
     }
 
     if (command.equals("Courses")) {
         openCoursesView();
     }
+    if (command.startsWith("GROUP_DETAILS_")) {
+        int groupID = Integer.parseInt(command.replace("GROUP_DETAILS_", ""));
+        showStudentGroupDetails(groupID);
+        return;
+    }
 
     if (command.equals("Student Groups")) {
-        openStudentGroupsView();
+        showStudentGroupsDashboard();
+        return;
     }
-
+    
+    if (command.startsWith("ROOM_DETAILS_")) {
+        String roomID = command.replace("ROOM_DETAILS_", "");
+        showRoomDetails(roomID);
+        return;
+    }
+    
     if (command.equals("Rooms")) {
-        openRoomsView();
+        showRoomsDashboard();
+        return;
     }
-
-    if (command.equals("Lessons")) {
-        openLessonsView();
+    if (command.equals("Scheduling")) {
+        showSchedulingDashboard();
+        return;
+    }
+    
+    if (command.equals("Add Lesson")) {
+        System.out.println("Opening Add Lesson Dialog");
+        openAddLessonDialog();
+        return;
     }
 
     // Lesson update actions.
@@ -378,6 +1549,12 @@ public void actionPerformed(ActionEvent e) {
     if (command.equals("Student Group Timetable")) {
         openStudentGroupTimetableDialog();
     }
+    
+    if (command.equals("Reports")) {
+        showReportsDashboard();
+        return;
+    }
+    
     //options in popupmanu
     if (command.equals("Extra Options")) {
         extraPopup.show(this, 180, 100);
@@ -391,10 +1568,12 @@ public void actionPerformed(ActionEvent e) {
     if (command.equals("Calculate Room Load")) {
         openRoomLoadDialog();
     }
+    
+    
 
 }
 
-    private void openAddLecturerDialog() {
+	private void openAddLecturerDialog() {
 
     // Create a pop-up dialog window for adding a new lecturer
     Dialog dialog = new Dialog(this, "Add Lecturer", true);
@@ -512,7 +1691,8 @@ public void actionPerformed(ActionEvent e) {
 
         dialog.setVisible(true);
     }
-    private void openAddRoomDialog() {
+    
+	private void openAddRoomDialog() {
         Dialog dialog = new Dialog(this, "Add Room", true);
         dialog.setLayout(new BorderLayout());
         dialog.setSize(420, 280);
@@ -668,7 +1848,7 @@ public void actionPerformed(ActionEvent e) {
 	  
 	    addButton.addActionListener(e -> {
 	        try {
-	        	int courseID = nextCourseID; 
+	        	int courseID = nextCourseID++; 
 	        	String lecturerText = lecturerChoice.getSelectedItem();
 	        	String groupText = groupChoice.getSelectedItem();
 	        	int lecturerID = Integer.parseInt(lecturerText.split(" - ")[0]);
@@ -676,8 +1856,11 @@ public void actionPerformed(ActionEvent e) {
 	        	if (!creditsField.getText().matches("\\d+"))
 	        	    throw new IllegalArgumentException("Credits must be positive a number");
 
-	        	system.addCourse(courseID,capitalizeFirstLetter(courseNameField.getText()),Integer.parseInt(creditsField.getText()),courseTypeChoice.getSelectedItem(),lecturerID,groupID);
-	        	courseID++;
+	        	system.addCourse(courseID,capitalizeFirstLetter(courseNameField.getText()),
+	        			Integer.parseInt(creditsField.getText()),
+	        			courseTypeChoice.getSelectedItem(),
+	        			lecturerID,
+	        			groupID);
 	            JOptionPane.showMessageDialog(this,
 	                "Course added successfully!\nTotal courses: " + system.getCourses().size());
 	            dialog.dispose();
@@ -1381,7 +2564,7 @@ public void actionPerformed(ActionEvent e) {
 
         for (Course course : system.getCourses())
         {
-            courseChoice.add(course.getCourseID() + " - " + course.getCourseName());
+        	courseChoice.add(getCourseDisplayName(course));
         }
 
         Choice yearChoice = new Choice();
@@ -1529,6 +2712,8 @@ public void actionPerformed(ActionEvent e) {
                 	    labCheckbox.getState(),
                 	    selectedRoom
                 	);
+                System.out.println("Lesson was added to course ID: " + courseID);
+                System.out.println("Next lesson ID is now: " + nextLessonID);
                 
                 AssignedToTeach assigned = null;
                 for (AssignedToTeach a : system.getAssignedToTeachList()) {
@@ -1547,6 +2732,9 @@ public void actionPerformed(ActionEvent e) {
                 	
                 	double totalHours = thread.getTotalHours();
                 	double requiredHours = assigned.getLecturer().getRequiredHours();
+                	
+                	System.out.println("Total hours: " + totalHours);
+                	System.out.println("Required hours: " + requiredHours);
                 	
                 	if(totalHours > requiredHours) {
                 	    Lesson addedLesson = assigned.getCourse().getLessons().get(
@@ -1573,6 +2761,8 @@ public void actionPerformed(ActionEvent e) {
                 	            "Overloaded warning",
                 	            JOptionPane.WARNING_MESSAGE);
 
+                	    dialog.dispose();
+                	   
                 	    return;
                 	}
                 }
@@ -1599,7 +2789,32 @@ public void actionPerformed(ActionEvent e) {
 
         dialog.setVisible(true);
     }
-    
+    private String getCourseDisplayName(Course course) {
+        String groupInfo = "";
+
+        for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
+            if (enrolment.getCourse().getCourseID() == course.getCourseID()) {
+                StudentGroup group = enrolment.getGroup();
+
+                groupInfo = " | Y" + group.getStudyYear() +
+                            " | " + group.getProgramName() +
+                            " | " + shortenDepartment(group.getDepartment());
+                break;
+            }
+        }
+
+        return course.getCourseID() + " - " + course.getCourseName() + groupInfo;
+    }
+
+    private String shortenDepartment(String department) {
+        if (department.equals("Computer Engineering")) return "CE";
+        if (department.equals("Electrical Engineering")) return "EE";
+        if (department.equals("Industrial Engineering and Management")) return "IEM";
+        if (department.equals("Economics and Business Administration")) return "EBA";
+        if (department.equals("Computer Science")) return "CS";
+
+        return department;
+    }
     private String getFriendlyStatus(String status) {
     	if (status == null) return "Unknown";
     	switch (status.toUpperCase()) {

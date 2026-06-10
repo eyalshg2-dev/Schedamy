@@ -1,37 +1,51 @@
 LECTURERS
 123456789,Drake,Bell,90.0,1.0,Signals;Physics
 345678912,Josh,Peck,80.0,0.75,Algorithms;Electronics
-123456123,Nadav,Volach,85.0,0.25,Java;Software Engineering;Databases
-321321654,Diza,Bimel,87.0,0.25,Mathematics;Algorithms
-321987654,Miri,Pizer,86.0,0.25,Algorithms;Mathematics
 STUDENT_GROUPS
 1,Computer Engineering,3,35,Morning
 2,Electrical Engineering,2,28,Evening
+3,Industrial Engineering and Management,2,35,Morning
+4,Nursing,1,50,Morning
+5,Psychology,1,15,Morning
 ROOMS
 101,3,Classroom,40,NONE,SCHEDULED
-102,3,Computer Lab,3,Computers,RESCHEDULED
-008,27,Auditorium,30,NONE,AVAILABLE
-011,27,Classroom,15,NONE,AVAILABLE
+102,3,Computer Lab,3,Computers,AVAILABLE
+008,27,Computer Lab,30,NONE,AVAILABLE
+2,21,Laboratory,15,NONE,AVAILABLE
+11,300,Auditorium,100,NONE,AVAILABLE
 COURSES
 1,Physics,3,mandatory
 2,Algorithms,4,mandatory
-3,Advanced algorithm,4,mandatory
+3,English,1,mandatory
+4,English,2,mandatory
+5,C++,5,mandatory
+6,C++,4,mandatory
+7,English,1,mandatory
+8,English,1,mandatory
+9,Sygnals,4,mandatory
+11,English,1,mandatory
 ASSIGNED_TO_TEACH
 123456789,1
 345678912,2
-321987654,3
+123456789,3
+123456789,4
+123456789,5
+345678912,6
+123456789,7
+123456789,8
+123456789,9
+123456789,11
 GROUP_ENROLMENTS
 1,1
 2,2
 1,3
+2,4
+1,5
+2,6
+3,7
+4,8
+1,9
+5,11
 LESSONS
-1,1,2026-06-04,10:00,12:15,CANCELLED,FRONTAL,false,102
-1,2,2026-06-07,08:00,10:00,SCHEDULED,FRONTAL,true,101
-1,3,2026-06-10,08:00,10:00,SCHEDULED,FRONTAL,true,101
-1,4,2026-06-11,09:00,12:00,SCHEDULED,FRONTAL,false,101
-1,5,2026-06-17,08:00,10:00,RESCHEDULED,FRONTAL,true,101
-1,6,2026-06-19,08:00,14:00,SCHEDULED,FRONTAL,true,101
-1,7,2026-06-21,08:00,12:00,SCHEDULED,FRONTAL,false,101
-1,8,2026-06-29,08:00,12:00,SCHEDULED,FRONTAL,true,101
-1,10,2026-06-23,08:00,16:00,SCHEDULED,FRONTAL,true,101
-2,9,2026-06-11,14:00,16:15,SCHEDULED,ZOOM,false,NONE
+1,1,2026-06-10,10:00,12:15,SCHEDULED,FRONTAL,false,101
+2,2,2026-06-11,10:00,12:15,SCHEDULED,ZOOM,false,NONE
