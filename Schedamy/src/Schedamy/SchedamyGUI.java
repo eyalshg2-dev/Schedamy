@@ -454,14 +454,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label sizeLabel = new Label("Room Size: " + selectedRoom.classifyRoomSize(), Label.CENTER);
         sizeLabel.setFont(new Font("Arial", Font.BOLD, 14));
 
-        Label equipmentLabel = new Label("Equipment: " + selectedRoom.getSpecialEquipment(), Label.CENTER);
-        equipmentLabel.setFont(new Font("Arial", Font.PLAIN, 13));
-
         infoCard.add(buildingLabel);
         infoCard.add(typeLabel);
         infoCard.add(capacityLabel);
         infoCard.add(sizeLabel);
-        infoCard.add(equipmentLabel);
 
         detailsPanel.add(infoCard);
 
@@ -680,8 +676,23 @@ public class SchedamyGUI extends Frame implements ActionListener {
         if (lesson.getRoom() != null) {
             roomText = "Room " + lesson.getRoom().getRoomID();
         }
+        StudentGroup group = system.getGroupForCourse(course);
+        Lecturer lecturer = system.getLecturerForCourse(course);
+        String courseText = course.getCourseName();
 
-        Label courseLabel = new Label(course.getCourseName(), Label.CENTER);
+        if (lecturer != null)
+        {
+            courseText += " | " +
+                          lecturer.getFirstName() + " " +
+                          lecturer.getLastName();
+        }
+        if (group != null)
+        {
+            courseText += " | " +
+                          group.getDepartment() +
+                          " Year " + group.getStudyYear();
+        }
+        Label courseLabel = new Label(courseText, Label.CENTER);
         courseLabel.setFont(new Font("Arial", Font.BOLD, 14));
 
         Label dateLabel = new Label(
@@ -1631,7 +1642,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
     specializationList.add("Electronics");
     specializationList.add("Physics");
     specializationList.add("Signals");
-
+    specializationList.add("Industrial Engineering");
+    specializationList.add("Economics");
+    specializationList.add("Business Administration");
+    specializationList.add("Psychology");
+    specializationList.add("Nursing");
     // Add label and list into the specialization panel
     specPanel.add(specializationLabel, BorderLayout.NORTH);
     specPanel.add(specializationList, BorderLayout.CENTER);
@@ -1714,12 +1729,6 @@ public class SchedamyGUI extends Frame implements ActionListener {
         formPanel.add(capacity);
 		formPanel.add(capacityField);
 		
-		Label equipment = new Label("Special Equipment");
-		TextField equipmentField = new TextField();
-		equipmentField.setText("NONE");
-		formPanel.add(equipment);
-		formPanel.add(equipmentField);
-        
         Choice roomTypeChoice = new Choice();
         roomTypeChoice.add("Classroom");
         roomTypeChoice.add("Computer Lab");
@@ -1751,19 +1760,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
             	if (!capacityField.getText().matches("\\d+"))
             	    throw new IllegalArgumentException("Capacity must be a number");
 
-                String specEquipment =equipmentField.getText().trim();
-
-                if (specEquipment.isEmpty()) {
-                    specEquipment = "NONE";
-                }
-
                 system.addRoom(
                     roomNumberField.getText(),
                     Integer.parseInt(buildingField.getText()),
                     roomTypeChoice.getSelectedItem(),
-                    Integer.parseInt(capacityField.getText()),
-                    specEquipment
-                );
+                    Integer.parseInt(capacityField.getText()));
                 JOptionPane.showMessageDialog(
                     this,
                     "Room added successfully!\n" +
@@ -1792,29 +1793,63 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	    dialog.setLayout(new BorderLayout());
 	    dialog.setSize(420, 260);
 	    Panel formPanel = new Panel(new GridLayout(5,1,5,5));
-	    
-	    
-	    TextField courseNameField = new TextField();
+	    Choice courseNameChoice = new Choice();
+
+	    courseNameChoice.add("Java");
+	    courseNameChoice.add("Databases");
+	    courseNameChoice.add("Software Engineering");
+	    courseNameChoice.add("Algorithms");
+	    courseNameChoice.add("Mathematics");
+	    courseNameChoice.add("Electronics");
+	    courseNameChoice.add("Physics");
+	    courseNameChoice.add("Signals");
+	    courseNameChoice.add("Industrial Engineering");
+	    courseNameChoice.add("Economics");
+	    courseNameChoice.add("Business Administration");
+	    courseNameChoice.add("Psychology");
+	    courseNameChoice.add("Nursing");
 	    TextField creditsField = new TextField();
 
 	    Choice courseTypeChoice = new Choice();
 	    courseTypeChoice.add("mandatory");
 	    courseTypeChoice.add("elective");
 	    Choice lecturerChoice = new Choice();
-
-	    for (Lecturer lecturer : system.getLecturers())
-	    {
-	        lecturerChoice.add(lecturer.getLecturerID() + " - " +lecturer.getFirstName() + " " +lecturer.getLastName());
-	    }
 	    Choice groupChoice = new Choice();
 
-	    for (StudentGroup group : system.getStudentGroups()) 
-	    {
-	        groupChoice.add(group.getGroupID() +"-" +group.getDepartment() +"  Year-" +group.getStudyYear() +" - " +group.getProgramName());
-	    }
+	    Runnable updateChoices = () -> {
+	        lecturerChoice.removeAll();
+	        groupChoice.removeAll();
+
+	        String selectedCourse = courseNameChoice.getSelectedItem();
+
+	        for (Lecturer lecturer : system.getLecturers())
+	        {
+	            if (lecturer.getSpecializations().contains(selectedCourse))
+	            {
+	                lecturerChoice.add(lecturer.getLecturerID() + " - " +
+	                        lecturer.getFirstName() + " " + lecturer.getLastName());
+	            }
+	        }
+	        for (StudentGroup group : system.getStudentGroups())
+	        {
+	            if (system.isCourseRelevantToGroup(selectedCourse, group))
+	            {
+	                groupChoice.add(group.getGroupID() + "-" +
+	                        group.getDepartment() + "  Year-" +
+	                        group.getStudyYear() + " - " +
+	                        group.getProgramName());
+	            }
+	        }
+	    };
+
+	    updateChoices.run();
+
+	    courseNameChoice.addItemListener(e -> {
+	        updateChoices.run();
+	    });
 	    Panel namePanel = new Panel(new BorderLayout());
 	    namePanel.add(new Label("Course Name:"), BorderLayout.WEST);
-	    namePanel.add(courseNameField, BorderLayout.CENTER);
+	    namePanel.add(courseNameChoice, BorderLayout.CENTER);
 	    formPanel.add(namePanel); 
 	    
 	    Panel creditsPanel = new Panel(new BorderLayout());
@@ -1850,6 +1885,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	    addButton.addActionListener(e -> {
 	        try {
 	        	int courseID = nextCourseID++; 
+	        	if (lecturerChoice.getItemCount() == 0)
+	        	    throw new IllegalArgumentException("No lecturer matches this course");
+
+	        	if (groupChoice.getItemCount() == 0)
+	        	    throw new IllegalArgumentException("No student group matches this course");
 	        	String lecturerText = lecturerChoice.getSelectedItem();
 	        	String groupText = groupChoice.getSelectedItem();
 	        	int lecturerID = Integer.parseInt(lecturerText.split(" - ")[0]);
@@ -1857,7 +1897,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	        	if (!creditsField.getText().matches("\\d+"))
 	        	    throw new IllegalArgumentException("Credits must be positive a number");
 
-	        	system.addCourse(courseID,capitalizeFirstLetter(courseNameField.getText()),
+	        	system.addCourse(courseID,courseNameChoice.getSelectedItem(),
 	        			Integer.parseInt(creditsField.getText()),
 	        			courseTypeChoice.getSelectedItem(),
 	        			lecturerID,
@@ -2562,7 +2602,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
     {
         Dialog dialog = new Dialog(this, "Add Lesson", true);
         dialog.setLayout(new BorderLayout());
-        dialog.setSize(500, 350);
+        dialog.setSize(600, 350);
 
         Panel formPanel = new Panel(new GridLayout(7, 2, 5, 5));
 
@@ -2630,13 +2670,30 @@ public class SchedamyGUI extends Frame implements ActionListener {
             else
                 roomChoice.setEnabled(true);
         });
-        for (Room room : system.getRooms()) 
-        {
-            roomChoice.add(room.getRoomID() +" - Capacity: " +room.getCapacity());
-            roomsList.add(room);
-        }
+        Runnable updateRoomChoices = () -> {
+            roomChoice.removeAll();
+            roomsList.clear();
 
-        
+            for (Room room : system.getRooms())
+            {
+                if (labCheckbox.getState())
+                {
+                    boolean isLab =
+                            room.getRoomType().equals("Laboratory") ||
+                            room.getRoomType().equals("Computer Lab");
+
+                    if (!isLab)
+                        continue;
+                }
+                roomChoice.add(room.getRoomID() + " - " +room.getRoomType() +" - Capacity: " + room.getCapacity());
+                roomsList.add(room);
+            }
+        };
+        updateRoomChoices.run();
+
+        labCheckbox.addItemListener(e -> {
+            updateRoomChoices.run();
+        });
         formPanel.add(new Label("Course:"));
         formPanel.add(courseChoice);
 
@@ -2799,20 +2856,26 @@ public class SchedamyGUI extends Frame implements ActionListener {
     }
     private String getCourseDisplayName(Course course) {
         String groupInfo = "";
+        String lecturerInfo = "";
+
+        Lecturer lecturer = system.getLecturerForCourse(course);
+
+        if (lecturer != null) {
+            lecturerInfo = " | " + lecturer.getFirstName() +
+                           " " + lecturer.getLastName();
+        }
 
         for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
             if (enrolment.getCourse().getCourseID() == course.getCourseID()) {
                 StudentGroup group = enrolment.getGroup();
 
-                groupInfo = " | Y" + group.getStudyYear() +
-                            " | " + group.getProgramName() +
-                            " | " + shortenDepartment(group.getDepartment());
+                groupInfo = " | "+ shortenDepartment(group.getDepartment())+" Y" + group.getStudyYear()+" "+ group.getProgramName();
                 break;
             }
         }
-
-        return course.getCourseID() + " - " + course.getCourseName() + groupInfo;
+        return course.getCourseID() + " - " +course.getCourseName() +lecturerInfo +groupInfo;
     }
+
 
     private String shortenDepartment(String department) {
         if (department.equals("Computer Engineering")) return "CE";

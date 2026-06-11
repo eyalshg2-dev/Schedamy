@@ -6,16 +6,14 @@ public class Room {
 	private int building;
 	private String roomType; 
 	private int capacity;
-	private String specialEquipment;  
 	private String status;
 
 	//Constructor
-	public Room(String roomID, int building, String roomType, int capacity, String specialEquipment, String status)
+	public Room(String roomID, int building, String roomType, int capacity,String status)
 	{
 		this.roomID = roomID;
 		this.building = building;
 		this.roomType = roomType;
-		this.specialEquipment = specialEquipment;
 		this.status = status;
 		this.capacity = capacity;
 	}
@@ -44,12 +42,6 @@ public class Room {
 		return this.capacity;
 	}
 
-	//Get specialEquipment 
-	public String getSpecialEquipment()
-	{
-		return this.specialEquipment;
-	}
-
 	//To String
 	public String toString()
 	{
@@ -58,8 +50,7 @@ public class Room {
 	           "Room Type: " + roomType + "\n" +
 	           "Capacity: " + capacity + "\n" +
 	           "Room Size: " + classifyRoomSize() + "\n" +
-	           "Special Equipment: " + specialEquipment + "\n" +
-	           "-------------------------";
+	           "Special Equipment: " +"-------------------------";
 	}
 	
 

@@ -80,15 +80,22 @@ public class SchedamySystem
     
     public void addCourse(int courseID, String courseName,int credits, String courseType,int lecturerID, int groupID)
     {	
-    	for (Course existing : courses) {
-    		if (existing.getCourseName().equalsIgnoreCase(courseName)) {
-    			for (GroupEnrolment enrolment : groupEnrolments) {
-    				if (enrolment.getCourse().equals(existing) &&
-    					enrolment.getGroup().getGroupID() == groupID) {
-    					throw new IllegalArgumentException ("This course already assigned to this student group");
-    				}
-    			}	
-    		}
+    	for (Course existing : courses) 
+    	{
+    	    if (existing.getCourseName().equalsIgnoreCase(courseName)) 
+    	    {
+    	        Lecturer existingLecturer = getLecturerForCourse(existing);
+    	        StudentGroup existingGroup = getGroupForCourse(existing);
+
+    	        if (existingLecturer != null &&
+    	            existingGroup != null &&
+    	            existingLecturer.getLecturerID() == lecturerID &&
+    	            existingGroup.getGroupID() == groupID)
+    	        {
+    	            throw new IllegalArgumentException(
+    	                "This course already exists for this lecturer and student group");
+    	        }
+    	    }
     	}
     	if (courseName == null || courseName.trim().isEmpty())
     	    throw new IllegalArgumentException("Course name cannot be empty");
@@ -138,7 +145,7 @@ public class SchedamySystem
     	lecturers.add(lecturer);
     }
 
-    public void addRoom(String roomNumber, int building,String roomType, int capacity,String equipment)
+    public void addRoom(String roomNumber, int building,String roomType, int capacity)
     {
     	if (roomNumber == null || roomNumber.isEmpty())
     	    throw new IllegalArgumentException("Invalid room number");
@@ -146,7 +153,15 @@ public class SchedamySystem
     		throw new IllegalArgumentException("Invalid building");
     	if (capacity <= 0)
     		throw new IllegalArgumentException("Invalid capacity");
-    	Room room = new Room(roomNumber,building,roomType,capacity,equipment,"AVAILABLE");
+    	  for (Room existingRoom : rooms)
+    	    {
+    	        if (existingRoom.getRoomID().equals(roomNumber) &&
+    	            existingRoom.getBuilding() == building)
+    	        {
+    	            throw new IllegalArgumentException("This room already exists in this building");
+    	        }
+    	    }
+    	Room room = new Room(roomNumber,building,roomType,capacity,"AVAILABLE");
     	rooms.add(room);
     }
     private boolean isRoomAvailable(Room room, Lesson lesson)
@@ -376,10 +391,7 @@ public class SchedamySystem
                 room.getRoomID() + "," +
                 room.getBuilding() + "," +
                 room.getRoomType() + "," +
-                room.getCapacity() + "," +
-                room.getSpecialEquipment() + "," +
-                room.getStatus()
-            );
+                room.getCapacity() + "," + room.getStatus());
             bw.newLine();
         }
 
@@ -528,19 +540,10 @@ public class SchedamySystem
                 int building = Integer.parseInt(parts[1]);
                 String roomType = parts[2];
                 int capacity = Integer.parseInt(parts[3]);
-                String equipment = parts[4];
-                String status = parts[5];
+                String status = parts[4];
 
                 rooms.add(
-                    new Room(
-                        roomID,
-                        building,
-                        roomType,
-                        capacity,
-                        equipment,
-                        status
-                    )
-                );
+                    new Room(roomID,building,roomType,capacity,status));
             }
 
             else if (currentSection.equals("COURSES"))
@@ -704,6 +707,45 @@ public class SchedamySystem
 
 	    return actualHours;
 	}
+   //Adapting a course to the group
+   public boolean isCourseRelevantToGroup(String courseName, StudentGroup group)
+   {
+       String department = group.getDepartment();
+       
+         //Course for everyone
+       if (courseName.equals("Mathematics") ||
+           courseName.equals("Physics"))
+           return true;
+
+       if (courseName.equals("Java") ||
+           courseName.equals("Databases") ||
+           courseName.equals("Software Engineering") ||
+           courseName.equals("Algorithms"))
+           return department.equals("Computer Engineering") ||
+                  department.equals("Computer Science");
+
+       if (courseName.equals("Electronics") ||
+           courseName.equals("Signals"))
+           return department.equals("Electrical Engineering") ||
+                  department.equals("Computer Engineering");
+
+       if (courseName.equals("Industrial Engineering"))
+           return department.equals("Industrial Engineering and Management");
+
+       if (courseName.equals("Economics") ||
+           courseName.equals("Business Administration"))
+           return department.equals("Economics and Business Administration") ||
+                  department.equals("Industrial Engineering and Management");
+
+       if (courseName.equals("Psychology"))
+           return department.equals("Psychology") ||
+                  department.equals("Nursing");
+
+       if (courseName.equals("Nursing"))
+           return department.equals("Nursing");
+
+       return false;
+   }
    
   
    //GET ROOM LOAD
@@ -721,7 +763,7 @@ public class SchedamySystem
 
        return totalLoad;
    }
-   
+   //FIND A LECTURER BY COURSE
    public Lecturer getLecturerForCourse(Course course) {
 	    for (AssignedToTeach assigned : assignedToTeachList) {
 	        if (assigned.getCourse().equals(course)) {
@@ -730,4 +772,5 @@ public class SchedamySystem
 	    }
 	    return null;
 	}
+   
 }

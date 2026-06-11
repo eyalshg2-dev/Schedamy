@@ -1,38 +1,35 @@
 LECTURERS
-123456789,Drake,Bell,90.0,1.0,Signals;Physics
-345678912,Josh,Peck,80.0,0.75,Algorithms;Electronics
+LECTURERS
+123456789,Drake,Bell,90.0,1.0,Signals;Physics;Mathematics;Algorithms
+345678912,Josh,Peck,80.0,0.75,Algorithms;Electronics;Physics;Signals
+456789123,Gal,Cohen,88.0,1.0,Java;Databases;Software Engineering;Mathematics
+567891234,Noa,Levi,85.0,0.75,Industrial Engineering;Economics;Business Administration;Mathematics
+678912345,Maya,Israeli,92.0,1.0,Psychology;Nursing;Physics;Mathematics
+789123456,Daniel,Green,87.0,1.0,Java;Databases;Software Engineering;Electronics
+891234567,Roni,Shalev,84.0,0.75,Psychology;Nursing;Economics;Business Administration
 STUDENT_GROUPS
 1,Computer Engineering,3,35,Morning
 2,Electrical Engineering,2,28,Evening
 3,Industrial Engineering and Management,2,35,Morning
 4,Nursing,1,50,Morning
 5,Psychology,1,15,Morning
+6,Computer Science,1,40,Morning
+7,Economics and Business Administration,2,45,Morning
 ROOMS
-101,3,Classroom,40,NONE,SCHEDULED
-102,3,Computer Lab,3,Computers,AVAILABLE
-008,27,Computer Lab,30,NONE,AVAILABLE
-2,21,Laboratory,15,NONE,AVAILABLE
-11,300,Auditorium,100,NONE,SCHEDULED
+101,3,Classroom,40,SCHEDULED
+102,3,Computer Lab,20,AVAILABLE
+008,27,Computer Lab,30,AVAILABLE
+2,21,Laboratory,50,AVAILABLE
+11,300,Auditorium,100,AVAILABLE
 COURSES
 1,Physics,3,mandatory
 2,Algorithms,4,mandatory
-5,C++,5,mandatory
-7,English,1,mandatory
-9,Sygnals,4,mandatory
 ASSIGNED_TO_TEACH
 123456789,1
 345678912,2
-123456789,5
-123456789,7
-123456789,9
-123456789,10
 GROUP_ENROLMENTS
 1,1
 2,2
-1,5
-3,7
-1,9
-1,10
 LESSONS
 1,1,2026-06-10,10:00,12:15,SCHEDULED,FRONTAL,false,101
 2,2,2026-06-11,10:00,12:15,SCHEDULED,ZOOM,false,NONE

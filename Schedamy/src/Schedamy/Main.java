@@ -11,8 +11,8 @@
 			SchedamySystem system = new SchedamySystem();
 			
 			//Sample rooms
-			system.addRoom("101", 3, "Classroom", 40, "NONE");
-			system.addRoom("102", 3, "Computer Lab", 3, "Computers");
+			system.addRoom("101", 3, "Classroom", 40);
+			system.addRoom("102", 3, "Computer Lab", 3);
 			
 			//Sample lecturers
 			ArrayList<String> specs1 = new ArrayList<>();
