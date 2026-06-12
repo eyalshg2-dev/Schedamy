@@ -5,7 +5,7 @@ import java.util.Vector;
 
 public class Lecturer {
 
-	private int lecturerID;
+	private String lecturerID;
 	private String firstName;
 	private String lastName; 
 	private ArrayList<String> specializations ;
@@ -15,7 +15,7 @@ public class Lecturer {
 	private Vector<Lesson> lessons;
 	
 	//Constructor
-	public Lecturer(int lecturerID, String firstName, String lastName, ArrayList<String> specializations, double teachingScore, double FTE)
+	public Lecturer(String lecturerID, String firstName, String lastName, ArrayList<String> specializations, double teachingScore, double FTE)
 		{
 			this.lecturerID = lecturerID;
 			this.firstName = firstName;
@@ -26,7 +26,7 @@ public class Lecturer {
 			lessons = new Vector<>();
 		}	
 	// get lecturerId
-	public int getLecturerID()
+	public String getLecturerID()
 	{
 		return this.lecturerID;
 	}

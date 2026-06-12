@@ -69,16 +69,16 @@ public class SchedamySystem
         return assignedToTeachList;
     }
     //find lecturer by id
-    private Lecturer findLecturerById(int lecturerID) {
+    private Lecturer findLecturerById(String lecturerID) {
         for (Lecturer lecturer : lecturers) {
-            if (lecturer.getLecturerID() == lecturerID)
+        	if (lecturer.getLecturerID().equals(lecturerID))
                 return lecturer;
         }
 
         return null;
     }
-    
-    public void addCourse(int courseID, String courseName,int credits, String courseType,int lecturerID, int groupID)
+    //add course
+    public void addCourse(int courseID, String courseName,int credits, String courseType,String lecturerID, int groupID)
     {	
     	for (Course existing : courses) 
     	{
@@ -89,7 +89,7 @@ public class SchedamySystem
 
     	        if (existingLecturer != null &&
     	            existingGroup != null &&
-    	            existingLecturer.getLecturerID() == lecturerID &&
+    	            existingLecturer.getLecturerID().equals(lecturerID) &&
     	            existingGroup.getGroupID() == groupID)
     	        {
     	            throw new IllegalArgumentException(
@@ -118,16 +118,17 @@ public class SchedamySystem
     	assignedToTeachList.add(assigned);
     	GroupEnrolment enrolment = new GroupEnrolment(group, course);
     	groupEnrolments.add(enrolment);
-    }
+    } 
 
-    public void addLecturer(int id, String firstName, String lastName,ArrayList<String> specializations,double teachingScore,double fte)
+    //add lecturer
+    public void addLecturer(String id, String firstName, String lastName,ArrayList<String> specializations,double teachingScore,double fte)
     {
     	// ID must be 9 digits
     	if (String.valueOf(id).length() != 9) 
     		throw new IllegalArgumentException("ID must contain 9 digits");
             	for (Lecturer l : lecturers) 
     	{
-    	    if (l.getLecturerID() == id)
+            		if (l.getLecturerID().equals(id))
     	        throw new IllegalArgumentException("This ID already exists");
     	}
     	// First name only letters
@@ -164,6 +165,7 @@ public class SchedamySystem
     	Room room = new Room(roomNumber,building,roomType,capacity,"AVAILABLE");
     	rooms.add(room);
     }
+    //room available
     private boolean isRoomAvailable(Room room, Lesson lesson)
     {
         for (RoomResrvation reservation : roomReservations) {
@@ -174,11 +176,13 @@ public class SchedamySystem
 
         return true;
     }
+    //add room reservation
     public void addRoomReservation(RoomResrvation roomReservation)
     {
         roomReservations.add(roomReservation);
     }
-
+    
+     //add student group
     public void addStudentGroup(int groupID, String department,int studyYear, int studentCount,String programName)
     {
     	if (studentCount <= 0)
@@ -498,7 +502,7 @@ public class SchedamySystem
 
             if (currentSection.equals("LECTURERS"))
             {
-                int id = Integer.parseInt(parts[0]);
+            	String id = parts[0];
                 String firstName = parts[1];
                 String lastName = parts[2];
                 double teachingScore = Double.parseDouble(parts[3]);
@@ -566,7 +570,7 @@ public class SchedamySystem
 
             else if (currentSection.equals("ASSIGNED_TO_TEACH"))
             {
-                int lecturerID = Integer.parseInt(parts[0]);
+                String lecturerID = parts[0];
                 int courseID = Integer.parseInt(parts[1]);
 
                 Lecturer lecturer = findLecturerById(lecturerID);
@@ -762,6 +766,42 @@ public class SchedamySystem
        }
 
        return totalLoad;
+   }
+   //student group load
+   public boolean isStudentGroupOverloaded(Course course)
+   {
+       StudentGroup group = getGroupForCourse(course);
+
+       if (group == null)
+           return false;
+
+       ArrayList<GroupEnrolment> groupCourses = new ArrayList<GroupEnrolment>();
+
+       for (GroupEnrolment enrolment : groupEnrolments)
+       {
+           if (enrolment.getGroup().equals(group))
+           {
+               groupCourses.add(enrolment);
+           }
+       }
+
+       return group.isScheduleOverloaded(
+               groupCourses.toArray(new GroupEnrolment[groupCourses.size()])
+       );
+   }
+   //REMOVE LESSONS
+   public void removeLesson(Course course, Lesson lesson)
+   {
+       roomReservations.removeIf(
+               reservation -> reservation.getLesson().equals(lesson)
+       );
+
+       if (lesson.getRoom() != null)
+       {
+           lesson.getRoom().setStatus("AVAILABLE");
+       }
+
+       course.getLessons().remove(lesson);
    }
    //FIND A LECTURER BY COURSE
    public Lecturer getLecturerForCourse(Course course) {

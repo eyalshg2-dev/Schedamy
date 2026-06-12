@@ -284,13 +284,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
         repaint();
     }
     
-    private void showLecturerDetails(int lecturerID) {
+    private void showLecturerDetails(String lecturerID) {
         clearMainPanel();
 
         Lecturer selectedLecturer = null;
 
         for (Lecturer lecturer : system.getLecturers()) {
-            if (lecturer.getLecturerID() == lecturerID) {
+            if (lecturer.getLecturerID().equals(lecturerID)) {
                 selectedLecturer = lecturer;
                 break;
             }
@@ -337,7 +337,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         detailsPanel.add(infoCard);
 
         for (AssignedToTeach assigned : system.getAssignedToTeachList()) {
-            if (assigned.getLecturer().getLecturerID() == selectedLecturer.getLecturerID()) {
+        	if (assigned.getLecturer().getLecturerID().equals(selectedLecturer.getLecturerID())) {
                 Course course = assigned.getCourse();
 
                 Panel courseCard = new Panel(new GridLayout(3, 1));
@@ -394,9 +394,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
         roomsPanel.setBackground(new Color(245, 247, 250));
 
         for (Room room : system.getRooms()) {
-            Button button = createDashboardButton("Room " + room.getRoomID());
-            button.setPreferredSize(new Dimension(250, 90));
-            button.setActionCommand("ROOM_DETAILS_" + room.getRoomID());
+        	Button button = createDashboardButton("Room " + room.getRoomID() + " | Building " + room.getBuilding());
+        		button.setPreferredSize(new Dimension(250, 90));
+        		button.setActionCommand("ROOM_DETAILS_" + room.getRoomID() + "_" + room.getBuilding());
             roomsPanel.add(button);
         }
 
@@ -415,13 +415,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
         repaint();
     }
     
-    private void showRoomDetails(String roomID) {
+    private void showRoomDetails(String roomID,int building) {
         clearMainPanel();
-
         Room selectedRoom = null;
-
-        for (Room room : system.getRooms()) {
-            if (room.getRoomID().equals(roomID)) {
+        for (Room room : system.getRooms()) 
+        {
+            if (room.getRoomID().equals(roomID) && room.getBuilding() == building)
+            {
                 selectedRoom = room;
                 break;
             }
@@ -432,7 +432,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
             return;
         }
 
-        Label title = new Label("Room " + selectedRoom.getRoomID(), Label.CENTER);
+        Label title = new Label("Room " + selectedRoom.getRoomID() +" | Building " + selectedRoom.getBuilding(),Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
         Panel detailsPanel = new Panel(new GridLayout(0, 1, 20, 20));
@@ -834,13 +834,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
         repaint();
     }
     
-    private void showLessonsOfLecturer(int lecturerID) {
+    private void showLessonsOfLecturer(String lecturerID) {
         clearMainPanel();
 
         Lecturer selectedLecturer = null;
 
         for (Lecturer lecturer : system.getLecturers()) {
-            if (lecturer.getLecturerID() == lecturerID) {
+            if (lecturer.getLecturerID().equals(lecturerID)) {
                 selectedLecturer = lecturer;
                 break;
             }
@@ -863,7 +863,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         boolean foundLesson = false;
 
         for (AssignedToTeach assigned : system.getAssignedToTeachList()) {
-            if (assigned.getLecturer().getLecturerID() == selectedLecturer.getLecturerID()) {
+        	if (assigned.getLecturer().getLecturerID().equals(selectedLecturer.getLecturerID())) {
                 Course course = assigned.getCourse();
 
                 for (Lesson lesson : course.getLessons()) {
@@ -1465,11 +1465,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
     }
     
     if (command.startsWith("LESSONS_LECTURER_")) {
-        int lecturerID = Integer.parseInt(command.replace("LESSONS_LECTURER_", ""));
+        String lecturerID = command.replace("LESSONS_LECTURER_", "");
         showLessonsOfLecturer(lecturerID);
         return;
     }
-
     if (command.equals("LESSONS_BY_LECTURER")) {
         showLessonsByLecturerSelection();
         return;
@@ -1499,7 +1498,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
     // View dialogs.
     
     if (command.startsWith("LECTURER_DETAILS_")) {
-        int lecturerID = Integer.parseInt(command.replace("LECTURER_DETAILS_", ""));
+        String lecturerID = command.replace("LECTURER_DETAILS_", "");
         showLecturerDetails(lecturerID);
         return;
     }
@@ -1524,8 +1523,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
     }
     
     if (command.startsWith("ROOM_DETAILS_")) {
-        String roomID = command.replace("ROOM_DETAILS_", "");
-        showRoomDetails(roomID);
+        String details = command.replace("ROOM_DETAILS_", "");
+        String[] parts = details.split("_");
+
+        String roomID = parts[0];
+        int building = Integer.parseInt(parts[1]);
+        showRoomDetails(roomID, building);
         return;
     }
     
@@ -1670,7 +1673,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
                  if (!teachingScoreField.getText().matches("\\d+(\\.\\d+)?"))
                      throw new IllegalArgumentException("Teaching score must be a positive number");
-                int id = Integer.parseInt(idField.getText());
+                 String id = idField.getText().trim();
                 String firstName = capitalizeFirstLetter(firstNameField.getText());
                 String lastName = capitalizeFirstLetter(lastNameField.getText());
              
@@ -1892,7 +1895,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	        	    throw new IllegalArgumentException("No student group matches this course");
 	        	String lecturerText = lecturerChoice.getSelectedItem();
 	        	String groupText = groupChoice.getSelectedItem();
-	        	int lecturerID = Integer.parseInt(lecturerText.split(" - ")[0]);
+	        	String lecturerID = lecturerText.split(" - ")[0];
 	        	int groupID = Integer.parseInt(groupText.split("-")[0]);
 	        	if (!creditsField.getText().matches("\\d+"))
 	        	    throw new IllegalArgumentException("Credits must be positive a number");
@@ -2648,6 +2651,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         startMinuteChoice.add("30");
         startMinuteChoice.add("45");
 
+        
         endMinuteChoice.add("00");
         endMinuteChoice.add("15");
         endMinuteChoice.add("30");
@@ -2663,9 +2667,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
         roomChoice.setEnabled(true);
         modeChoice.addItemListener(e -> {
 
-            String mode = modeChoice.getSelectedItem();
-
-            if (mode.equals("ZOOM"))
+            if (labCheckbox.getState() &&
+                modeChoice.getSelectedItem().equals("ZOOM")) {
+                JOptionPane.showMessageDialog(this,"Lab lessons cannot be taught on Zoom");
+                modeChoice.select("FRONTAL");
+            }
+            if (modeChoice.getSelectedItem().equals("ZOOM"))
                 roomChoice.setEnabled(false);
             else
                 roomChoice.setEnabled(true);
@@ -2685,7 +2692,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
                     if (!isLab)
                         continue;
                 }
-                roomChoice.add(room.getRoomID() + " - " +room.getRoomType() +" - Capacity: " + room.getCapacity());
+                roomChoice.add(
+                	    "Room " + room.getRoomID() +" - Building " + room.getBuilding()+" - "+room.getRoomType() +" - Capacity: " + room.getCapacity());
                 roomsList.add(room);
             }
         };
@@ -2789,7 +2797,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
                 }
                 
                 //CalculateHoursThread thread for checking if a lecturer is overloading after adding a lesson
-                if (assigned != null) {
+                if (assigned != null)
+                {
                 	AssignedToTeach finalAssigned = assigned;
                 	CalculateHoursThread thread = new CalculateHoursThread(finalAssigned);
                 	thread.start();
@@ -2806,39 +2815,59 @@ public class SchedamyGUI extends Frame implements ActionListener {
                 	            assigned.getCourse().getLessons().size() - 1
                 	    );
 
-                	    system.getRoomReservations().removeIf(
-                	            reservation -> reservation.getLesson().equals(addedLesson)
-                	    );
-
-                	    if (addedLesson.getRoom() != null) {
-                	        addedLesson.getRoom().setStatus("AVAILABLE");
-                	    }
-
-                	    assigned.getCourse().getLessons().remove(addedLesson);
-
+                	    system.removeLesson(assigned.getCourse(), addedLesson);
                 	    nextLessonID--;
 
-                	    JOptionPane.showMessageDialog(this, 
-                	            "Warning: " + assigned.getLecturer().getFirstName() + " " +
+                	    JOptionPane.showMessageDialog(
+                	            this,
+                	            "Cannot add lesson.\n\n" +
+                	            assigned.getLecturer().getFirstName() + " " +
                 	            assigned.getLecturer().getLastName() +
-                	            " is now overloaded!\nTotalHours: " + totalHours + 
-                	            "\nRequired hours: " + requiredHours, 
-                	            "Overloaded warning",
-                	            JOptionPane.WARNING_MESSAGE);
-
-                	    dialog.dispose();
-                	   
+                	            " is overloaded.\n" +
+                	            "Total Hours: " + totalHours +
+                	            "\nRequired Hours: " + requiredHours +
+                	            "\n\nThe lesson was not added.",
+                	            "Lesson Not Added",
+                	            JOptionPane.WARNING_MESSAGE
+                	    );
                 	    return;
                 	}
                 }
+                if (assigned != null &&
+                	    system.isStudentGroupOverloaded(assigned.getCourse()))
+                	{
+                	    Lesson addedLesson =
+                	            assigned.getCourse().getLessons().get(
+                	                    assigned.getCourse().getLessons().size() - 1);
+
+                	    system.removeLesson(assigned.getCourse(), addedLesson);
+                	    nextLessonID--;
+
+                	    StudentGroup group =
+                	            system.getGroupForCourse(assigned.getCourse());
+
+                	    JOptionPane.showMessageDialog(
+                	            this,
+                	            "Cannot add lesson.\n\n" +
+                	            group.getDepartment() +
+                	            " Year " +
+                	            group.getStudyYear() +
+                	            " is overloaded.\n\n" +
+                	            "The lesson was not added.",
+                	            "Lesson Not Added",
+                	            JOptionPane.WARNING_MESSAGE
+                	    );
+                	    return;
+                	}
                 JOptionPane.showMessageDialog(
                     this,
                     "Lesson added successfully!",
                     "Success",
                     JOptionPane.INFORMATION_MESSAGE
+                    
                 );
-
                 dialog.dispose();
+
 
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(
