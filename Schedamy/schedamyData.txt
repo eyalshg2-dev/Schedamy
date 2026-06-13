@@ -1,12 +1,9 @@
 LECTURERS
-LECTURERS
-123456789,Drake,Bell,90.0,1.0,Signals;Physics;Mathematics;Algorithms
-345678912,Josh,Peck,80.0,0.75,Algorithms;Electronics;Physics;Signals
+123456789,Drake,Bell,90.0,1.0,Signals;Physics
+345678912,Josh,Peck,80.0,0.75,Algorithms;Electronics
 456789123,Gal,Cohen,88.0,1.0,Java;Databases;Software Engineering;Mathematics
-567891234,Noa,Levi,85.0,0.75,Industrial Engineering;Economics;Business Administration;Mathematics
-678912345,Maya,Israeli,92.0,1.0,Psychology;Nursing;Physics;Mathematics
-789123456,Daniel,Green,87.0,1.0,Java;Databases;Software Engineering;Electronics
-891234567,Roni,Shalev,84.0,0.75,Psychology;Nursing;Economics;Business Administration
+567891234,Noa,Levi,85.0,0.75,Industrial Engineering;Economics;Business Administration
+678912345,Maya,Israeli,92.0,1.0,Psychology;Nursing
 STUDENT_GROUPS
 1,Computer Engineering,3,35,Morning
 2,Electrical Engineering,2,28,Evening
@@ -20,16 +17,50 @@ ROOMS
 102,3,Computer Lab,20,AVAILABLE
 008,27,Computer Lab,30,AVAILABLE
 2,21,Laboratory,50,AVAILABLE
-11,300,Auditorium,100,AVAILABLE
+11,300,Auditorium,100,SCHEDULED
 COURSES
 1,Physics,3,mandatory
 2,Algorithms,4,mandatory
+3,Java,4,mandatory
+4,Databases,3,mandatory
+5,Software Engineering,3,mandatory
+6,Mathematics,3,mandatory
+7,Electronics,4,mandatory
+8,Signals,4,mandatory
+9,Industrial Engineering,3,mandatory
+10,Economics,3,mandatory
+11,Business Administration,3,elective
+12,Psychology,3,mandatory
+13,Nursing,4,mandatory
 ASSIGNED_TO_TEACH
 123456789,1
 345678912,2
+456789123,3
+456789123,4
+456789123,5
+456789123,6
+345678912,7
+123456789,8
+567891234,9
+567891234,10
+567891234,11
+678912345,12
+678912345,13
 GROUP_ENROLMENTS
 1,1
 2,2
+1,3
+6,4
+1,5
+5,6
+2,7
+2,8
+3,9
+7,10
+7,11
+5,12
+4,13
 LESSONS
-1,1,2026-06-10,10:00,12:15,SCHEDULED,FRONTAL,false,101
-2,2,2026-06-11,10:00,12:15,SCHEDULED,ZOOM,false,NONE
+1,1,2026-06-25,10:00,12:15,SCHEDULED,FRONTAL,false,101,3
+2,2,2026-06-28,10:00,12:15,SCHEDULED,ZOOM,false,NONE,-1
+3,3,2026-07-02,08:00,10:15,SCHEDULED,FRONTAL,false,102,3

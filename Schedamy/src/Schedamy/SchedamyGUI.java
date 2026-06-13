@@ -452,9 +452,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
             return;
         }
 
-        if (command.startsWith("LESSONS_COURSE_NAME_")) {
-            String courseName = command.replace("LESSONS_COURSE_NAME_", "");
-            showLessonsOfCourseName(courseName);
+        if (command.startsWith("LESSONS_COURSE_ID_")) {
+            int courseID = Integer.parseInt(command.replace("LESSONS_COURSE_ID_", ""));
+            showLessonsOfCourseID(courseID);
             return;
         }
 
@@ -475,11 +475,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
         }
 
         if (command.startsWith("LESSONS_ROOM_")) {
-            String roomID = command.replace("LESSONS_ROOM_", "");
-            showLessonsOfRoom(roomID);
+            String details = command.replace("LESSONS_ROOM_", "");
+            String[] parts = details.split("_");
+            String roomID = parts[0];
+            int building = Integer.parseInt(parts[1]);
+            showLessonsOfRoom(roomID, building);
             return;
         }
-
         if (command.equals("LESSONS_BY_GROUP")) {
             showLessonsByGroupSelection();
             return;
@@ -1375,7 +1377,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         	button.setPreferredSize(new Dimension(250, 90));
 
         	// Action command must stay clean
-        	button.setActionCommand("LESSONS_COURSE_NAME_" + course.getCourseName());
+        	button.setActionCommand("LESSONS_COURSE_ID_" + course.getCourseID());
 
         	coursesPanel.add(button);
         }
@@ -1394,10 +1396,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
         repaint();
     }
     
-    private void showLessonsOfCourseName(String courseName) {
+    private void showLessonsOfCourseID(int courseID) {
         clearMainPanel();
 
-        Label title = new Label("Lessons - " + courseName, Label.CENTER);
+        Label title = new Label("Lessons - Course " + courseID, Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 15));
 
         Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
@@ -1406,7 +1408,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         boolean foundLessons = false;
 
         for (Course course : system.getCourses()) {
-            if (course.getCourseName().equals(courseName)) {
+        	if (course.getCourseID() == courseID) {
                 for (Lesson lesson : course.getLessons()) {
                     lessonsPanel.add(createLessonCard(course, lesson));
                     foundLessons = true;
@@ -1541,10 +1543,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
         roomsPanel.setBackground(new Color(245, 247, 250));
 
         for (Room room : system.getRooms()) {
-            Button button = createDashboardButton("Room " + room.getRoomID());
-            button.setPreferredSize(new Dimension(250, 90));
-            button.setActionCommand("LESSONS_ROOM_" + room.getRoomID());
-
+        	Button button = createDashboardButton("Room " + room.getRoomID() + " | Building " + room.getBuilding());
+        		button.setPreferredSize(new Dimension(250, 90));
+        		button.setActionCommand("LESSONS_ROOM_" + room.getRoomID() + "_" + room.getBuilding());
             roomsPanel.add(button);
         }
         Button backButton = createBackButton("Back to Lessons", "Lessons");
@@ -1562,13 +1563,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
         repaint();
     }
     
-    private void showLessonsOfRoom(String roomID) {
+    private void showLessonsOfRoom(String roomID, int building) {
         clearMainPanel();
 
         Room selectedRoom = null;
 
         for (Room room : system.getRooms()) {
-            if (room.getRoomID().equals(roomID)) {
+        	if (room.getRoomID().equals(roomID) && room.getBuilding() == building) {
                 selectedRoom = room;
                 break;
             }
@@ -1579,7 +1580,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
             return;
         }
 
-        Label title = new Label("Lessons - Room " + selectedRoom.getRoomID(), Label.CENTER);
+        Label title = new Label("Lessons - Room " +selectedRoom.getRoomID() +" (Building " +selectedRoom.getBuilding() +")",Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
         Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
@@ -1589,9 +1590,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         for (Course course : system.getCourses()) {
             for (Lesson lesson : course.getLessons()) {
-                if (lesson.getRoom() != null &&
-                    lesson.getRoom().getRoomID().equals(selectedRoom.getRoomID())) {
-
+            	if (lesson.getRoom() != null &&
+            		    lesson.getRoom().getRoomID().equals(selectedRoom.getRoomID()) &&
+            		    lesson.getRoom().getBuilding() == selectedRoom.getBuilding()) 
+            	{
                     lessonsPanel.add(createLessonCard(course, lesson));
                     foundLesson = true;
                 }
@@ -1895,7 +1897,18 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
             	if (!capacityField.getText().matches("\\d+"))
             	    throw new IllegalArgumentException("Capacity must be a number");
-
+            	if (Integer.parseInt(roomNumberField.getText()) > 999)
+            		{
+            		    throw new IllegalArgumentException("Room number must be smaller than 999");
+            		}
+            		if (Integer.parseInt(buildingField.getText()) > 100)
+            		{
+            		    throw new IllegalArgumentException("Building number must be smaller than 100");
+            		}
+            		if (Integer.parseInt(capacityField.getText()) > 200)
+            		{
+            		    throw new IllegalArgumentException("Capacity must be smaller than 200");
+            		}
                 system.addRoom(
                     roomNumberField.getText(),
                     Integer.parseInt(buildingField.getText()),
@@ -2021,7 +2034,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	  
 	    addButton.addActionListener(e -> {
 	        try {
-	        	int courseID = nextCourseID++; 
+	        	int courseID = nextCourseID; 
 	        	if (lecturerChoice.getItemCount() == 0)
 	        	    throw new IllegalArgumentException("No lecturer matches this course");
 
@@ -2039,6 +2052,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	        			courseTypeChoice.getSelectedItem(),
 	        			lecturerID,
 	        			groupID);
+	        	nextCourseID++;
 	            JOptionPane.showMessageDialog(this,
 	                "Course added successfully!\nTotal courses: " + system.getCourses().size());
 	            dialog.dispose();
@@ -2122,7 +2136,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	        try {
 	        	if (!studentCountField.getText().matches("\\d+"))
 	        	    throw new IllegalArgumentException("Student count must be a positive number");
-	        system.addStudentGroup(nextGroupID++,departmentChoice.getSelectedItem(),Integer.parseInt(studyYearChoice.getSelectedItem()),Integer.parseInt(studentCountField.getText()),programChoice.getSelectedItem());
+	        	system.addStudentGroup(nextGroupID, departmentChoice.getSelectedItem(),
+	        	        Integer.parseInt(studyYearChoice.getSelectedItem()),
+	        	        Integer.parseInt(studentCountField.getText()),
+	        	        programChoice.getSelectedItem());
+	        	nextGroupID++;
 	            //success and error massages
 	            JOptionPane.showMessageDialog(
 	                this,
@@ -2305,7 +2323,14 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 	                if (lessonDate.isBefore(LocalDate.now()))
 	                    throw new IllegalArgumentException("Lesson date cannot be in the past");
-
+	                if (lessonDate.equals(LocalDate.now()))
+	                {
+	                    if (!startTime.isAfter(LocalTime.now()))
+	                    {
+	                        throw new IllegalArgumentException(
+	                                "Start time must be in the future for today's date");
+	                    }
+	                }
 	                if (!endTime.isAfter(startTime))
 	                    throw new IllegalArgumentException("End time must be after start time");
 	                
@@ -2316,7 +2341,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	                }
 	                system.addLessonToCourse(
 	                	    courseID,
-	                	    nextLessonID++,
+	                	    nextLessonID,
 	                	    lessonDate,
 	                	    startTime,
 	                	    endTime,
@@ -2325,6 +2350,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	                	    labCheckbox.getState(),
 	                	    selectedRoom
 	                	);
+	                nextLessonID++;
 	                System.out.println("Lesson was added to course ID: " + courseID);
 	                System.out.println("Next lesson ID is now: " + nextLessonID);
 	                
@@ -2969,7 +2995,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
             GroupEnrolment[] enrolments =
                     groupCourses.toArray(new GroupEnrolment[groupCourses.size()]);
 
-            int totalHours = group.calculateTotalHours(enrolments);
+            double totalHours = group.calculateTotalHours(enrolments);
             boolean overloaded = group.isScheduleOverloaded(enrolments);
 
             JOptionPane.showMessageDialog(
@@ -2977,7 +3003,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
                     "Student Group: " + group.getDepartment() +
                     " Year " + group.getStudyYear() +
                     "\nProgram: " + group.getProgramName() +
-                    "\nTotal load: " + totalHours +
+                    "\nTotal load: " + String.format("%.2f", totalHours)+
                     "\nOverloaded: " + overloaded
             );
         }
@@ -2987,11 +3013,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
     {
         Choice roomChoice = new Choice();
 
-        for (Room room : system.getRooms()) 
+        for (Room room : system.getRooms())
         {
-        	roomChoice.add(room.getRoomID());
+            roomChoice.add("Room " + room.getRoomID() +" | Building " + room.getBuilding());
         }
-
         int result = JOptionPane.showConfirmDialog(this,roomChoice,"Choose Room",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {

@@ -70,9 +70,10 @@ public class RoomResrvation {
 	
 	public boolean overlaps(Room otherRoom, Lesson otherLesson)
 	{
-	    if (!room.getRoomID().equals(otherRoom.getRoomID())) {
-	        return false;
-	    }
+		if (!room.getRoomID().equals(otherRoom.getRoomID()) ||
+			    room.getBuilding() != otherRoom.getBuilding()) {
+			    return false;
+			}
 
 	    if (!lesson.getLessonDate().equals(otherLesson.getLessonDate())) {
 	        return false;

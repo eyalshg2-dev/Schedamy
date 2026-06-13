@@ -134,9 +134,16 @@ public class SchedamySystem
     	// First name only letters
     	if (!firstName.matches("[a-zA-Z ]+"))
     		throw new IllegalArgumentException("First name must contain only letters");
+    	// First name max 10 letters
+    	if (firstName.length() > 10)
+    	    throw new IllegalArgumentException("First name cannot exceed 10 characters");
     	// Last name only letters
     	if (!lastName.matches("[a-zA-Z ]+"))
     		throw new IllegalArgumentException("Last name must contain only letters");
+    	// last name max 10 letters
+    	if (lastName.length() > 10)
+    	    throw new IllegalArgumentException("Last name cannot exceed 10 characters");
+
     	Lecturer lecturer = new Lecturer(id,firstName,lastName,specializations,teachingScore,fte);
     	// FTE Between 0-100
     	if (fte < 0 || fte > 100)
@@ -185,6 +192,16 @@ public class SchedamySystem
      //add student group
     public void addStudentGroup(int groupID, String department,int studyYear, int studentCount,String programName)
     {
+    	for (StudentGroup group : studentGroups)
+    	{
+    	    if (group.getDepartment().equalsIgnoreCase(department) &&
+    	        group.getStudyYear() == studyYear &&
+    	        group.getProgramName().equalsIgnoreCase(programName))
+    	    {
+    	        throw new IllegalArgumentException(
+    	                "This student group already exists");
+    	    }
+    	}
     	if (studentCount <= 0)
     		throw new IllegalArgumentException("Invalid student count");
     	StudentGroup group = new StudentGroup(groupID,department,studyYear,studentCount,programName);
@@ -440,22 +457,23 @@ public class SchedamySystem
         for (Course course : courses) {
             for (Lesson lesson : course.getLessons()) {
                 String roomID = "NONE";
-
+                int building = -1;
                 if (lesson.getRoom() != null) {
                     roomID = lesson.getRoom().getRoomID();
+                    building = lesson.getRoom().getBuilding();
                 }
-
                 bw.write(
-                    course.getCourseID() + "," +
-                    lesson.getLessonID() + "," +
-                    lesson.getLessonDate() + "," +
-                    lesson.getStartTime() + "," +
-                    lesson.getEndTime() + "," +
-                    lesson.getStatus() + "," +
-                    lesson.getTeachingMode() + "," +
-                    lesson.isLabRoomRequired() + "," +
-                    roomID
-                );
+                	    course.getCourseID() + "," +
+                	    lesson.getLessonID() + "," +
+                	    lesson.getLessonDate() + "," +
+                	    lesson.getStartTime() + "," +
+                	    lesson.getEndTime() + "," +
+                	    lesson.getStatus() + "," +
+                	    lesson.getTeachingMode() + "," +
+                	    lesson.isLabRoomRequired() + "," +
+                	    roomID + "," +
+                	    building
+                	);
                 bw.newLine();
             }
         }
@@ -686,7 +704,7 @@ public class SchedamySystem
     	}
     	
     	//cancel the lesson
-    	lessonToCancel.setStatus("CANCELLED");
+    	removeLesson(course, lessonToCancel);
     	
     	// start availabilityThread
     	Thread availabilityThread = new Thread(new AvailabilityThread(

@@ -64,9 +64,9 @@ public class StudentGroup
   
 
   //calculate hours in course
-    public int calculateTotalHours(GroupEnrolment[] enrolments)
+    public double calculateTotalHours(GroupEnrolment[] enrolments)
     {
-        int totalHours = 0;
+        double totalHours = 0;
 
         for(int i = 0; i < enrolments.length; i++)
         {
@@ -74,24 +74,26 @@ public class StudentGroup
             {
                 for(int j = 0; j < enrolments[i].getCourse().getLessons().size(); j++)
                 {
-                    if(enrolments[i].getCourse().getLessons().get(j) != null)
+                    Lesson lesson = enrolments[i].getCourse().getLessons().get(j);
+
+                    if(lesson != null)
                     {
                         totalHours += Duration.between(
-                                enrolments[i].getCourse().getLessons().get(j).getStartTime(),
-                                enrolments[i].getCourse().getLessons().get(j).getEndTime()
-                        ).toMinutes() / 45;
+                                lesson.getStartTime(),
+                                lesson.getEndTime()
+                        ).toMinutes() / 45.0;
                     }
                 }
             }
         }
-   
+
         return totalHours;
     }
     
  // Check if the schedule is overloaded
     public boolean isScheduleOverloaded(GroupEnrolment[] enrolments)
     {
-        int totalHours = calculateTotalHours(enrolments);
+        double totalHours = calculateTotalHours(enrolments);
 
         if (programName.equals("Evening"))
         {
