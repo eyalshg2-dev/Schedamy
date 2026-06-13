@@ -840,14 +840,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Panel optionsPanel =  new Panel(new GridLayout(0, 2, 25, 25));
         optionsPanel.setBackground(new Color(245, 247, 250));
 
-        /*
-        Button rescheduleLessonButton = createDashboardButton("Reschedule Lesson");
-        rescheduleLessonButton.setActionCommand("Reschedule Lesson");
-        */
         Button addLessonButton = createActionButton("Add Lesson", "Add Lesson");
         Button cancelLessonButton = createActionButton("Cancel Lesson", "Cancel Lesson");
-        Button rescheduleLessonButton = createActionButton("Reschedule Lesson", "Reschedule Lesson");
-
 
         optionsPanel.add(addLessonButton);
         optionsPanel.add(cancelLessonButton);
