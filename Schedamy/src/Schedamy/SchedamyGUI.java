@@ -43,8 +43,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     
     private Panel mainPanel;
-  
-    
+ 
     
  // ======================================================
  // Constructor
@@ -68,13 +67,17 @@ public class SchedamyGUI extends Frame implements ActionListener {
         
         // Show the main window.
         setVisible(true);
+        
+        // Ask for loading previous data when starting
+        askLoadOnStart();
 
-        // Close the program when the user closes the window.
+        // Confirm exit when the user closes the window.
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                System.exit(0);
+                confirmExit();
             }
         });
+       
     }
    
     
@@ -514,7 +517,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         }
 
         if (command.equals("Exit")) {
-            System.exit(0);
+            confirmExit();
             return;
         }
 
@@ -658,11 +661,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Button backButton = createBackButton("Back to Home", "HOME");
 
         mainPanel.add(title, BorderLayout.NORTH);
-
-        ScrollPane scrollPane =
-        	    new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-
-        	scrollPane.add(coursesPanel);
+        
+        setCardsPanelSize(coursesPanel, courseNames.size());
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
+        scrollPane.add(coursesPanel);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
@@ -694,6 +696,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         mainPanel.add(title, BorderLayout.NORTH);
 
+        setCardsPanelSize(lecturersPanel, system.getLecturers().size());
         ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(lecturersPanel);
        
@@ -715,10 +718,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
         groupsPanel.setBackground(new Color(245, 247, 250));
 
         for (StudentGroup group : system.getStudentGroups()) {
-            Button button = createDashboardButton(
-                group.getDepartment() + " | Year " + group.getStudyYear()
-            );
-
+        	Button button = createDashboardButton(
+        		    shortenDepartment(group.getDepartment()) +
+        		    " | Y" + group.getStudyYear() +
+        		    " | " + group.getProgramName()
+        		);
             button.setPreferredSize(new Dimension(250, 90));
             button.setActionCommand("GROUP_DETAILS_" + group.getGroupID());
 
@@ -729,6 +733,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         mainPanel.add(title, BorderLayout.NORTH);
         
+        setCardsPanelSize(groupsPanel, system.getStudentGroups().size());
         ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(groupsPanel);
         
@@ -759,6 +764,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Button backButton = createBackButton("Back to Home", "HOME");
         mainPanel.add(title, BorderLayout.NORTH);
 
+        setCardsPanelSize(roomsPanel, system.getRooms().size());
         ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(roomsPanel);
         
@@ -1950,8 +1956,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 	        for (Lecturer lecturer : system.getLecturers())
 	        {
-	            if (lecturer.getSpecializations().contains(selectedCourse))
-	            {
+	        	if (lecturer.getSpecializations().contains(selectedCourse))
+	        	{
 	                lecturerChoice.add(lecturer.getLecturerID() + " - " +
 	                        lecturer.getFirstName() + " " + lecturer.getLastName());
 	            }
@@ -3085,7 +3091,70 @@ public class SchedamyGUI extends Frame implements ActionListener {
         nextGroupID = maxGroupID + 1;
         nextLessonID = maxLessonID + 1;
     }
+    
+        // ------------------------------------------------------
+        // DATA Management
+        // ------------------------------------------------------
+    private void confirmExit() {
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            "Do you want to save data before exiting?",
+            "Exit Schedemy",
+            JOptionPane.YES_NO_CANCEL_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
 
+        if (result == JOptionPane.YES_OPTION) {
+            try {
+                system.saveDataToFile();
+                System.exit(0);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Error saving data: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+
+        if (result == JOptionPane.NO_OPTION) {
+            System.exit(0);
+        }
+
+        // CANCEL -> do nothing
+    }
+    
+    private void askLoadOnStart() {
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            "Do you want to load saved data?",
+            "Load Data",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (result == JOptionPane.YES_OPTION) {
+            try {
+                system.loadDataFromFile();
+                updateNextIDs();
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Data loaded successfully!",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Error loading data: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+    }
         // ------------------------------------------------------
         // Text Formatting
         // ------------------------------------------------------
@@ -3176,6 +3245,21 @@ public class SchedamyGUI extends Frame implements ActionListener {
         button.setPreferredSize(new Dimension(250, 90));
         return button;
     }
+    
+    private void setCardsPanelSize(Panel panel, int itemCount) {
+        int columns = 2;
+        int buttonWidth = 250;
+        int buttonHeight = 90;
+        int hGap = 25;
+        int vGap = 25;
+
+        int rows = (int) Math.ceil(itemCount / 2.0);
+
+        int width = columns * buttonWidth + hGap + 40;
+        int height = rows * buttonHeight + Math.max(0, rows - 1) * vGap + 40;
+
+        panel.setPreferredSize(new Dimension(width, height));
+    }
         // ------------------------------------------------------
         // Lesson Helpers
         // ------------------------------------------------------
@@ -3227,126 +3311,4 @@ public class SchedamyGUI extends Frame implements ActionListener {
         return Color.WHITE;
     }
     
-    
-
- // Old views , kept temporarily for backup
- 	private void openCoursesView() {
-	    String text = "";
-
-	    for (Course course : system.getCourses()) {
-	        text += "-----------------------------------------------------------\n";
-	        text += course.getCourseName() + "\n";
-	        text += "-----------------------------------------------------------\n\n";
-
-	        text += "Course ID: " + course.getCourseID() + "\n";
-	        text += "Credits: " + course.getCredits() + "\n";
-	        text += "Type: " + course.getCourseType() + "\n";
-	        text += "Number of lessons: " + course.getLessons().size() + "\n";
-	        text += "\n";
-	        text += system.getCourseInfo(course);
-
-	        text += "\n\n";
-	    }
-
-	    if (text.isEmpty()) {
-	        text = "No courses found.";
-	    }
-
-	    showTextDialog("Courses", text);
-	}
-	private void openLecturersView()
-	{
-	    String text = "";
-
-	    for (Lecturer lecturer : system.getLecturers()) {
-	        text += lecturer.toString() + "\n\n";
-	    }
-
-	    if (text.isEmpty()) {
-	        text = "No lecturers found.";
-	    }
-
-	    showTextDialog("Lecturers", text);
-	}
-    private void openStudentGroupsView()
-    {
-        String text = "";
-        for (StudentGroup group : system.getStudentGroups()) {
-            text += group.toString() + "\n\n";
-        }
-        if (text.isEmpty())
-            text = "No student groups found.";
-
-        showTextDialog("Student Groups", text);
-    }
-    private void openRoomsView()
-    {
-        String text = "";
-
-        for (Room room : system.getRooms()) {
-            text += room.toString() + "\n\n";
-        }
-
-        if (text.isEmpty()) {
-            text = "No rooms found.";
-        }
-
-        showTextDialog("Rooms", text);
-    }
-    private void openLessonsView()
-    {
-        String text = "";
-
-        for (Course course : system.getCourses())
-        {
-            if (course.getLessons().isEmpty()) {
-                continue;
-            }
-            Lecturer lecturer = system.getLecturerForCourse(course);
-            StudentGroup group = system.getGroupForCourse(course);
-
-            text += "------------------------------------------------------------------------------------------------------\n";
-            text += course.getCourseName() +" | Lecturer: " +lecturer.getFirstName() + " " +lecturer.getLastName() +" | Group: " +group.getDepartment() +" Year " +group.getStudyYear() +"\n";
-            text += "------------------------------------------------------------------------------------------------------\n\n";
-
-            for (Lesson lesson : course.getLessons())
-            {
-                text += "Lesson #" + lesson.getLessonID() + "\n\n";
-
-                text += "Date: " +
-                        lesson.getLessonDate().format(DATE_FORMAT) + "\n";
-
-                text += "Time: " +
-                        lesson.getStartTime() +
-                        " - " +
-                        lesson.getEndTime() + "\n";
-
-                text += "Room: " +
-                        (lesson.getRoom() != null ?
-                         lesson.getRoom().getRoomID() :
-                         "Zoom") + "\n";
-
-                text += "Mode: " +
-                        lesson.getTeachingMode() + "\n";
-
-                text += "Status: " +
-                        getFriendlyStatus(lesson.getStatus()) + "\n";
-
-                text += "\n----------------------------------------\n\n";
-            }
-
-            text += "\n";
-        }
-
-        if (text.isEmpty()) {
-            text = "No lessons found.";
-        }
-
-        showTextDialog("Lessons", text);
-    }
-  
-   
-
-    
-   
 }
