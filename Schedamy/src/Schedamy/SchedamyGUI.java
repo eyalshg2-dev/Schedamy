@@ -1802,12 +1802,15 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         addButton.addActionListener(e -> {
             try {
+            	 int score = Integer.parseInt(teachingScoreField.getText().trim());
             	 if (!idField.getText().matches("\\d+"))
                      throw new IllegalArgumentException("Lecturer ID must contain only digits");
-
-                 if (!teachingScoreField.getText().matches("\\d+(\\.\\d+)?"))
-                     throw new IllegalArgumentException("Teaching score must be a positive number");
-                 String id = idField.getText().trim();
+            	 
+                 if (score > 100 || score < 0) {
+                	 throw new IllegalArgumentException("Teaching score must be positive and less than 100");
+                 }
+                 
+                String id = idField.getText().trim();
                 String firstName = capitalizeFirstLetter(firstNameField.getText());
                 String lastName = capitalizeFirstLetter(lastNameField.getText());
              
@@ -2545,14 +2548,15 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	            	return; //Go back or closed dialog
 	            }
 
-	            // Get the selected Lesson directly by index
+	            // Get the selected lesson directly by index
 	            int selectedIndex = lessonChoice.getSelectedIndex();
 	            Lesson selectedLesson = lessonsList.get(selectedIndex);
 	            int courseID = courseIDs.get(selectedIndex);
-	            LocalDate newDate = selectedLesson.getLessonDate().plusWeeks(1);
+	            LocalDate newDate1 = selectedLesson.getLessonDate().plusWeeks(1);
+	            LocalDate newDate2 = selectedLesson.getLessonDate().plusWeeks(2);
 	            
 	            if (choice == 0) {
-	            	system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate, sharedRoomLock);
+	            	system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate1, sharedRoomLock);
 	            	JOptionPane.showMessageDialog(
 	            			this,
 	                        "Lesson cancelled successfully!\nReason: " + reason,
@@ -2562,13 +2566,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	            }
 	            
 	            if (choice == 1) {
-	            	system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate, sharedRoomLock);
 	            	dialog.dispose();
 	            }
 	            
 	            JOptionPane.showMessageDialog(
 	            		this,
-	            		"Searching for available slot...\nChecking lecturer, students and rooms.",
+	            		"Searching for available slot...",
 	            		"Searching",
 	            		JOptionPane.INFORMATION_MESSAGE);
 	            
@@ -2580,52 +2583,94 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	            	}
 	            }
 	            
-	            AvailabilityThread availThread = new AvailabilityThread(
-	            		lecturer, selectedLesson, newDate,
+	            AvailabilityThread availThread1 = new AvailabilityThread(
+	            		lecturer, selectedLesson, newDate1,
+	            		new Vector<>(system.getRooms()),
+	            		sharedRoomLock,
+	            		new Vector<>(system.getGroupEnrolments()), false);
+	            AvailabilityThread availThread2 = new AvailabilityThread(
+	            		lecturer, selectedLesson, newDate2,
 	            		new Vector<>(system.getRooms()),
 	            		sharedRoomLock,
 	            		new Vector<>(system.getGroupEnrolments()), false);
 	            
-	            Thread t = new Thread(availThread);
-	            t.start();
-	            t.join();
+	            Thread t1 = new Thread(availThread1);
+	            Thread t2 = new Thread(availThread2);
+	            t1.start();
+	            t2.start();
 	            
-	            String suggestion = availThread.getSuggestion();
+	            t1.join();
+	            t2.join();
 	            
-	            if(suggestion.isEmpty()) {
+	            String suggestion1 = availThread1.getSuggestion();
+	            String suggestion2 = availThread2.getSuggestion();
+	            
+	            if(suggestion1.isEmpty() && suggestion2.isEmpty()) {
+	            	//neither found a slot
 	            	JOptionPane.showMessageDialog(this,
 	            			"No Available slot found automatically.\nPlease Reshcedule Manually.",
 	            			"No Slot Found",
 	            			JOptionPane.WARNING_MESSAGE);
 	            	SwingUtilities.invokeLater(() -> openRescheduleLessonDialog());
 	            } else {
-	            	String [] approveOption = {"Approve", "Pick Manually"};
-	            	int approveChoice = JOptionPane.showOptionDialog(
-	            			this,
-	            			"Available slot found!\n\n" + suggestion +
-	            			"\nLecturer: " + lecturer.getFirstName() + " " + lecturer.getLastName() +
-	            			"\nStudent Group: " + system.getGroupForCourse(courseID) + 
-	            			"\nDo you approve this schedule?",
-	            			"Slot Found",
-	            			JOptionPane.DEFAULT_OPTION,
-	            			JOptionPane.INFORMATION_MESSAGE,
-	            			null,
-	            			approveOption,
-	            			approveOption[0]);
-	            	
-	            	if (approveChoice == 0) {
-	            		selectedLesson.setLessonDate(availThread.getSuggestedDate());
-	            		selectedLesson.setStatus("RESCHEDULED");
-	            		if (availThread.getSuggestedRoom() != null) {
-	            			selectedLesson.setRoom(availThread.getSuggestedRoom());
-	            		}
-	            		JOptionPane.showMessageDialog(this, 
-	            				"Lesson Reshceduled Successfully!",
-	            				"Success",
-	            				JOptionPane.INFORMATION_MESSAGE);
-	            	} else {
-	            		SwingUtilities.invokeLater(() -> openRescheduleLessonDialog());
-	            	}
+	                // Build the message showing available options
+	                String message = "Available slots found!\n\n";
+	                
+	                ArrayList<String> optionsList = new ArrayList<>();
+	                
+	                if (!suggestion1.isEmpty()) {
+	                    message += "Option 1:\n" + suggestion1 + "\n\n";
+	                    optionsList.add("Option 1");
+	                }
+	                if (!suggestion2.isEmpty()) {
+	                    message += "Option 2:\n" + suggestion2 + "\n\n";
+	                    optionsList.add("Option 2");
+	                }
+	                optionsList.add("Pick Manually");
+	                
+	                message += "Lecturer: " + lecturer.getFirstName() + " " + lecturer.getLastName() +
+	                           "\nStudent Group: " + system.getGroupForCourse(courseID);
+
+	                String[] option = optionsList.toArray(new String[0]);
+	                
+	                int approveChoice = JOptionPane.showOptionDialog(
+	                    this,
+	                    message,
+	                    "Slots Found",
+	                    JOptionPane.DEFAULT_OPTION,
+	                    JOptionPane.INFORMATION_MESSAGE,
+	                    null,
+	                    option,
+	                    option[0]);
+
+	                // User picked Option 1
+	                if (approveChoice == 0 && !suggestion1.isEmpty()) {
+	                    selectedLesson.setLessonDate(availThread1.getSuggestedDate());
+	                    selectedLesson.setStatus("RESCHEDULED");
+	                    if (availThread1.getSuggestedRoom() != null) {
+	                        selectedLesson.setRoom(availThread1.getSuggestedRoom());
+	                        availThread1.getSuggestedRoom().setStatus("SCHEDULED");
+	                    }
+	                    JOptionPane.showMessageDialog(this,
+	                        "Lesson rescheduled successfully!",
+	                        "Success", JOptionPane.INFORMATION_MESSAGE);
+
+	                // User picked Option 2
+	                } else if (approveChoice == 1 && !suggestion2.isEmpty() && suggestion1.isEmpty() == false) {
+	                    selectedLesson.setLessonDate(availThread2.getSuggestedDate());
+	                    selectedLesson.setStatus("RESCHEDULED");
+	                    if (availThread2.getSuggestedRoom() != null) {
+	                        selectedLesson.setRoom(availThread2.getSuggestedRoom());
+	                        availThread2.getSuggestedRoom().setStatus("SCHEDULED");
+	                    }
+	                    JOptionPane.showMessageDialog(this,
+	                        "Lesson rescheduled successfully!",
+	                        "Success", JOptionPane.INFORMATION_MESSAGE);
+
+	                // User picked Pick Manually 
+	                } else {
+	                    SwingUtilities.invokeLater(() -> openRescheduleLessonDialog());
+	                }
 	            }
          
 	        } catch (Exception ex) {

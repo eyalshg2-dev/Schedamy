@@ -93,8 +93,19 @@ public class AvailabilityThread implements Runnable {
 			synchronized (roomLock) {
 				Room availableRoom = null;
 				
+				int studentCount = 0;
+				for (GroupEnrolment enrolment : groupEnrolment) {
+					for (Lesson l : enrolment.getCourse().getLessons()) {
+						if (l.getLessonID() == lesson.getLessonID()) {
+							studentCount = enrolment.getGroup().getStudentCount();
+							break;
+						}
+					}
+				}
+				
 				for(Room room : rooms) {
-					if("AVAILABLE".equals(room.getStatus())) {
+					if("AVAILABLE".equals(room.getStatus()) &&
+							room.getCapacity() >= studentCount) {
 						availableRoom = room;
 						break;
 					}
