@@ -205,14 +205,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
      // Attach the menu bar to the main window.
      setMenuBar(menuBar);
-<<<<<<< HEAD
 }
     // Creates the "File" menu and its menu items.
-=======
-    }
-       // Creates the "File" menu and its menu items.
->>>>>>> branch 'main' of https://github.com/eyalshg2-dev/Schedamy.git
-    private void buildFileMenu() {
+      private void buildFileMenu() {
      fileMenu = new Menu("File");
 
      // Create menu items with keyboard shortcuts.
@@ -277,14 +272,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
   MenuItem rescheduleLessonItem = new MenuItem("Reschedule Lesson");
   rescheduleLessonItem.addActionListener(this);
   manageMenu.add(rescheduleLessonItem);
-<<<<<<< HEAD
   */
 }
     //Builds the "View" menu.
-=======
-    }
-       //Builds the "View" menu.
->>>>>>> branch 'main' of https://github.com/eyalshg2-dev/Schedamy.git
+    
     private void buildViewMenu() {
 
  viewMenu = new Menu("View");
@@ -849,22 +840,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Panel optionsPanel =  new Panel(new GridLayout(0, 2, 25, 25));
         optionsPanel.setBackground(new Color(245, 247, 250));
 
-<<<<<<< HEAD
-        Button addLessonButton = createDashboardButton("Add Lesson");
-        addLessonButton.setActionCommand("Add Lesson");
-
-        Button cancelLessonButton = createDashboardButton("Cancel Lesson");
-        cancelLessonButton.setActionCommand("Cancel Lesson");
-
         /*
         Button rescheduleLessonButton = createDashboardButton("Reschedule Lesson");
         rescheduleLessonButton.setActionCommand("Reschedule Lesson");
         */
-=======
         Button addLessonButton = createActionButton("Add Lesson", "Add Lesson");
         Button cancelLessonButton = createActionButton("Cancel Lesson", "Cancel Lesson");
         Button rescheduleLessonButton = createActionButton("Reschedule Lesson", "Reschedule Lesson");
->>>>>>> branch 'main' of https://github.com/eyalshg2-dev/Schedamy.git
 
 
         optionsPanel.add(addLessonButton);
