@@ -803,6 +803,7 @@ public class SchedamySystem
 
        course.getLessons().remove(lesson);
    }
+   
    //FIND A LECTURER BY COURSE
    public Lecturer getLecturerForCourse(Course course) {
 	    for (AssignedToTeach assigned : assignedToTeachList) {
@@ -812,5 +813,17 @@ public class SchedamySystem
 	    }
 	    return null;
 	}
-   
+
+public String getGroupForCourse(int courseID) {
+	Course course = findCourseById(courseID);
+    if (course == null) return "Unknown";
+    
+    for (GroupEnrolment enrolment : groupEnrolments) {
+        if (enrolment.getCourse().equals(course)) {
+            StudentGroup group = enrolment.getGroup();
+            return group.getDepartment() + " Year " + group.getStudyYear();
+        }
+    }
+    return "No group found";
+}   
 }

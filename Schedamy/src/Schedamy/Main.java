@@ -35,14 +35,14 @@
 			
 			//sample lessons
 			system.addLessonToCourse(1, 1,
-					LocalDate.of(2026, 6, 10),
+					LocalDate.of(2026, 6, 25),
 					LocalTime.of(10, 0),
 					LocalTime.of(12, 15),
 					"SCHEDULED", "FRONTAL", false,
 					system.getRooms().get(0));
 			
 			system.addLessonToCourse(2, 2,
-					LocalDate.of(2026, 6, 11), 
+					LocalDate.of(2026, 6, 28), 
 					LocalTime.of(10, 0), 
 					LocalTime.of(12, 15), 
 					"SCHEDULED", "ZOOM", false, null);

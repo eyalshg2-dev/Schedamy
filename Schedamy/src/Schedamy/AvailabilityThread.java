@@ -9,6 +9,8 @@ public class AvailabilityThread implements Runnable {
 	//By using Runnable we want to create a thread 
 	// that runs in sync by checking the availability
 	// of the lecturers, students and classrooms
+	private static final java.time.format.DateTimeFormatter DATE_FORMAT = 
+		    java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
 	
 	private Lecturer lecturer;
 	private Lesson lesson;
@@ -19,6 +21,9 @@ public class AvailabilityThread implements Runnable {
 	private boolean isCancellation;
 	private LocalTime startTime;
 	private LocalTime endTime;
+	private String suggestion = "";
+	private Room suggestedRoom = null;
+	private LocalDate suggestedDate = null;
 	
 	public AvailabilityThread(Lecturer lecturer, Lesson lesson, 
 							  LocalDate date, Vector<Room> rooms,
@@ -38,6 +43,11 @@ public class AvailabilityThread implements Runnable {
 	public void run() {
 		
 		try {
+			
+			if (isCancellation) {
+				System.out.println("Lesson Cancelled!");
+				return;
+			}
 			//Check the availability of the lecturer
 			for (Lesson current : lecturer.getLessons()) {
 				if(current.getLessonDate().equals(date)) {
@@ -89,33 +99,44 @@ public class AvailabilityThread implements Runnable {
 						break;
 					}
 				}
-				if(availableRoom != null) {
-					availableRoom.setStatus("RESCHEDULED");
-					lesson.setLessonDate(date);
-					lesson.setRoom(availableRoom);
-					if (!isCancellation) {
-						lesson.setStatus("RESCHEDULED");
-					}
-					System.out.println("Suggested Reschedule on: " + date 
-							+ " from " + startTime + " to " +
-							endTime + " | Room: " + availableRoom.getRoomID());
-				} else {
-					System.out.println("No available room on : " + date);
-				}
-			}
+				if (availableRoom != null) {
+		            if (!isCancellation) {
+		                // Store suggestion instead of applying
+		                suggestedRoom = availableRoom;
+		                suggestedDate = date;
+		                suggestion = "Date: " + date.format(DATE_FORMAT) + 
+		                             "\nTime: " + startTime + " - " + endTime + 
+		                             "\nRoom: " + availableRoom.getRoomID();
+		                System.out.println("[FRONTAL] Suggestion found: " + suggestion);
+		            }
+		        } else {
+		            System.out.println("[FRONTAL] No available room on: " + date);
+		        }
+		    }
 		}
 		
 		//function to handle incase the lesson will be in zoom
 		private void handleZoom() {
 			synchronized (lesson) {
-				if(!"RESCHEDULED".equals(lesson.getStatus())) {
-					lesson.setLessonDate(date);
-					if (!isCancellation) {
-						lesson.setStatus("RESCHEDULED");
-					}
-					System.out.println("[ZOOM] Rescheduled on: " + date +
-							 " from " + startTime + " to " + endTime + " - all groups available");
-				}	
-			 }
-		  }   
+				if (!isCancellation) {
+		            suggestedDate = date;
+		            suggestion = "Date: " + date.format(DATE_FORMAT) + 
+		                         "\nTime: " + startTime + " - " + endTime + 
+		                         "\nMode: ZOOM (no room needed)";
+		            System.out.println("[ZOOM] Suggestion found: " + suggestion);
+		        }
+		    }
+		}
+
+		public String getSuggestion() {
+			return suggestion;
+		}   
+		
+		public Room getSuggestedRoom() {
+			return suggestedRoom;
+		}
+		
+		public LocalDate getSuggestedDate() {
+			return suggestedDate;
+		}
 }

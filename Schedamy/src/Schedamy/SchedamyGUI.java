@@ -8,6 +8,8 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import java.time.format.DateTimeFormatter;
 import java.awt.event.*;
 
@@ -183,7 +185,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
      // Attach the menu bar to the main window.
      setMenuBar(menuBar);
 }
-       // Creates the "File" menu and its menu items.
+    // Creates the "File" menu and its menu items.
     private void buildFileMenu() {
      fileMenu = new Menu("File");
 
@@ -245,11 +247,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
   cancelLessonItem.addActionListener(this);
   manageMenu.add(cancelLessonItem);
 
+  /*
   MenuItem rescheduleLessonItem = new MenuItem("Reschedule Lesson");
   rescheduleLessonItem.addActionListener(this);
   manageMenu.add(rescheduleLessonItem);
+  */
 }
-       //Builds the "View" menu.
+    //Builds the "View" menu.
     private void buildViewMenu() {
 
  viewMenu = new Menu("View");
@@ -828,13 +832,17 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Button cancelLessonButton = createDashboardButton("Cancel Lesson");
         cancelLessonButton.setActionCommand("Cancel Lesson");
 
+        /*
         Button rescheduleLessonButton = createDashboardButton("Reschedule Lesson");
         rescheduleLessonButton.setActionCommand("Reschedule Lesson");
+        */
 
 
         optionsPanel.add(addLessonButton);
         optionsPanel.add(cancelLessonButton);
+        /*
         optionsPanel.add(rescheduleLessonButton);
+        */
        
 
         Button backButton = createDashboardButton("Back to Home");
@@ -2146,17 +2154,17 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	        Checkbox labCheckbox = new Checkbox("Lab Required");
 	        Choice roomChoice = new Choice();
 	        roomChoice.setEnabled(true);
+	        
 	        modeChoice.addItemListener(e -> {
 
-	            if (labCheckbox.getState() &&
-	                modeChoice.getSelectedItem().equals("ZOOM")) {
-	                JOptionPane.showMessageDialog(this,"Lab lessons cannot be taught on Zoom");
-	                modeChoice.select("FRONTAL");
-	            }
-	            if (modeChoice.getSelectedItem().equals("ZOOM"))
+	        	if (modeChoice.getSelectedItem().equals("ZOOM")) {
 	                roomChoice.setEnabled(false);
-	            else
+	                labCheckbox.setState(false);
+	                labCheckbox.setEnabled(false);
+	            } else {
 	                roomChoice.setEnabled(true);
+	                labCheckbox.setEnabled(true);
+	            }
 	        });
 	        Runnable updateRoomChoices = () -> {
 	            roomChoice.removeAll();
@@ -2389,7 +2397,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	    for (Course course : system.getCourses()) {
 	        for (Lesson lesson : course.getLessons()) {
 	        	if (!lesson.getStatus().equalsIgnoreCase("CANCELLED")&&
-	        		!lesson.getStatus().equalsIgnoreCase("RESCHEDULED")) {
+	        		lesson.getLessonDate().isAfter(LocalDate.now())){
 	            lessonChoice.add(
 	                course.getCourseID() + " - " +
 	                course.getCourseName() + " | Lesson " +
@@ -2402,6 +2410,14 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	            courseIDs.add(course.getCourseID());
 	        	}
 	        }
+	    }
+	    
+	    if (lessonChoice.getItemCount() == 0) {
+	        JOptionPane.showMessageDialog(this,
+	            "There are no lessons available to cancel.",
+	            "No Lessons Found",
+	            JOptionPane.INFORMATION_MESSAGE);
+	        return; 
 	    }
 
 	    TextField reasonField = new TextField();
@@ -2433,29 +2449,107 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	            if (reason.isEmpty()) {
 	                throw new IllegalArgumentException("Cancel reason cannot be empty.");
 	            }
+	            
+	            //ask user before cancelling
+	            String [] options = {"Cancel Only", "Reschedule", "Go Back"};
+	            
+	            int choice = JOptionPane.showOptionDialog(
+	            		this,
+	            		"Would You Like To Reschedule?",
+	            		"Cancel Lesson",
+	            		JOptionPane.DEFAULT_OPTION,
+	            		JOptionPane.QUESTION_MESSAGE,
+	            		null,
+	            		options,
+	            		options[0]);
+	            
+	            if (choice == 2 || choice == -1) {
+	            	return; //Go back or closed dialog
+	            }
 
 	            // Get the selected Lesson directly by index
 	            int selectedIndex = lessonChoice.getSelectedIndex();
 	            Lesson selectedLesson = lessonsList.get(selectedIndex);
 	            int courseID = courseIDs.get(selectedIndex);
-	            
 	            LocalDate newDate = selectedLesson.getLessonDate().plusWeeks(1);
 	            
-	            system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate, sharedRoomLock);
-
+	            if (choice == 0) {
+	            	system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate, sharedRoomLock);
+	            	JOptionPane.showMessageDialog(
+	            			this,
+	                        "Lesson cancelled successfully!\nReason: " + reason,
+	                        "Success", JOptionPane.INFORMATION_MESSAGE);
+	                    dialog.dispose();
+	                    return;
+	            }
+	            
+	            if (choice == 1) {
+	            	system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate, sharedRoomLock);
+	            	dialog.dispose();
+	            }
+	            
 	            JOptionPane.showMessageDialog(
-	                this,
-	                "Lesson cancelled successfully!\nReason: " + reason,
-	                "Success",
-	                JOptionPane.INFORMATION_MESSAGE
-	            );
+	            		this,
+	            		"Searching for available slot...\nChecking lecturer, students and rooms.",
+	            		"Searching",
+	            		JOptionPane.INFORMATION_MESSAGE);
 	            
-
-	            dialog.dispose();
+	            Lecturer lecturer = null;
+	            for (AssignedToTeach a : system.getAssignedToTeachList()) {
+	            	if (a.getCourse().getCourseID() == courseID) {
+	            		lecturer = a.getLecturer();
+	            		break;
+	            	}
+	            }
 	            
-	            openRescheduleLessonDialog();
+	            AvailabilityThread availThread = new AvailabilityThread(
+	            		lecturer, selectedLesson, newDate,
+	            		new Vector<>(system.getRooms()),
+	            		sharedRoomLock,
+	            		new Vector<>(system.getGroupEnrolments()), false);
 	            
+	            Thread t = new Thread(availThread);
+	            t.start();
+	            t.join();
 	            
+	            String suggestion = availThread.getSuggestion();
+	            
+	            if(suggestion.isEmpty()) {
+	            	JOptionPane.showMessageDialog(this,
+	            			"No Available slot found automatically.\nPlease Reshcedule Manually.",
+	            			"No Slot Found",
+	            			JOptionPane.WARNING_MESSAGE);
+	            	SwingUtilities.invokeLater(() -> openRescheduleLessonDialog());
+	            } else {
+	            	String [] approveOption = {"Approve", "Pick Manually"};
+	            	int approveChoice = JOptionPane.showOptionDialog(
+	            			this,
+	            			"Available slot found!\n\n" + suggestion +
+	            			"\nLecturer: " + lecturer.getFirstName() + " " + lecturer.getLastName() +
+	            			"\nStudent Group: " + system.getGroupForCourse(courseID) + 
+	            			"\nDo you approve this schedule?",
+	            			"Slot Found",
+	            			JOptionPane.DEFAULT_OPTION,
+	            			JOptionPane.INFORMATION_MESSAGE,
+	            			null,
+	            			approveOption,
+	            			approveOption[0]);
+	            	
+	            	if (approveChoice == 0) {
+	            		selectedLesson.setLessonDate(availThread.getSuggestedDate());
+	            		selectedLesson.setStatus("RESCHEDULED");
+	            		if (availThread.getSuggestedRoom() != null) {
+	            			selectedLesson.setRoom(availThread.getSuggestedRoom());
+	            		}
+	            		JOptionPane.showMessageDialog(this, 
+	            				"Lesson Reshceduled Successfully!",
+	            				"Success",
+	            				JOptionPane.INFORMATION_MESSAGE);
+	            	} else {
+	            		SwingUtilities.invokeLater(() -> openRescheduleLessonDialog());
+	            	}
+	            }
+         
 	        } catch (Exception ex) {
 	            JOptionPane.showMessageDialog(
 	                this,
@@ -2632,6 +2726,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 	            if (newDate.isBefore(LocalDate.now())) {
 	                throw new IllegalArgumentException("Lesson date cannot be in the past");
+	            }
+	            
+	            if (newDate.equals(LocalDate.now())) {
+	            	if (!newStart.isAfter(LocalTime.now())) {
+	            		throw new IllegalArgumentException("Start time must be in the future for today date");
+	            	}
 	            }
 
 	            if (!newEnd.isAfter(newStart)) {
@@ -3011,7 +3111,6 @@ public class SchedamyGUI extends Frame implements ActionListener {
     	switch (status.toUpperCase()) {
     	case "SCHEDULED": return "SCHEDULED";
     	case "AVAILABLE": return "SCHEDULED";
-    	case "CANCELLED": return "NEEDS TO RESCHEDULE";
     	case "RESCHEDULED": return "RESCHEDULED";
     	default: return status;
     	}
