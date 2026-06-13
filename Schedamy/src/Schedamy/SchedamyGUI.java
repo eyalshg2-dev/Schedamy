@@ -37,7 +37,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
     private Menu viewMenu;
     private Menu helpMenu;
     private Menu optionsMenu;
-    private PopupMenu extraPopup;
+  
     
     // The main system object that stores and manages all data.
     private SchedamySystem system;
@@ -45,8 +45,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     
     private Panel mainPanel;
-  
-    
+ 
     
  // ======================================================
  // Constructor
@@ -54,7 +53,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
  // ======================================================
     
     public SchedamyGUI(SchedamySystem system) {
-        super("Schedamy System");
+        super("Schedemy System");
 
         this.system = system;
         updateNextIDs();
@@ -70,13 +69,17 @@ public class SchedamyGUI extends Frame implements ActionListener {
         
         // Show the main window.
         setVisible(true);
+        
+        // Ask for loading previous data when starting
+        askLoadOnStart();
 
-        // Close the program when the user closes the window.
+        // Confirm exit when the user closes the window.
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                System.exit(0);
+                confirmExit();
             }
         });
+       
     }
    
     
@@ -96,7 +99,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Panel headerPanel = new Panel(new GridLayout(3, 1));
         headerPanel.setBackground(new Color(245, 247, 250));
 
-        Label titleLabel = new Label("Schedamy", Label.CENTER);
+        Label titleLabel = new Label("Schedemy", Label.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 34));
 
         Label subtitleLabel = new Label("College Scheduling Management System", Label.CENTER);
@@ -111,9 +114,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
         headerPanel.add(titleLabel);
         headerPanel.add(subtitleLabel);
         headerPanel.add(descriptionLabel);
-
-        // Center buttons
-        Panel cardsPanel = new Panel(new GridLayout(3, 3, 18, 18));
+     // Center buttons
+        Panel cardsPanel = new Panel(new GridLayout(3, 3, 15, 15));
         cardsPanel.setBackground(new Color(245, 247, 250));
 
         cardsPanel.add(createDashboardButton("Courses"));
@@ -124,8 +126,28 @@ public class SchedamyGUI extends Frame implements ActionListener {
         cardsPanel.add(createDashboardButton("Scheduling"));
         cardsPanel.add(createDashboardButton("Reports"));
 
+        Panel wrapper = new Panel(new BorderLayout());
+        wrapper.setBackground(new Color(245, 247, 250));
+
+        Panel leftPadding = new Panel();
+        leftPadding.setBackground(new Color(245, 247, 250));
+        leftPadding.setPreferredSize(new Dimension(15, 0));
+
+        Panel rightPadding = new Panel();
+        rightPadding.setBackground(new Color(245, 247, 250));
+        rightPadding.setPreferredSize(new Dimension(15, 0));
+        
+        Panel bottomPadding = new Panel();
+        bottomPadding.setBackground(new Color(245, 247, 250));
+        bottomPadding.setPreferredSize(new Dimension(0, 15));
+
+        wrapper.add(leftPadding, BorderLayout.WEST);
+        wrapper.add(rightPadding, BorderLayout.EAST);
+        wrapper.add(bottomPadding, BorderLayout.SOUTH);
+        wrapper.add(cardsPanel, BorderLayout.CENTER);
+
         mainPanel.add(headerPanel, BorderLayout.NORTH);
-        mainPanel.add(cardsPanel, BorderLayout.CENTER);
+        mainPanel.add(wrapper, BorderLayout.CENTER);
 
         add(mainPanel, BorderLayout.CENTER);
     }
@@ -170,8 +192,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
      buildFileMenu();
      buildManageMenu();
      buildViewMenu();
-     buildOptionsMenu();
-     buildExtraPopup();
+     buildReportsMenu();
      buildHelpMenu();
      
 
@@ -184,8 +205,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
      // Attach the menu bar to the main window.
      setMenuBar(menuBar);
+<<<<<<< HEAD
 }
     // Creates the "File" menu and its menu items.
+=======
+    }
+       // Creates the "File" menu and its menu items.
+>>>>>>> branch 'main' of https://github.com/eyalshg2-dev/Schedamy.git
     private void buildFileMenu() {
      fileMenu = new Menu("File");
 
@@ -213,7 +239,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
      fileMenu.addSeparator();
 
      fileMenu.add(exitItem);
-}
+    }
        //Builds the "Manage" menu and all management actions.
     private void buildManageMenu() {
 
@@ -251,9 +277,14 @@ public class SchedamyGUI extends Frame implements ActionListener {
   MenuItem rescheduleLessonItem = new MenuItem("Reschedule Lesson");
   rescheduleLessonItem.addActionListener(this);
   manageMenu.add(rescheduleLessonItem);
+<<<<<<< HEAD
   */
 }
     //Builds the "View" menu.
+=======
+    }
+       //Builds the "View" menu.
+>>>>>>> branch 'main' of https://github.com/eyalshg2-dev/Schedamy.git
     private void buildViewMenu() {
 
  viewMenu = new Menu("View");
@@ -282,22 +313,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
  MenuItem lessonsItem = new MenuItem("Lessons");
  lessonsItem.addActionListener(this);
  viewMenu.add(lessonsItem);
-
- viewMenu.addSeparator();
-
- // Menu for timetable views.
- Menu timetableMenu = new Menu("Timetables");
-
- MenuItem lecturerTimetableItem =new MenuItem("Lecturer Timetable");
- lecturerTimetableItem.addActionListener(this);
- timetableMenu.add(lecturerTimetableItem);
-
- MenuItem groupTimetableItem = new MenuItem("Student Group Timetable");
- groupTimetableItem.addActionListener(this);
- timetableMenu.add(groupTimetableItem);
-
- viewMenu.add(timetableMenu);
-}
+    }
        //Builds the "Help" menu.This menu contains general information about the system.
     private void buildHelpMenu() {
 
@@ -307,36 +323,37 @@ public class SchedamyGUI extends Frame implements ActionListener {
  instructionsItem.addActionListener(this);
  helpMenu.add(instructionsItem);
  
- MenuItem aboutItem = new MenuItem("About Schedamy");
+ MenuItem aboutItem = new MenuItem("About Schedemy");
  aboutItem.addActionListener(this);
  helpMenu.add(aboutItem);
-}
-       // options  in pop up menu
-    private void buildOptionsMenu() {
-        optionsMenu = new Menu("Options");
+    }
+       // reports
+    private void buildReportsMenu() {
+    	    optionsMenu = new Menu("Reports");
 
-        MenuItem extraOptionsItem = new MenuItem("Extra Options");
-        extraOptionsItem.addActionListener(this);
+    	    MenuItem lecturerLoadItem = new MenuItem("Calculate Lecturer Load");
+    	    MenuItem studentLoadItem = new MenuItem("Calculate Student Load");
+    	    MenuItem roomLoadItem = new MenuItem("Calculate Room Load");
 
-        optionsMenu.add(extraOptionsItem);
-}
-    private void buildExtraPopup() {
-        extraPopup = new PopupMenu();
+    	    optionsMenu.add(lecturerLoadItem);
+    	    optionsMenu.add(studentLoadItem);
+    	    optionsMenu.add(roomLoadItem);
 
-        MenuItem lecturerLoadItem = new MenuItem("Calculate Lecturer Load");
-        MenuItem studentLoadItem = new MenuItem("Calculate Student Load");
-        MenuItem roomLoadItem = new MenuItem("Calculate Room Load");
-        
-        lecturerLoadItem.addActionListener(this);
-        roomLoadItem.addActionListener(this);
-        studentLoadItem.addActionListener(this);
+    	    optionsMenu.addSeparator();
 
-        extraPopup.add(lecturerLoadItem);
-        extraPopup.add(studentLoadItem);  
-        extraPopup.add(roomLoadItem);
+    	    MenuItem lecturerTimetableItem = new MenuItem("Lecturer Timetable");
+    	    MenuItem groupTimetableItem = new MenuItem("Student Group Timetable");
 
-        add(extraPopup);
-}
+    	    optionsMenu.add(lecturerTimetableItem);
+    	    optionsMenu.add(groupTimetableItem);
+
+    	    lecturerLoadItem.addActionListener(this);
+    	    studentLoadItem.addActionListener(this);
+    	    roomLoadItem.addActionListener(this);
+    	    lecturerTimetableItem.addActionListener(this);
+    	    groupTimetableItem.addActionListener(this);
+    	}
+   
     
     
     
@@ -514,7 +531,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         }
 
         if (command.equals("Exit")) {
-            System.exit(0);
+            confirmExit();
             return;
         }
 
@@ -561,22 +578,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
             return;
         }
 
-        // ======================================================
-        // Timetable Views
-        // ======================================================
-
-        if (command.equals("Lecturer Timetable")) {
-            openLecturerTimetableDialog();
-            return;
-        }
-
-        if (command.equals("Student Group Timetable")) {
-            openStudentGroupTimetableDialog();
-            return;
-        }
+    
 
         // ======================================================
-        // Reports
+        // Reports and Timetable Views
         // ======================================================
 
         if (command.equals("Calculate Lecturer Load")) {
@@ -591,6 +596,16 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         if (command.equals("Calculate Room Load")) {
             openRoomLoadDialog();
+            return;
+        }
+        
+        if (command.equals("Lecturer Timetable")) {
+            openLecturerTimetableDialog();
+            return;
+        }
+
+        if (command.equals("Student Group Timetable")) {
+            openStudentGroupTimetableDialog();
             return;
         }
 
@@ -609,31 +624,23 @@ public class SchedamyGUI extends Frame implements ActionListener {
             return;
         }
 
-        if (command.equals("About Schedamy")) {
+        if (command.equals("About Schedemy")) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Schedamy System\n" +
+                    "Schedemy System\n" +
                     "Software Engineering Project\n" +
                     "By Idan Zilcha, Orel Levi, Eyal Shigris and Ola Jangirian\n" +
                     "We are four third-year engineering students who experienced many schedule and classroom changes\n" +
                     "during our studies due to unexpected events such as viruses, wars, and maybe even alien invasions.\n" +
-                    "To improve and simplify the process, we created Schedamy - a smart scheduling system,\n" +
+                    "To improve and simplify the process, we created Schedemy - a smart scheduling system,\n" +
                     "designed to manage lesson cancellations, rescheduling, classroom changes, and lecturer availability more efficiently.\n" +
-                    "The name \"Schedamy\" combines the words Schedule + Academy,\n" +
+                    "The name \"Schedemy\" combines the words Schedule + Academy,\n" +
                     "and also sounds like the Hebrew word \"Shakadnu\" (we worked hard) - which we definitely did.\n",
-                    "About Schedamy",
+                    "About Schedemy",
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-
-        // ======================================================
-        // Options Popup
-        // ======================================================
-
-        if (command.equals("Extra Options")) {
-            extraPopup.show(this, 180, 100);
-            return;
-        }
+        
     }
     
     
@@ -649,7 +656,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Courses", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel coursesPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        Panel coursesPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         coursesPanel.setBackground(new Color(245, 247, 250));
 
         ArrayList<String> courseNames = new ArrayList<String>();
@@ -665,12 +672,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
             }
         }
 
-        Button backButton = createDashboardButton("Back to Home");
-        backButton.setActionCommand("HOME");
+        Button backButton = createBackButton("Back to Home", "HOME");
 
         mainPanel.add(title, BorderLayout.NORTH);
-
-        ScrollPane scrollPane = new ScrollPane();
+        
+        setCardsPanelSize(coursesPanel, courseNames.size());
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(coursesPanel);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
@@ -686,7 +693,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lecturers", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel lecturersPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        Panel lecturersPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         lecturersPanel.setBackground(new Color(245, 247, 250));
 
         for (Lecturer lecturer : system.getLecturers()) {
@@ -699,13 +706,14 @@ public class SchedamyGUI extends Frame implements ActionListener {
             lecturersPanel.add(button);
         }
 
-        Button backButton = createDashboardButton("Back to Home");
-        backButton.setActionCommand("HOME");
+        Button backButton = createBackButton("Back to Home", "HOME");
 
         mainPanel.add(title, BorderLayout.NORTH);
 
-        ScrollPane scrollPane = new ScrollPane();
+        setCardsPanelSize(lecturersPanel, system.getLecturers().size());
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(lecturersPanel);
+       
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
@@ -720,27 +728,29 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Student Groups", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel groupsPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        Panel groupsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         groupsPanel.setBackground(new Color(245, 247, 250));
 
         for (StudentGroup group : system.getStudentGroups()) {
-            Button button = createDashboardButton(
-                group.getDepartment() + " | Year " + group.getStudyYear()
-            );
-
+        	Button button = createDashboardButton(
+        		    shortenDepartment(group.getDepartment()) +
+        		    " | Y" + group.getStudyYear() +
+        		    " | " + group.getProgramName()
+        		);
             button.setPreferredSize(new Dimension(250, 90));
             button.setActionCommand("GROUP_DETAILS_" + group.getGroupID());
 
             groupsPanel.add(button);
         }
 
-        Button backButton = createDashboardButton("Back to Home");
-        backButton.setActionCommand("HOME");
+        Button backButton = createBackButton("Back to Home", "HOME");
 
         mainPanel.add(title, BorderLayout.NORTH);
-
-        ScrollPane scrollPane = new ScrollPane();
+        
+        setCardsPanelSize(groupsPanel, system.getStudentGroups().size());
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(groupsPanel);
+        
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
@@ -755,7 +765,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Rooms", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel roomsPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        Panel roomsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         roomsPanel.setBackground(new Color(245, 247, 250));
 
         for (Room room : system.getRooms()) {
@@ -765,13 +775,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
             roomsPanel.add(button);
         }
 
-        Button backButton = createDashboardButton("Back to Home");
-        backButton.setActionCommand("HOME");
-
+        Button backButton = createBackButton("Back to Home", "HOME");
         mainPanel.add(title, BorderLayout.NORTH);
 
-        ScrollPane scrollPane = new ScrollPane();
+        setCardsPanelSize(roomsPanel, system.getRooms().size());
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(roomsPanel);
+        
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
@@ -786,31 +796,44 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel optionsPanel = new Panel(new GridLayout(2, 2, 20, 20));
+        Panel optionsPanel =  new Panel(new GridLayout(0, 2, 25, 25));
         optionsPanel.setBackground(new Color(245, 247, 250));
 
-        Button byCourse = createDashboardButton("By Course");
-        byCourse.setActionCommand("LESSONS_BY_COURSE");
-
-        Button byLecturer = createDashboardButton("By Lecturer");
-        byLecturer.setActionCommand("LESSONS_BY_LECTURER");
-
-        Button byRoom = createDashboardButton("By Room");
-        byRoom.setActionCommand("LESSONS_BY_ROOM");
-
-        Button byGroup = createDashboardButton("By Student Group");
-        byGroup.setActionCommand("LESSONS_BY_GROUP");
+        Button byCourse = createActionButton("By Course", "LESSONS_BY_COURSE");
+        Button byLecturer = createActionButton("By Lecturer", "LESSONS_BY_LECTURER");
+        Button byRoom = createActionButton("By Room", "LESSONS_BY_ROOM");
+        Button byGroup = createActionButton("By Student Group", "LESSONS_BY_GROUP");
 
         optionsPanel.add(byCourse);
         optionsPanel.add(byLecturer);
         optionsPanel.add(byRoom);
         optionsPanel.add(byGroup);
 
-        Button backButton = createDashboardButton("Back to Home");
-        backButton.setActionCommand("HOME");
+        Button backButton = createBackButton("Back to Home", "HOME");
 
         mainPanel.add(title, BorderLayout.NORTH);
-        mainPanel.add(optionsPanel, BorderLayout.CENTER);
+        
+        Panel wrapper = new Panel(new BorderLayout());
+        wrapper.setBackground(new Color(245, 247, 250));
+
+        Panel topPadding = new Panel();
+        topPadding.setPreferredSize(new Dimension(0, 20));
+
+        Panel leftPadding = new Panel();
+        leftPadding.setPreferredSize(new Dimension(25, 0));
+
+        Panel rightPadding = new Panel();
+        rightPadding.setPreferredSize(new Dimension(25, 0));
+        
+        wrapper.add(topPadding, BorderLayout.NORTH);
+        wrapper.add(leftPadding, BorderLayout.WEST);
+        wrapper.add(rightPadding, BorderLayout.EAST);
+        wrapper.add(optionsPanel, BorderLayout.CENTER);
+
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
+        scrollPane.add(wrapper);
+
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
         mainPanel.add(backButton, BorderLayout.SOUTH);
 
         validate();
@@ -823,9 +846,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Scheduling", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel optionsPanel = new Panel(new GridLayout(3, 1, 20, 20));
+        Panel optionsPanel =  new Panel(new GridLayout(0, 2, 25, 25));
         optionsPanel.setBackground(new Color(245, 247, 250));
 
+<<<<<<< HEAD
         Button addLessonButton = createDashboardButton("Add Lesson");
         addLessonButton.setActionCommand("Add Lesson");
 
@@ -836,6 +860,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Button rescheduleLessonButton = createDashboardButton("Reschedule Lesson");
         rescheduleLessonButton.setActionCommand("Reschedule Lesson");
         */
+=======
+        Button addLessonButton = createActionButton("Add Lesson", "Add Lesson");
+        Button cancelLessonButton = createActionButton("Cancel Lesson", "Cancel Lesson");
+        Button rescheduleLessonButton = createActionButton("Reschedule Lesson", "Reschedule Lesson");
+>>>>>>> branch 'main' of https://github.com/eyalshg2-dev/Schedamy.git
 
 
         optionsPanel.add(addLessonButton);
@@ -845,11 +874,31 @@ public class SchedamyGUI extends Frame implements ActionListener {
         */
        
 
-        Button backButton = createDashboardButton("Back to Home");
-        backButton.setActionCommand("HOME");
-
+        Button backButton = createBackButton("Back to Home", "HOME");
+        
         mainPanel.add(title, BorderLayout.NORTH);
-        mainPanel.add(optionsPanel, BorderLayout.CENTER);
+        
+        Panel wrapper = new Panel(new BorderLayout());
+        wrapper.setBackground(new Color(245, 247, 250));
+
+        Panel topPadding = new Panel();
+        topPadding.setPreferredSize(new Dimension(0, 20));
+
+        Panel leftPadding = new Panel();
+        leftPadding.setPreferredSize(new Dimension(25, 0));
+
+        Panel rightPadding = new Panel();
+        rightPadding.setPreferredSize(new Dimension(25, 0));
+
+        wrapper.add(topPadding, BorderLayout.NORTH);
+        wrapper.add(leftPadding, BorderLayout.WEST);
+        wrapper.add(rightPadding, BorderLayout.EAST);
+        wrapper.add(optionsPanel, BorderLayout.CENTER);
+
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
+        scrollPane.add(wrapper);
+
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
         mainPanel.add(backButton, BorderLayout.SOUTH);
 
         validate();
@@ -862,29 +911,46 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Reports", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel optionsPanel = new Panel(new GridLayout(3, 1, 20, 20));
+        Panel optionsPanel =  new Panel(new GridLayout(0, 2, 25, 25));
         optionsPanel.setBackground(new Color(245, 247, 250));
 
-        Button lecturerLoadButton = createDashboardButton("Lecturer Load");
-        lecturerLoadButton.setActionCommand("Calculate Lecturer Load");
-
-        Button studentLoadButton = createDashboardButton("Student Group Load");
-        studentLoadButton.setActionCommand("Calculate Student Load");
-
-        Button roomLoadButton = createDashboardButton("Room Load");
-        roomLoadButton.setActionCommand("Calculate Room Load");
-
-
-
+        Button lecturerLoadButton = createActionButton("Lecturer Load", "Calculate Lecturer Load");
+        Button studentLoadButton = createActionButton("Student Group Load", "Calculate Student Load");
+        Button roomLoadButton = createActionButton("Room Load", "Calculate Room Load");
+        Button lecturerTimetableButton = createActionButton("Lecturer Timetable", "Lecturer Timetable");
+        Button groupTimetableButton = createActionButton("Student Group Timetable", "Student Group Timetable");
+        
         optionsPanel.add(lecturerLoadButton);
         optionsPanel.add(studentLoadButton);
         optionsPanel.add(roomLoadButton);
-       
-        Button backButton = createDashboardButton("Back to Home");
-        backButton.setActionCommand("HOME");
+        optionsPanel.add(lecturerTimetableButton);
+        optionsPanel.add(groupTimetableButton);
+        
+        Button backButton = createBackButton("Back to Home", "HOME");
 
         mainPanel.add(title, BorderLayout.NORTH);
-        mainPanel.add(optionsPanel, BorderLayout.CENTER);
+        
+        Panel wrapper = new Panel(new BorderLayout());
+        wrapper.setBackground(new Color(245, 247, 250));
+
+        Panel topPadding = new Panel();
+        topPadding.setPreferredSize(new Dimension(0, 20));
+
+        Panel leftPadding = new Panel();
+        leftPadding.setPreferredSize(new Dimension(25, 0));
+
+        Panel rightPadding = new Panel();
+        rightPadding.setPreferredSize(new Dimension(25, 0));
+
+        wrapper.add(topPadding, BorderLayout.NORTH);
+        wrapper.add(leftPadding, BorderLayout.WEST);
+        wrapper.add(rightPadding, BorderLayout.EAST);
+        wrapper.add(optionsPanel, BorderLayout.CENTER);
+
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
+        scrollPane.add(wrapper);
+
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
         mainPanel.add(backButton, BorderLayout.SOUTH);
 
         validate();
@@ -904,7 +970,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label(courseName, Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel detailsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        Panel detailsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         detailsPanel.setBackground(new Color(245, 247, 250));
 
         boolean found = false;
@@ -965,8 +1031,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
             detailsPanel.add(new Label("No course details found.", Label.CENTER));
         }
 
-        Button backButton = createDashboardButton("Back to Courses");
-        backButton.setActionCommand("Courses");
+        Button backButton = createBackButton("Back to Courses", "Courses");
+        
 
         mainPanel.add(title, BorderLayout.NORTH);
 
@@ -1064,10 +1130,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
                 detailsPanel.add(courseCard);
             }
         }
-
-        Button backButton = createDashboardButton("Back to Lecturers");
-        backButton.setActionCommand("Lecturers");
-
+        Button backButton = createBackButton("Back to Lecturers", "Lecturers");
+       
         mainPanel.add(title, BorderLayout.NORTH);
 
         ScrollPane scrollPane = new ScrollPane();
@@ -1125,10 +1189,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
         infoCard.add(sizeLabel);
 
         detailsPanel.add(infoCard);
-
-        Button backButton = createDashboardButton("Back to Rooms");
-        backButton.setActionCommand("Rooms");
-
+        Button backButton = createBackButton("Back to Rooms", "Rooms");
+      
         mainPanel.add(title, BorderLayout.NORTH);
 
         ScrollPane scrollPane = new ScrollPane();
@@ -1225,9 +1287,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
                 detailsPanel.add(courseCard);
             }
         }
-
-        Button backButton = createDashboardButton("Back to Student Groups");
-        backButton.setActionCommand("Student Groups");
+        Button backButton = createBackButton("Back to Student Groups", "Student Groups");
+        
 
         mainPanel.add(title, BorderLayout.NORTH);
 
@@ -1312,31 +1373,43 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons By Course", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel coursesPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        Panel coursesPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));;
         coursesPanel.setBackground(new Color(245, 247, 250));
 
         ArrayList<String> courseNames = new ArrayList<String>();
 
         for (Course course : system.getCourses()) {
-            if (!courseNames.contains(course.getCourseName())) {
-                courseNames.add(course.getCourseName());
-                Lecturer lecturer = system.getLecturerForCourse(course);
-                StudentGroup group = system.getGroupForCourse(course);
-                Button button = createDashboardButton(course.getCourseName());
-                button.setPreferredSize(new Dimension(250, 90));
-                button.setActionCommand("LESSONS_COURSE_NAME_" + course.getCourseName()+" | lecturer: " +lecturer.getFirstName() + " " +lecturer.getLastName() +" | student group:  " +group.getDepartment() +" year: " +group.getStudyYear());
+        	courseNames.add(course.getCourseName());
 
-                coursesPanel.add(button);
-            }
+        	Lecturer lecturer = system.getLecturerForCourse(course);
+        	StudentGroup group = system.getGroupForCourse(course);
+
+        	String buttonText = course.getCourseName();
+
+        	if (lecturer != null) {
+        	    buttonText += " | " + lecturer.getFirstName() + " " + lecturer.getLastName();
+        	}
+
+        	if (group != null) {
+        	    buttonText += " | " + shortenDepartment(group.getDepartment()) +
+        	                  " Y" + group.getStudyYear();
+        	}
+
+        	Button button = createDashboardButton(buttonText);
+        	button.setPreferredSize(new Dimension(250, 90));
+
+        	// Action command must stay clean
+        	button.setActionCommand("LESSONS_COURSE_NAME_" + course.getCourseName());
+
+        	coursesPanel.add(button);
         }
-
-        Button backButton = createDashboardButton("Back to Lessons");
-        backButton.setActionCommand("Lessons");
+        Button backButton = createBackButton("Back to Lessons", "Lessons");
 
         mainPanel.add(title, BorderLayout.NORTH);
 
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(coursesPanel);
+        
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
@@ -1351,7 +1424,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons - " + courseName, Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 15));
 
-        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         lessonsPanel.setBackground(new Color(245, 247, 250));
 
         boolean foundLessons = false;
@@ -1368,8 +1441,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
         if (!foundLessons) {
             lessonsPanel.add(new Label("No lessons found for this course.", Label.CENTER));
         }
-
         Button backButton = createDashboardButton("Back to Courses");
+      
         backButton.setActionCommand("LESSONS_BY_COURSE");
 
         mainPanel.add(title, BorderLayout.NORTH);
@@ -1393,7 +1466,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons By Lecturer", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel lecturersPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        Panel lecturersPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));;
         lecturersPanel.setBackground(new Color(245, 247, 250));
 
         for (Lecturer lecturer : system.getLecturers()) {
@@ -1406,13 +1479,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
             lecturersPanel.add(button);
         }
 
-        Button backButton = createDashboardButton("Back to Lessons");
-        backButton.setActionCommand("Lessons");
-
+        Button backButton = createBackButton("Back to Lessons", "Lessons");
+        
         mainPanel.add(title, BorderLayout.NORTH);
 
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(lecturersPanel);
+        
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
@@ -1444,7 +1517,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         );
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         lessonsPanel.setBackground(new Color(245, 247, 250));
 
         boolean foundLesson = false;
@@ -1463,8 +1536,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
         if (!foundLesson) {
             lessonsPanel.add(new Label("No lessons found for this lecturer.", Label.CENTER));
         }
-
         Button backButton = createDashboardButton("Back to Lecturers");
+     
         backButton.setActionCommand("LESSONS_BY_LECTURER");
 
         mainPanel.add(title, BorderLayout.NORTH);
@@ -1488,7 +1561,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons By Room", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel roomsPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        Panel roomsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));;
         roomsPanel.setBackground(new Color(245, 247, 250));
 
         for (Room room : system.getRooms()) {
@@ -1498,14 +1571,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
             roomsPanel.add(button);
         }
-
-        Button backButton = createDashboardButton("Back to Lessons");
-        backButton.setActionCommand("Lessons");
-
+        Button backButton = createBackButton("Back to Lessons", "Lessons");
+        
         mainPanel.add(title, BorderLayout.NORTH);
 
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(roomsPanel);
+        
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
@@ -1534,7 +1606,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons - Room " + selectedRoom.getRoomID(), Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         lessonsPanel.setBackground(new Color(245, 247, 250));
 
         boolean foundLesson = false;
@@ -1553,7 +1625,6 @@ public class SchedamyGUI extends Frame implements ActionListener {
         if (!foundLesson) {
             lessonsPanel.add(new Label("No lessons found for this room.", Label.CENTER));
         }
-
         Button backButton = createDashboardButton("Back to Rooms");
         backButton.setActionCommand("LESSONS_BY_ROOM");
 
@@ -1578,7 +1649,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons By Student Group", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel groupsPanel = new Panel(new GridLayout(0, 2, 15, 15));
+        Panel groupsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));;
         groupsPanel.setBackground(new Color(245, 247, 250));
 
         for (StudentGroup group : system.getStudentGroups()) {
@@ -1591,14 +1662,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
             groupsPanel.add(button);
         }
-
-        Button backButton = createDashboardButton("Back to Lessons");
-        backButton.setActionCommand("Lessons");
-
+        Button backButton = createBackButton("Back to Lessons", "Lessons");
+     
         mainPanel.add(title, BorderLayout.NORTH);
 
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(groupsPanel);
+        
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
@@ -1631,7 +1701,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         );
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 20, 20));
+        Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         lessonsPanel.setBackground(new Color(245, 247, 250));
 
         boolean foundLesson = false;
@@ -1677,6 +1747,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
     // Create a pop-up dialog window for adding a new lecturer
     Dialog dialog = new Dialog(this, "Add Lecturer", true);
+    enableDialogCloseButton(dialog);
     // Organize the dialog into sections
     dialog.setLayout(new BorderLayout());
     dialog.setSize(450, 380);
@@ -1798,6 +1869,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
     
 	private void openAddRoomDialog() {
         Dialog dialog = new Dialog(this, "Add Room", true);
+        enableDialogCloseButton(dialog);
         dialog.setLayout(new BorderLayout());
         dialog.setSize(420, 280);
 
@@ -1878,6 +1950,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
     
 	private void openAddCourseDialog() {
 	    Dialog dialog = new Dialog(this, "Add Course", true);
+	    enableDialogCloseButton(dialog);
 	    dialog.setLayout(new BorderLayout());
 	    dialog.setSize(420, 260);
 	    Panel formPanel = new Panel(new GridLayout(5,1,5,5));
@@ -1912,8 +1985,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 	        for (Lecturer lecturer : system.getLecturers())
 	        {
-	            if (lecturer.getSpecializations().contains(selectedCourse))
-	            {
+	        	if (lecturer.getSpecializations().contains(selectedCourse))
+	        	{
 	                lecturerChoice.add(lecturer.getLecturerID() + " - " +
 	                        lecturer.getFirstName() + " " + lecturer.getLastName());
 	            }
@@ -2012,6 +2085,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	   
 		// Create dialog window
 	    Dialog dialog = new Dialog(this, "Add Student Group", true);
+	    enableDialogCloseButton(dialog);
 	    //BorderLayout for better organization
 	    dialog.setLayout(new BorderLayout());
 	    // Set dialog size
@@ -2093,6 +2167,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	private void openAddLessonDialog()
 	    {
 	        Dialog dialog = new Dialog(this, "Add Lesson", true);
+	        enableDialogCloseButton(dialog);
 	        dialog.setLayout(new BorderLayout());
 	        dialog.setSize(600, 350);
 
@@ -2383,6 +2458,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	private void openCancelLessonDialog()
 	{
 	    Dialog dialog = new Dialog(this, "Cancel Lesson", true);
+	    enableDialogCloseButton(dialog);
 	    dialog.setLayout(new BorderLayout());
 	    dialog.setSize(500, 220);
 
@@ -2568,6 +2644,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	private void openRescheduleLessonDialog()
 	{
 	    Dialog dialog = new Dialog(this, "Reschedule Lesson", true);
+	    enableDialogCloseButton(dialog);
 	    dialog.setLayout(new BorderLayout());
 	    dialog.setSize(600, 300);
 
@@ -2857,49 +2934,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
                 double requiredHours = lecturer.getRequiredHours();
                 double diff = requiredHours - actualHours;
-                
-
-                /*
-                  This version uses CalculateHoursThread with only one
-                  AssignedToTeach object, and calculates  hours of
-                  only one course, even if the lecturer teaches several courses.
-                 
-                 SchedamySystem calculateLecturerActualHours() checks all AssignedToTeach objects and sums
-                 hours of every course that belongs to this lecturer,
-                 to give lecturer's real total teaching load.
-                 We can think if there is any other way, if we want to use the thread. 
-                 (Now there is no use for CalculateHoursThread)
-                 */
-                
-                /* Find AssignedToTeach for this lecturer
-                AssignedToTeach assigned = null;
-                for (AssignedToTeach a : system.getAssignedToTeachList()) {
-                    if (a.getLecturer().equals(lecturer)) {
-                        assigned = a;
-                        break;
-                    }
-                }
-
-                if (assigned == null) {
-                    JOptionPane.showMessageDialog(this,
-                        "This lecturer has no assigned courses.",
-                        "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                // Show calculating message
-                JOptionPane.showMessageDialog(this,
-                    "Calculating hours for " + lecturer.getFirstName() + "...\nPlease wait.",
-                    "Calculating", JOptionPane.INFORMATION_MESSAGE);
-
-                // Start the thread
-                CalculateHoursThread thread = new CalculateHoursThread(assigned);
-                thread.start();
-                thread.join(); // wait for result
-                double actualHours = thread.getTotalHours();
-                double requiredHours = lecturer.getRequiredHours();
-                double diff = requiredHours - actualHours;*/
-
+     
          
                 JOptionPane.showMessageDialog(this,
                     "Lecturer: " + lecturer.getFirstName() + " " + lecturer.getLastName() +
@@ -2997,7 +3032,150 @@ public class SchedamyGUI extends Frame implements ActionListener {
         }
     }
     
+        // Timetable dialogs
+    private void openLecturerTimetableDialog()
+    {
+        Choice lecturerChoice = new Choice();
+        Vector<Lecturer> lecturersList = new Vector<Lecturer>();
+
+        for (Lecturer lecturer : system.getLecturers()) {
+            lecturerChoice.add(
+                lecturer.getLecturerID() + " - " +
+                lecturer.getFirstName() + " " +
+                lecturer.getLastName()
+            );
+            lecturersList.add(lecturer);
+        }
+
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            lecturerChoice,
+            "Choose Lecturer",
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                if (lecturerChoice.getItemCount() == 0) {
+                    throw new IllegalArgumentException("No lecturers found.");
+                }
+
+                Lecturer selectedLecturer =
+                    lecturersList.get(lecturerChoice.getSelectedIndex());
+
+                String text = "Lecturer: " +
+                    selectedLecturer.getFirstName() + " " +
+                    selectedLecturer.getLastName() +
+                    " (ID: " + selectedLecturer.getLecturerID() + ")\n\n";
+
+                text += "--------------------------------------------------------------------------------\n";
+
+                boolean foundLesson = false;
+
+                for (AssignedToTeach assigned : system.getAssignedToTeachList()) {
+                    if (assigned.getLecturer().equals(selectedLecturer)) {
+                        Course course = assigned.getCourse();
+
+                        for (Lesson lesson : course.getLessons()) {
+                            if (!lesson.getStatus().equals("CANCELLED")) {
+                                text += buildLessonRow(course, lesson);
+                                foundLesson = true;
+                            }
+                        }
+                    }
+                }
+
+                if (!foundLesson) {
+                    text += "No lessons found for this lecturer.";
+                }
+
+                showTextDialog("Lecturer Timetable", text);
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Error: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+    }
     
+    private void openStudentGroupTimetableDialog()
+    {
+        Choice groupChoice = new Choice();
+        Vector<StudentGroup> groupsList = new Vector<StudentGroup>();
+
+        for (StudentGroup group : system.getStudentGroups()) {
+            groupChoice.add(
+                group.getGroupID() + " - " +
+                group.getDepartment() + " Year " +
+                group.getStudyYear()
+            );
+            groupsList.add(group);
+        }
+
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            groupChoice,
+            "Choose Student Group",
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE
+        );
+
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                if (groupChoice.getItemCount() == 0) {
+                    throw new IllegalArgumentException("No student groups found.");
+                }
+
+                StudentGroup selectedGroup =
+                    groupsList.get(groupChoice.getSelectedIndex());
+
+                String text = "Student Group: " +
+                    selectedGroup.getGroupID() + " - " +
+                    selectedGroup.getDepartment() + ", " +
+                    " Year " + selectedGroup.getStudyYear() + ", " +
+                    selectedGroup.getProgramName() +
+                    ", (" + selectedGroup.getStudentCount() + " students)\n\n";
+
+                text += "--------------------------------------------------------------------------------\n";
+
+                boolean foundLesson = false;
+
+                for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
+                    if (enrolment.getGroup().equals(selectedGroup)) {
+                        Course course = enrolment.getCourse();
+
+                        for (Lesson lesson : course.getLessons()) {
+                            if (!lesson.getStatus().equals("CANCELLED")) {
+                                text += buildLessonRow(course, lesson);
+                                foundLesson = true;
+                            }
+                        }
+                    }
+                }
+
+                if (!foundLesson) {
+                    text += "No lessons found for this student group.";
+                }
+
+                showTextDialog("Student Group Timetable", text);
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Error: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+    }
+ 	
+ 	
     
     // ======================================================
     // Helpers
@@ -3034,7 +3212,70 @@ public class SchedamyGUI extends Frame implements ActionListener {
         nextGroupID = maxGroupID + 1;
         nextLessonID = maxLessonID + 1;
     }
+    
+        // ------------------------------------------------------
+        // DATA Management
+        // ------------------------------------------------------
+    private void confirmExit() {
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            "Do you want to save data before exiting?",
+            "Exit Schedemy",
+            JOptionPane.YES_NO_CANCEL_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
 
+        if (result == JOptionPane.YES_OPTION) {
+            try {
+                system.saveDataToFile();
+                System.exit(0);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Error saving data: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+
+        if (result == JOptionPane.NO_OPTION) {
+            System.exit(0);
+        }
+
+        // CANCEL -> do nothing
+    }
+    
+    private void askLoadOnStart() {
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            "Do you want to load saved data?",
+            "Load Data",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (result == JOptionPane.YES_OPTION) {
+            try {
+                system.loadDataFromFile();
+                updateNextIDs();
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Data loaded successfully!",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Error loading data: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+    }
         // ------------------------------------------------------
         // Text Formatting
         // ------------------------------------------------------
@@ -3086,6 +3327,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
     private void showTextDialog(String title, String text)
     {
         Dialog dialog = new Dialog(this, title, true);
+        enableDialogCloseButton(dialog);
         dialog.setLayout(new BorderLayout());
         dialog.setSize(600, 450);
 
@@ -3102,7 +3344,43 @@ public class SchedamyGUI extends Frame implements ActionListener {
         dialog.setVisible(true);
     }
     
+    private void enableDialogCloseButton(Dialog dialog) {
+        dialog.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                dialog.dispose();
+            }
+        });
+    }
     
+    private Button createBackButton(String text, String command) {
+        Button button = createDashboardButton(text);
+        button.setActionCommand(command);
+        button.setPreferredSize(new Dimension(220, 45));
+        button.setFont(new Font("Arial", Font.BOLD, 16));
+        return button;
+    }
+    
+    private Button createActionButton(String text, String command) {
+        Button button = createDashboardButton(text);
+        button.setActionCommand(command);
+        button.setPreferredSize(new Dimension(250, 90));
+        return button;
+    }
+    
+    private void setCardsPanelSize(Panel panel, int itemCount) {
+        int columns = 2;
+        int buttonWidth = 250;
+        int buttonHeight = 90;
+        int hGap = 25;
+        int vGap = 25;
+
+        int rows = (int) Math.ceil(itemCount / 2.0);
+
+        int width = columns * buttonWidth + hGap + 40;
+        int height = rows * buttonHeight + Math.max(0, rows - 1) * vGap + 40;
+
+        panel.setPreferredSize(new Dimension(width, height));
+    }
         // ------------------------------------------------------
         // Lesson Helpers
         // ------------------------------------------------------
@@ -3153,300 +3431,4 @@ public class SchedamyGUI extends Frame implements ActionListener {
         return Color.WHITE;
     }
     
-    
- // Timetable dialogs
-	
- 	private void openLecturerTimetableDialog()
- 	{
- 	    Dialog dialog = new Dialog(this, "Lecturer Timetable", true);
- 	    dialog.setLayout(new BorderLayout());
- 	    dialog.setSize(450, 180);
-
- 	    Choice lecturerChoice = new Choice();
- 	    Vector<Lecturer> lecturersList = new Vector<Lecturer>();
-
- 	    for (Lecturer lecturer : system.getLecturers()) {
- 	        lecturerChoice.add(
- 	            lecturer.getLecturerID() + " - " +
- 	            lecturer.getFirstName() + " " +
- 	            lecturer.getLastName()
- 	        );
- 	        lecturersList.add(lecturer);
- 	    }
-
- 	    Button showButton = new Button("Show Timetable");
- 	    Button closeButton = new Button("Close");
-
- 	    Panel formPanel = new Panel(new GridLayout(1, 2, 5, 5));
- 	    formPanel.add(new Label("Lecturer:"));
- 	    formPanel.add(lecturerChoice);
-
- 	    Panel buttonPanel = new Panel(new GridLayout(1, 2, 5, 5));
- 	    buttonPanel.add(showButton);
- 	    buttonPanel.add(closeButton);
-
- 	    dialog.add(formPanel, BorderLayout.CENTER);
- 	    dialog.add(buttonPanel, BorderLayout.SOUTH);
-
- 	    
- 	   
- 	    showButton.addActionListener(e -> {
- 	        try {
- 	            if (lecturerChoice.getItemCount() == 0) {
- 	                throw new IllegalArgumentException("No lecturers found.");
- 	            }
-
- 	            Lecturer selectedLecturer =
- 	                lecturersList.get(lecturerChoice.getSelectedIndex());
- 	            
- 	            String text = "Lecturer: " +
- 	            	    selectedLecturer.getFirstName() + " " +
- 	            	    selectedLecturer.getLastName() +
- 	            	    " (ID: " + selectedLecturer.getLecturerID() + ")\n\n";
- 	           
- 		            text += "--------------------------------------------------------------------------------\n";
-
- 		            boolean foundLesson = false;
-
- 		            for (AssignedToTeach assigned : system.getAssignedToTeachList()) {
- 		                if (assigned.getLecturer().equals(selectedLecturer)) {
- 		                    Course course = assigned.getCourse();
-
- 		                    for (Lesson lesson : course.getLessons()) {
- 		                        if (!lesson.getStatus().equals("CANCELLED")) {
- 		                            text += buildLessonRow(course, lesson);
- 		                            foundLesson = true;
- 		                        }
- 		                    }
- 		                }
- 		            }
-
- 		            if (!foundLesson) {
- 		                text += "No lessons found for this lecturer.";
- 		            }
-
- 	          
- 	            showTextDialog("Lecturer Timetable", text);
- 	         
-
- 	        } catch (Exception ex) {
- 	            JOptionPane.showMessageDialog(this,
- 	                "Error: " + ex.getMessage(),
- 	                "Error",
- 	                JOptionPane.ERROR_MESSAGE);
- 	        }
- 	    });
-
- 	    closeButton.addActionListener(e -> dialog.dispose());
-
- 	    dialog.setVisible(true);
- 	}
- 	
- 	private void openStudentGroupTimetableDialog()
- 	{
- 	    Dialog dialog = new Dialog(this, "Student Group Timetable", true);
- 	    dialog.setLayout(new BorderLayout());
- 	    dialog.setSize(450, 180);
-
- 	    Choice groupChoice = new Choice();
- 	    Vector<StudentGroup> groupsList = new Vector<StudentGroup>();
-
- 	    for (StudentGroup group : system.getStudentGroups()) {
- 	        groupChoice.add(
- 	            group.getGroupID() + " - " +
- 	            group.getDepartment() + " Year " +
- 	            group.getStudyYear()
- 	        );
-
- 	        groupsList.add(group);
- 	    }
-
- 	    Button showButton = new Button("Show Timetable");
- 	    Button closeButton = new Button("Close");
-
- 	    Panel formPanel = new Panel(new GridLayout(1, 2, 5, 5));
- 	    formPanel.add(new Label("Student Group:"));
- 	    formPanel.add(groupChoice);
-
- 	    Panel buttonPanel = new Panel(new GridLayout(1, 2, 5, 5));
- 	    buttonPanel.add(showButton);
- 	    buttonPanel.add(closeButton);
-
- 	    dialog.add(formPanel, BorderLayout.CENTER);
- 	    dialog.add(buttonPanel, BorderLayout.SOUTH);
-
- 	    showButton.addActionListener(e -> {
- 	        try {
- 	            if (groupChoice.getItemCount() == 0) {
- 	                throw new IllegalArgumentException("No student groups found.");
- 	            }
-
- 	            StudentGroup selectedGroup =
- 	                groupsList.get(groupChoice.getSelectedIndex());
-
- 	            String text = "Student Group: " +
- 	                selectedGroup.getGroupID() + " - " +
- 	                selectedGroup.getDepartment() + ", " +
- 	                " Year " + selectedGroup.getStudyYear() + ", " + selectedGroup.getProgramName() +
- 	                ", (" + selectedGroup.getStudentCount() + " students)\n\n";
-
- 	            
- 	           
- 	            text += "--------------------------------------------------------------------------------\n";
-
- 	            boolean foundLesson = false;
-
- 	            for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
- 	                if (enrolment.getGroup().equals(selectedGroup)) {
- 	                    Course course = enrolment.getCourse();
-
- 	                    for (Lesson lesson : course.getLessons()) {
- 	                        if (!lesson.getStatus().equals("CANCELLED")) {
- 	                            text += buildLessonRow(course, lesson);
- 	                            foundLesson = true;
- 	                        }
- 	                    }
- 	                }
- 	            }
-
- 	            if (!foundLesson) {
- 	                text += "No lessons found for this student group.";
- 	            }
-
- 	            showTextDialog("Student Group Timetable", text);
-
- 	        } catch (Exception ex) {
- 	            JOptionPane.showMessageDialog(
- 	                this,
- 	                "Error: " + ex.getMessage(),
- 	                "Error",
- 	                JOptionPane.ERROR_MESSAGE
- 	            );
- 	        }
- 	    });
- 	    closeButton.addActionListener(e -> dialog.dispose());
-
- 	    dialog.setVisible(true);
- 	}
- 	
- // Old views  
- 	private void openCoursesView() {
-	    String text = "";
-
-	    for (Course course : system.getCourses()) {
-	        text += "-----------------------------------------------------------\n";
-	        text += course.getCourseName() + "\n";
-	        text += "-----------------------------------------------------------\n\n";
-
-	        text += "Course ID: " + course.getCourseID() + "\n";
-	        text += "Credits: " + course.getCredits() + "\n";
-	        text += "Type: " + course.getCourseType() + "\n";
-	        text += "Number of lessons: " + course.getLessons().size() + "\n";
-	        text += "\n";
-	        text += system.getCourseInfo(course);
-
-	        text += "\n\n";
-	    }
-
-	    if (text.isEmpty()) {
-	        text = "No courses found.";
-	    }
-
-	    showTextDialog("Courses", text);
-	}
-	private void openLecturersView()
-	{
-	    String text = "";
-
-	    for (Lecturer lecturer : system.getLecturers()) {
-	        text += lecturer.toString() + "\n\n";
-	    }
-
-	    if (text.isEmpty()) {
-	        text = "No lecturers found.";
-	    }
-
-	    showTextDialog("Lecturers", text);
-	}
-    private void openStudentGroupsView()
-    {
-        String text = "";
-        for (StudentGroup group : system.getStudentGroups()) {
-            text += group.toString() + "\n\n";
-        }
-        if (text.isEmpty())
-            text = "No student groups found.";
-
-        showTextDialog("Student Groups", text);
-    }
-    private void openRoomsView()
-    {
-        String text = "";
-
-        for (Room room : system.getRooms()) {
-            text += room.toString() + "\n\n";
-        }
-
-        if (text.isEmpty()) {
-            text = "No rooms found.";
-        }
-
-        showTextDialog("Rooms", text);
-    }
-    private void openLessonsView()
-    {
-        String text = "";
-
-        for (Course course : system.getCourses())
-        {
-            if (course.getLessons().isEmpty()) {
-                continue;
-            }
-            Lecturer lecturer = system.getLecturerForCourse(course);
-            StudentGroup group = system.getGroupForCourse(course);
-
-            text += "------------------------------------------------------------------------------------------------------\n";
-            text += course.getCourseName() +" | Lecturer: " +lecturer.getFirstName() + " " +lecturer.getLastName() +" | Group: " +group.getDepartment() +" Year " +group.getStudyYear() +"\n";
-            text += "------------------------------------------------------------------------------------------------------\n\n";
-
-            for (Lesson lesson : course.getLessons())
-            {
-                text += "Lesson #" + lesson.getLessonID() + "\n\n";
-
-                text += "Date: " +
-                        lesson.getLessonDate().format(DATE_FORMAT) + "\n";
-
-                text += "Time: " +
-                        lesson.getStartTime() +
-                        " - " +
-                        lesson.getEndTime() + "\n";
-
-                text += "Room: " +
-                        (lesson.getRoom() != null ?
-                         lesson.getRoom().getRoomID() :
-                         "Zoom") + "\n";
-
-                text += "Mode: " +
-                        lesson.getTeachingMode() + "\n";
-
-                text += "Status: " +
-                        getFriendlyStatus(lesson.getStatus()) + "\n";
-
-                text += "\n----------------------------------------\n\n";
-            }
-
-            text += "\n";
-        }
-
-        if (text.isEmpty()) {
-            text = "No lessons found.";
-        }
-
-        showTextDialog("Lessons", text);
-    }
-  
-   
-
-    
-   
 }
