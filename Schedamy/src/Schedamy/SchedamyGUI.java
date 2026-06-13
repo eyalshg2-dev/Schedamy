@@ -18,7 +18,7 @@ import java.awt.event.*;
 //Class fields, counters, menus and shared objects
 //======================================================
 
-// Main GUI class of  Schedemy system.
+// Main GUI class of Schedemy system.
 // This class creates the main window, menus, dialogs and user actions.
 public class SchedamyGUI extends Frame implements ActionListener {
 	
