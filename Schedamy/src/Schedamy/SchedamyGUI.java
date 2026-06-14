@@ -1344,7 +1344,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons By Course", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel coursesPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));;
+        Panel coursesPanel =  new Panel(new GridLayout(0, 2, 25, 25));
         coursesPanel.setBackground(new Color(245, 247, 250));
 
         ArrayList<String> courseNames = new ArrayList<String>();
@@ -1378,11 +1378,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         mainPanel.add(title, BorderLayout.NORTH);
 
-        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-        scrollPane.add(coursesPanel);
-        
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-
+        mainPanel.add(createPaddedScrollPane(coursesPanel), BorderLayout.CENTER);
+   
         mainPanel.add(backButton, BorderLayout.SOUTH);
 
         validate();
@@ -1412,10 +1409,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
         if (!foundLessons) {
             lessonsPanel.add(new Label("No lessons found for this course.", Label.CENTER));
         }
-        Button backButton = createDashboardButton("Back to Courses");
-      
-        backButton.setActionCommand("LESSONS_BY_COURSE");
-
+        Button backButton = createBackButton("Back to Courses", "LESSONS_BY_COURSE");
+     
         mainPanel.add(title, BorderLayout.NORTH);
 
         ScrollPane scrollPane = new ScrollPane();
@@ -1437,7 +1432,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons By Lecturer", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel lecturersPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));;
+        Panel lecturersPanel = new Panel(new GridLayout(0, 2, 25, 25));
         lecturersPanel.setBackground(new Color(245, 247, 250));
 
         for (Lecturer lecturer : system.getLecturers()) {
@@ -1454,11 +1449,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         
         mainPanel.add(title, BorderLayout.NORTH);
 
-        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-        scrollPane.add(lecturersPanel);
-        
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-
+        mainPanel.add(createPaddedScrollPane(lecturersPanel), BorderLayout.CENTER);
         mainPanel.add(backButton, BorderLayout.SOUTH);
 
         validate();
@@ -1507,10 +1498,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
         if (!foundLesson) {
             lessonsPanel.add(new Label("No lessons found for this lecturer.", Label.CENTER));
         }
-        Button backButton = createDashboardButton("Back to Lecturers");
-     
-        backButton.setActionCommand("LESSONS_BY_LECTURER");
-
+        Button backButton = createBackButton("Back to Lecturers", "LESSONS_BY_LECTURER");
+    
         mainPanel.add(title, BorderLayout.NORTH);
 
         ScrollPane scrollPane = new ScrollPane();
@@ -1532,11 +1521,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons By Room", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel roomsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));;
+        Panel roomsPanel = new Panel(new GridLayout(0, 2, 25, 25));
         roomsPanel.setBackground(new Color(245, 247, 250));
 
         for (Room room : system.getRooms()) {
-            Button button = createDashboardButton("Room " + room.getRoomID());
+        	Button button = createDashboardButton(
+        		    "Room " + room.getRoomID() + " | Building " + room.getBuilding()
+        		);
             button.setPreferredSize(new Dimension(250, 90));
             button.setActionCommand("LESSONS_ROOM_" + room.getRoomID());
 
@@ -1545,11 +1536,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Button backButton = createBackButton("Back to Lessons", "Lessons");
         
         mainPanel.add(title, BorderLayout.NORTH);
-
-        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-        scrollPane.add(roomsPanel);
-        
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(createPaddedScrollPane(roomsPanel), BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
 
@@ -1596,8 +1583,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         if (!foundLesson) {
             lessonsPanel.add(new Label("No lessons found for this room.", Label.CENTER));
         }
-        Button backButton = createDashboardButton("Back to Rooms");
-        backButton.setActionCommand("LESSONS_BY_ROOM");
+        Button backButton = createBackButton("Back to Rooms", "LESSONS_BY_ROOM");
 
         mainPanel.add(title, BorderLayout.NORTH);
 
@@ -1620,7 +1606,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons By Student Group", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel groupsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));;
+        Panel groupsPanel = new Panel(new GridLayout(0, 2, 25, 25));;
         groupsPanel.setBackground(new Color(245, 247, 250));
 
         for (StudentGroup group : system.getStudentGroups()) {
@@ -1636,11 +1622,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Button backButton = createBackButton("Back to Lessons", "Lessons");
      
         mainPanel.add(title, BorderLayout.NORTH);
-
-        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-        scrollPane.add(groupsPanel);
-        
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(createPaddedScrollPane(groupsPanel), BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
 
@@ -1691,10 +1673,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
         if (!foundLesson) {
             lessonsPanel.add(new Label("No lessons found for this student group.", Label.CENTER));
         }
-
-        Button backButton = createDashboardButton("Back to Student Groups");
-        backButton.setActionCommand("LESSONS_BY_GROUP");
-
+        Button backButton = createBackButton("Back to Student Groups", "LESSONS_BY_GROUP");
+    
         mainPanel.add(title, BorderLayout.NORTH);
 
         ScrollPane scrollPane = new ScrollPane();
@@ -3259,6 +3239,33 @@ public class SchedamyGUI extends Frame implements ActionListener {
         int height = rows * buttonHeight + Math.max(0, rows - 1) * vGap + 40;
 
         panel.setPreferredSize(new Dimension(width, height));
+    }
+    
+    private ScrollPane createPaddedScrollPane(Panel contentPanel) {
+        Panel wrapper = new Panel(new BorderLayout());
+        wrapper.setBackground(new Color(245, 247, 250));
+
+        Panel topPadding = new Panel();
+        topPadding.setBackground(new Color(245, 247, 250));
+        topPadding.setPreferredSize(new Dimension(0, 30));
+
+        Panel leftPadding = new Panel();
+        leftPadding.setBackground(new Color(245, 247, 250));
+        leftPadding.setPreferredSize(new Dimension(30, 0));
+
+        Panel rightPadding = new Panel();
+        rightPadding.setBackground(new Color(245, 247, 250));
+        rightPadding.setPreferredSize(new Dimension(30, 0));
+
+        wrapper.add(topPadding, BorderLayout.NORTH);
+        wrapper.add(leftPadding, BorderLayout.WEST);
+        wrapper.add(rightPadding, BorderLayout.EAST);
+        wrapper.add(contentPanel, BorderLayout.CENTER);
+
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
+        scrollPane.add(wrapper);
+
+        return scrollPane;
     }
         // ------------------------------------------------------
         // Lesson Helpers
