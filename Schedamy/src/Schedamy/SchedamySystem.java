@@ -142,13 +142,9 @@ public class SchedamySystem
 		// last name max 10 letters
 		if (lastName.length() > 10)
 			throw new IllegalArgumentException("Last name cannot exceed 10 characters");
-
-		Lecturer lecturer = new Lecturer(id,firstName,lastName,specializations,teachingScore,fte);
-		// FTE Between 0-100
-		if (fte < 0 || fte > 100)
-			throw new IllegalArgumentException("FTE must be a number between 0-100");
-		if (specializations.isEmpty())
+        if (specializations.isEmpty())
 			throw new IllegalArgumentException("Choose at least one specialization");
+		Lecturer lecturer = new Lecturer(id,firstName,lastName,specializations,teachingScore,fte);
 		lecturers.add(lecturer);
 	}
 
@@ -201,8 +197,8 @@ public class SchedamySystem
 						"This student group already exists");
 			}
 		}
-		if (studentCount <= 0)
-			throw new IllegalArgumentException("Invalid student count");
+		if (studentCount <= 0 || studentCount > 100 )
+			throw new IllegalArgumentException("Student count must be between 1 and 100");
 		StudentGroup group = new StudentGroup(groupID,department,studyYear,studentCount,programName);
 		studentGroups.add(group);
 	}

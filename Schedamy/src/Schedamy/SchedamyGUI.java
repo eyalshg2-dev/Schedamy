@@ -1833,12 +1833,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 		addButton.addActionListener(e -> {
 			try {
-				int score = Integer.parseInt(teachingScoreField.getText().trim());
+				double score = Double.parseDouble(teachingScoreField.getText().trim());
 				if (!idField.getText().matches("\\d+"))
 					throw new IllegalArgumentException("Lecturer ID must contain only digits");
 
 				if (score > 100 || score < 0) {
-					throw new IllegalArgumentException("Teaching score must be positive and less than 100");
+					throw new IllegalArgumentException("Teaching Score must be between 0 and 100");
 				}
 
 				String id = idField.getText().trim();
@@ -1924,25 +1924,28 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		addButton.addActionListener(e -> {
 			try {
 				if (!roomNumberField.getText().matches("\\d+"))
-					throw new IllegalArgumentException("Room number must be a number");
+					throw new IllegalArgumentException("Room number must be a whole number");
 
 				if (!buildingField.getText().matches("\\d+"))
-					throw new IllegalArgumentException("Building must be a number");
+					throw new IllegalArgumentException("Building must be a whole number");
 
 				if (!capacityField.getText().matches("\\d+"))
-					throw new IllegalArgumentException("Capacity must be a number");
-				if (Integer.parseInt(roomNumberField.getText()) > 999)
-				{
-					throw new IllegalArgumentException("Room number must be smaller than 999");
-				}
-				if (Integer.parseInt(buildingField.getText()) > 100)
-				{
-					throw new IllegalArgumentException("Building number must be smaller than 100");
-				}
-				if (Integer.parseInt(capacityField.getText()) > 200)
-				{
-					throw new IllegalArgumentException("Capacity must be smaller than 200");
-				}
+					throw new IllegalArgumentException("Capacity must be a whole number");
+				if (Integer.parseInt(roomNumberField.getText()) < 0 ||
+					    Integer.parseInt(roomNumberField.getText()) > 999)
+					{
+					    throw new IllegalArgumentException("Room number must be between 0 and 999");
+					}
+					if (Integer.parseInt(buildingField.getText()) < 0 ||
+					    Integer.parseInt(buildingField.getText()) > 100)
+					{
+					    throw new IllegalArgumentException("Building number must be between 0 and 100");
+					}
+					if (Integer.parseInt(capacityField.getText()) < 0 ||
+					    Integer.parseInt(capacityField.getText()) > 200)
+					{
+					    throw new IllegalArgumentException("Capacity must be between 0 and 200");
+					}
 				system.addRoom(
 						roomNumberField.getText(),
 						Integer.parseInt(buildingField.getText()),
@@ -2078,9 +2081,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
 				String groupText = groupChoice.getSelectedItem();
 				String lecturerID = lecturerText.split(" - ")[0];
 				int groupID = Integer.parseInt(groupText.split("-")[0]);
-				if (!creditsField.getText().matches("\\d+"))
-					throw new IllegalArgumentException("Credits must be positive a number");
+				String creditsText = creditsField.getText().trim();
 
+				if (!creditsText.matches("\\d+"))
+				    throw new IllegalArgumentException("Credits must be a whole number");
+				int credits = Integer.parseInt(creditsText);
+				if (credits < 1 || credits > 10)
+				    throw new IllegalArgumentException("Credits must be between 1 and 10");
 				system.addCourse(courseID,courseNameChoice.getSelectedItem(),
 						Integer.parseInt(creditsField.getText()),
 						courseTypeChoice.getSelectedItem(),
@@ -2169,7 +2176,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		addButton.addActionListener(e -> {
 			try {
 				if (!studentCountField.getText().matches("\\d+"))
-					throw new IllegalArgumentException("Student count must be a positive number");
+					throw new IllegalArgumentException("Student count must be a whole number");
 				system.addStudentGroup(nextGroupID, departmentChoice.getSelectedItem(),
 						Integer.parseInt(studyYearChoice.getSelectedItem()),
 						Integer.parseInt(studentCountField.getText()),
