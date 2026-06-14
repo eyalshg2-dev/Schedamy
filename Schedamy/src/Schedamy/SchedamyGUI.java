@@ -1924,13 +1924,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		addButton.addActionListener(e -> {
 			try {
 				if (!roomNumberField.getText().matches("\\d+"))
-					throw new IllegalArgumentException("Room number must be a whole number");
+					throw new IllegalArgumentException("Room number must be a whole and positive number");
 
 				if (!buildingField.getText().matches("\\d+"))
-					throw new IllegalArgumentException("Building must be a whole number");
+					throw new IllegalArgumentException("Building must be a whole and positive number");
 
 				if (!capacityField.getText().matches("\\d+"))
-					throw new IllegalArgumentException("Capacity must be a whole number");
+					throw new IllegalArgumentException("Capacity must be a whole and positive number");
 				if (Integer.parseInt(roomNumberField.getText()) < 0 ||
 					    Integer.parseInt(roomNumberField.getText()) > 999)
 					{
@@ -2083,8 +2083,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
 				int groupID = Integer.parseInt(groupText.split("-")[0]);
 				String creditsText = creditsField.getText().trim();
 
+				
 				if (!creditsText.matches("\\d+"))
-				    throw new IllegalArgumentException("Credits must be a whole number");
+				    throw new IllegalArgumentException("Credits must be a whole and positive number");
 				int credits = Integer.parseInt(creditsText);
 				if (credits < 1 || credits > 10)
 				    throw new IllegalArgumentException("Credits must be between 1 and 10");
@@ -2176,7 +2177,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		addButton.addActionListener(e -> {
 			try {
 				if (!studentCountField.getText().matches("\\d+"))
-					throw new IllegalArgumentException("Student count must be a whole number");
+					throw new IllegalArgumentException("Student count must be a whole and positive number");
 				system.addStudentGroup(nextGroupID, departmentChoice.getSelectedItem(),
 						Integer.parseInt(studyYearChoice.getSelectedItem()),
 						Integer.parseInt(studentCountField.getText()),

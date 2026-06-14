@@ -164,6 +164,7 @@ public class SchedamySystem
 				throw new IllegalArgumentException("This room already exists in this building");
 			}
 		}
+		
 		Room room = new Room(roomNumber,building,roomType,capacity,"AVAILABLE");
 		rooms.add(room);
 	}
