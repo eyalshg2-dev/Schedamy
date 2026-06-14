@@ -646,33 +646,41 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		// Help
 		// ======================================================
 
-		if (command.equals("Instructions")) {
-			JOptionPane.showMessageDialog(
-					this,
-					"Use Manage to add or update data.\n" +
-							"Use View to display rooms, lecturers, courses and timetables.\n" +
-							"Use File to save or load system data.",
-							"Schedamy Instructions",
-							JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
+		 if (command.equals("Instructions")) {
+	            showTextDialog(
+	                "Schedamy Instructions",
+	                "\n" +
+	                    "Use Manage to add or update data.\n" +
+	                    "\n" +
+	                    "Use View to display rooms, lecturers, courses and timetables.\n" +
+	                    "\n" +
+	                    "Use File to save or load system data.");                    
+	            return;
+	        }
 
-		if (command.equals("About Schedemy")) {
-			JOptionPane.showMessageDialog(
-					this,
-					"Schedemy System\n" +
-							"Software Engineering Project\n" +
-							"By Idan Zilcha, Orel Levi, Eyal Shigris and Ola Jangirian\n" +
-							"We are four third-year engineering students who experienced many schedule and classroom changes\n" +
-							"during our studies due to unexpected events such as viruses, wars, and maybe even alien invasions.\n" +
-							"To improve and simplify the process, we created Schedemy - a smart scheduling system,\n" +
-							"designed to manage lesson cancellations, rescheduling, classroom changes, and lecturer availability more efficiently.\n" +
-							"The name \"Schedemy\" combines the words Schedule + Academy,\n" +
-							"and also sounds like the Hebrew word \"Shakadnu\" (we worked hard) - which we definitely did.\n",
-							"About Schedemy",
-							JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
+		 if (command.equals("About Schedemy")) {
+	            showTextDialog(
+	                "About Schedemy",
+	                "\n" +
+	                    "Schedemy System\n" +
+	                    "\n" +
+	                    "Software Engineering Project\n" +
+	                    "\n" +
+	                    "By Idan Zilcha, Orel Levi, Eyal Shigris and Ola Jangirian\n" +
+	                    "\n" +
+	                    "We are four third-year engineering students who experienced many schedule and classroom changes\n" +
+	                    "\n" +
+	                    "during our studies due to unexpected events such as viruses, wars, and maybe even alien invasions.\n" +
+	                    "\n" +
+	                    "To improve and simplify the process, we created Schedemy - a smart scheduling system,\n" +
+	                    "\n" +
+	                    "designed to manage lesson cancellations, rescheduling, classroom changes, and lecturer availability more efficiently.\n" +
+	                    "\n" +
+	                    "The name \"Schedemy\" combines the words Schedule + Academy,\n" +
+	                    "\n" +
+	                    "and also sounds like the Hebrew word \"Shakadnu\" (we worked hard) - which we definitely did.\n");
+	            return;
+	        }
 
 	}
 
@@ -710,10 +718,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		mainPanel.add(title, BorderLayout.NORTH);
 
 		setCardsPanelSize(coursesPanel, courseNames.size());
-		ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-		scrollPane.add(coursesPanel);
-		mainPanel.add(scrollPane, BorderLayout.CENTER);
-
+		mainPanel.add(createPaddedScrollPane(coursesPanel), BorderLayout.CENTER);
 		mainPanel.add(backButton, BorderLayout.SOUTH);
 
 		validate();
@@ -721,39 +726,43 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	}
 
 	private void showLecturersDashboard() {
-		clearMainPanel();
+	    clearMainPanel();
 
-		Label title = new Label("Lecturers", Label.CENTER);
-		title.setFont(new Font("Arial", Font.BOLD, 28));
+	    Label title = new Label("Lecturers", Label.CENTER);
+	    title.setFont(new Font("Arial", Font.BOLD, 28));
 
-		Panel lecturersPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
-		lecturersPanel.setBackground(new Color(245, 247, 250));
+	    Panel lecturersPanel = new Panel(new GridLayout(0, 2, 25, 25));
+	    lecturersPanel.setBackground(new Color(245, 247, 250));
 
-		for (Lecturer lecturer : system.getLecturers()) {
-			String name = lecturer.getFirstName() + " " + lecturer.getLastName();
+	    for (Lecturer lecturer : system.getLecturers()) {
+	        String lecturerText =
+	                lecturer.getFirstName() + " " + lecturer.getLastName();
 
-			Button button = createDashboardButton(name);
-			button.setPreferredSize(new Dimension(250, 90));
-			button.setActionCommand("LECTURER_DETAILS_" + lecturer.getLecturerID());
+	        Button button = createDashboardButton(lecturerText);
+	        button.setPreferredSize(new Dimension(250, 90));
+	        button.setActionCommand("LECTURER_DETAILS_" + lecturer.getLecturerID());
 
-			lecturersPanel.add(button);
-		}
+	        lecturersPanel.add(button);
+	    }
 
-		Button backButton = createBackButton("Back to Home", "HOME");
+	    Button backButton = createBackButton("Back to Home", "HOME");
 
-		mainPanel.add(title, BorderLayout.NORTH);
+	    mainPanel.add(title, BorderLayout.NORTH);
+	    mainPanel.add(createPaddedScrollPane(lecturersPanel), BorderLayout.CENTER);
+	    mainPanel.add(backButton, BorderLayout.SOUTH);
 
-		setCardsPanelSize(lecturersPanel, system.getLecturers().size());
-		ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-		scrollPane.add(lecturersPanel);
-
-		mainPanel.add(scrollPane, BorderLayout.CENTER);
-
-		mainPanel.add(backButton, BorderLayout.SOUTH);
-
-		validate();
-		repaint();
+	    validate();
+	    repaint();
 	}
+    
+    
+    
+ // ======================================================
+ // Dash boards
+ // Main navigation screens of the application
+ // ======================================================
+    
+   
 
 	private void showStudentGroupsDashboard() {
 		clearMainPanel();
@@ -781,10 +790,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		mainPanel.add(title, BorderLayout.NORTH);
 
 		setCardsPanelSize(groupsPanel, system.getStudentGroups().size());
-		ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-		scrollPane.add(groupsPanel);
-
-		mainPanel.add(scrollPane, BorderLayout.CENTER);
+		mainPanel.add(createPaddedScrollPane(groupsPanel), BorderLayout.CENTER);
 
 		mainPanel.add(backButton, BorderLayout.SOUTH);
 
@@ -820,10 +826,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		mainPanel.add(title, BorderLayout.NORTH);
 
 		setCardsPanelSize(roomsPanel, system.getRooms().size());
-		ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
-		scrollPane.add(roomsPanel);
-
-		mainPanel.add(scrollPane, BorderLayout.CENTER);
+		mainPanel.add(createPaddedScrollPane(roomsPanel), BorderLayout.CENTER);
 
 		mainPanel.add(backButton, BorderLayout.SOUTH);
 
@@ -1514,8 +1517,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		repaint();
 	}
 
+
 	private void showLessonsOfLecturer(String lecturerID) {
 		clearMainPanel();
+
 
 		Lecturer selectedLecturer = null;
 
@@ -1537,8 +1542,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
 				);
 		title.setFont(new Font("Arial", Font.BOLD, 28));
 
-		Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
-		lessonsPanel.setBackground(new Color(245, 247, 250));
+		Panel lessonsPanel = new Panel(new GridLayout(0, 1, 0, 15));
+        lessonsPanel.setBackground(new Color(245, 247, 250));
 
 		boolean foundLesson = false;
 
@@ -1560,9 +1565,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 		mainPanel.add(title, BorderLayout.NORTH);
 
-		ScrollPane scrollPane = new ScrollPane();
-		scrollPane.add(lessonsPanel);
-		mainPanel.add(scrollPane, BorderLayout.CENTER);
+		ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
+        scrollPane.add(lessonsPanel);
+
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
 
 		mainPanel.add(backButton, BorderLayout.SOUTH);
 
@@ -1588,9 +1594,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
 			button.setPreferredSize(new Dimension(250, 90));
 			button.setActionCommand("LESSONS_ROOM_" + room.getRoomID() + "_" + room.getBuilding());
 
-			roomsPanel.add(button);
+		roomsPanel.add(button);
 		}
 		Button backButton = createBackButton("Back to Lessons", "Lessons");
+
 
 		mainPanel.add(title, BorderLayout.NORTH);
 		mainPanel.add(createPaddedScrollPane(roomsPanel), BorderLayout.CENTER);
@@ -1604,7 +1611,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	private void showLessonsOfRoom(String roomID, int building) {
 		clearMainPanel();
 
+
 		Room selectedRoom = null;
+
 
 		for (Room room : system.getRooms()) {
 			if (room.getRoomID().equals(roomID) && room.getBuilding() == building) {
@@ -1621,8 +1630,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		Label title = new Label("Lessons - Room " +selectedRoom.getRoomID() +" (Building " +selectedRoom.getBuilding() +")",Label.CENTER);
 		title.setFont(new Font("Arial", Font.BOLD, 28));
 
-		Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
-		lessonsPanel.setBackground(new Color(245, 247, 250));
+        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 0, 15));
+        lessonsPanel.setBackground(new Color(245, 247, 250));
 
 		boolean foundLesson = false;
 
@@ -1645,9 +1654,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 		mainPanel.add(title, BorderLayout.NORTH);
 
-		ScrollPane scrollPane = new ScrollPane();
-		scrollPane.add(lessonsPanel);
-		mainPanel.add(scrollPane, BorderLayout.CENTER);
+		 ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
+		 scrollPane.add(lessonsPanel);
+		 mainPanel.add(scrollPane, BorderLayout.CENTER);
 
 		mainPanel.add(backButton, BorderLayout.SOUTH);
 
@@ -1664,7 +1673,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		Label title = new Label("Lessons By Student Group", Label.CENTER);
 		title.setFont(new Font("Arial", Font.BOLD, 28));
 
-		Panel groupsPanel = new Panel(new GridLayout(0, 2, 25, 25));;
+		Panel groupsPanel = new Panel(new GridLayout(0, 2, 25, 25));
 		groupsPanel.setBackground(new Color(245, 247, 250));
 
 		for (StudentGroup group : system.getStudentGroups()) {
@@ -1675,12 +1684,14 @@ public class SchedamyGUI extends Frame implements ActionListener {
 			button.setPreferredSize(new Dimension(250, 90));
 			button.setActionCommand("LESSONS_GROUP_" + group.getGroupID());
 
+
 			groupsPanel.add(button);
 		}
 		Button backButton = createBackButton("Back to Lessons", "Lessons");
 
 		mainPanel.add(title, BorderLayout.NORTH);
 		mainPanel.add(createPaddedScrollPane(groupsPanel), BorderLayout.CENTER);
+
 
 		mainPanel.add(backButton, BorderLayout.SOUTH);
 
@@ -1712,7 +1723,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 				);
 		title.setFont(new Font("Arial", Font.BOLD, 28));
 
-		Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+		Panel lessonsPanel = new Panel(new GridLayout(0, 1, 0, 15));
 		lessonsPanel.setBackground(new Color(245, 247, 250));
 
 		boolean foundLesson = false;
@@ -1733,18 +1744,19 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		}
 		Button backButton = createBackButton("Back to Student Groups", "LESSONS_BY_GROUP");
 
+
 		mainPanel.add(title, BorderLayout.NORTH);
 
-		ScrollPane scrollPane = new ScrollPane();
-		scrollPane.add(lessonsPanel);
-		mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+		ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
+		 scrollPane.add(lessonsPanel);
+		 mainPanel.add(scrollPane, BorderLayout.CENTER);
 
 		mainPanel.add(backButton, BorderLayout.SOUTH);
 
 		validate();
 		repaint();
 	}
-
 
 
 	// ======================================================
@@ -1833,9 +1845,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 		addButton.addActionListener(e -> {
 			try {
+				String scoreText = teachingScoreField.getText().trim();
+				if (!scoreText.matches("\\d+"))
+				    throw new IllegalArgumentException("Teaching Score must be a whole and positive number");
 				double score = Double.parseDouble(teachingScoreField.getText().trim());
 				if (!idField.getText().matches("\\d+"))
 					throw new IllegalArgumentException("Lecturer ID must contain only digits");
+				
 
 				if (score > 100 || score < 0) {
 					throw new IllegalArgumentException("Teaching Score must be between 0 and 100");
@@ -2408,39 +2424,42 @@ public class SchedamyGUI extends Frame implements ActionListener {
 				//CalculateHoursThread thread for checking if a lecturer is overloading after adding a lesson
 				if (assigned != null)
 				{
-					AssignedToTeach finalAssigned = assigned;
-					CalculateHoursThread thread = new CalculateHoursThread(finalAssigned);
-					thread.start();
-					thread.join();
+				    double totalHours = 0;
+				    for (AssignedToTeach a : system.getAssignedToTeachList())
+				    {
+				        if (a.getLecturer().getLecturerID().equals(assigned.getLecturer().getLecturerID()))
+				        {
+				            CalculateHoursThread thread = new CalculateHoursThread(a);
+				            thread.start();
+				            thread.join();
 
-					double totalHours = thread.getTotalHours();
-					double requiredHours = assigned.getLecturer().getRequiredHours();
+				            totalHours += thread.getTotalHours();
+				        }
+				    }
+				    double requiredHours = assigned.getLecturer().getRequiredHours();
 
-					System.out.println("Total hours: " + totalHours);
-					System.out.println("Required hours: " + requiredHours);
+				    if (totalHours > requiredHours)
+				    {
+				        Lesson addedLesson = assigned.getCourse().getLessons().get(
+				                assigned.getCourse().getLessons().size() - 1
+				        );
+				        system.removeLesson(assigned.getCourse(), addedLesson);
+				        nextLessonID--;
 
-					if(totalHours > requiredHours) {
-						Lesson addedLesson = assigned.getCourse().getLessons().get(
-								assigned.getCourse().getLessons().size() - 1
-								);
-
-						system.removeLesson(assigned.getCourse(), addedLesson);
-						nextLessonID--;
-
-						JOptionPane.showMessageDialog(
-								this,
-								"Cannot add lesson.\n\n" +
-										assigned.getLecturer().getFirstName() + " " +
-										assigned.getLecturer().getLastName() +
-										" is overloaded.\n" +
-										"Total Hours: " + totalHours +
-										"\nRequired Hours: " + requiredHours +
-										"\n\nThe lesson was not added.",
-										"Lesson Not Added",
-										JOptionPane.WARNING_MESSAGE
-								);
-						return;
-					}
+				        JOptionPane.showMessageDialog(
+				                this,
+				                "Cannot add lesson.\n\n" +
+				                        assigned.getLecturer().getFirstName() + " " +
+				                        assigned.getLecturer().getLastName() +
+				                        " is overloaded.\n" +
+				                        "Total Hours: " + totalHours +
+				                        "\nRequired Hours: " + requiredHours +
+				                        "\n\nThe lesson was not added.",
+				                "Lesson Not Added",
+				                JOptionPane.WARNING_MESSAGE
+				        );
+				        return;
+				    }
 				}
 				if (assigned != null &&
 						system.isStudentGroupOverloaded(assigned.getCourse()))
@@ -3101,78 +3120,93 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	// Student Group Load
 	private void openStudentLoadDialog() {
 
-		Choice groupChoice = new Choice();
+	    Choice groupChoice = new Choice();
 
-		for (StudentGroup group : system.getStudentGroups()) {
-			groupChoice.add(
-					group.getGroupID() + " - " +
-							group.getDepartment() + " Year " +
-							group.getStudyYear() + " - " +
-							group.getProgramName()
-					);
-		}
+	    for (StudentGroup group : system.getStudentGroups()) {
+	        groupChoice.add(
+	                group.getGroupID() + " - " +
+	                group.getDepartment() + " Year " +
+	                group.getStudyYear() + " - " +
+	                group.getProgramName()
+	        );
+	    }
 
-		int result = JOptionPane.showConfirmDialog(
-				this,
-				groupChoice,
-				"Choose Student Group",
-				JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.PLAIN_MESSAGE
-				);
+	    int result = JOptionPane.showConfirmDialog(
+	            this,
+	            groupChoice,
+	            "Choose Student Group",
+	            JOptionPane.OK_CANCEL_OPTION,
+	            JOptionPane.PLAIN_MESSAGE
+	    );
 
-		if (result == JOptionPane.OK_OPTION) {
+	    if (result == JOptionPane.OK_OPTION) {
 
-			StudentGroup group =
-					system.getStudentGroups().get(groupChoice.getSelectedIndex());
+	        StudentGroup group =
+	                system.getStudentGroups().get(groupChoice.getSelectedIndex());
 
-			ArrayList<GroupEnrolment> groupCourses = new ArrayList<GroupEnrolment>();
+	        ArrayList<GroupEnrolment> groupCourses = new ArrayList<GroupEnrolment>();
 
-			for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
-				if (enrolment.getGroup().equals(group)) {
-					groupCourses.add(enrolment);
-				}
-			}
+	        for (GroupEnrolment enrolment : system.getGroupEnrolments()) {
+	            if (enrolment.getGroup().equals(group)) {
+	                groupCourses.add(enrolment);
+	            }
+	        }
 
-			GroupEnrolment[] enrolments =
-					groupCourses.toArray(new GroupEnrolment[groupCourses.size()]);
+	        GroupEnrolment[] enrolments =
+	                groupCourses.toArray(new GroupEnrolment[groupCourses.size()]);
 
-			double totalHours = group.calculateTotalHours(enrolments);
-			boolean overloaded = group.isScheduleOverloaded(enrolments);
+	        double totalHours = group.calculateTotalHours(enrolments);
+	        boolean overloaded = group.isScheduleOverloaded(enrolments);
 
-			JOptionPane.showMessageDialog(
-					this,
-					"Student Group: " + group.getDepartment() +
-					" Year " + group.getStudyYear() +
-					"\nProgram: " + group.getProgramName() +
-					"\nTotal load: " + String.format("%.2f", totalHours)+
-					"\nOverloaded: " + overloaded
-					);
-		}
+	        JOptionPane.showMessageDialog(
+	                this,
+	                "Student Group: " + group.getDepartment() +
+	                " Year " + group.getStudyYear() +
+	                "\nProgram: " + group.getProgramName() +
+	                "\nTotal load: " + String.format("%.2f", totalHours) +
+	                "\nOverloaded: " + overloaded,
+	                "Student Group Load Result",
+	                JOptionPane.INFORMATION_MESSAGE
+	        );
+	    }
 	}
+
+        // Room Load
 	// Room Load
-	private void openRoomLoadDialog()
-	{
-		Choice roomChoice = new Choice();
+	private void openRoomLoadDialog() {
 
-		for (Room room : system.getRooms())
-		{
-			roomChoice.add("Room " + room.getRoomID() +" | Building " + room.getBuilding());
-		}
-		int result = JOptionPane.showConfirmDialog(this,roomChoice,"Choose Room",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
+	    Choice roomChoice = new Choice();
 
-		if (result == JOptionPane.OK_OPTION) {
+	    for (Room room : system.getRooms()) {
+	        roomChoice.add("Room " + room.getRoomID() + " | Building " + room.getBuilding());
+	    }
 
-			Room room = system.getRooms().get(roomChoice.getSelectedIndex());
-			double load = system.calculateRoomLoad(room);
+	    int result = JOptionPane.showConfirmDialog(
+	            this,
+	            roomChoice,
+	            "Choose Room",
+	            JOptionPane.OK_CANCEL_OPTION,
+	            JOptionPane.PLAIN_MESSAGE
+	    );
 
-			JOptionPane.showMessageDialog(
-					this,
-					"Room: " + room.getRoomID() +
-					"\nBuilding: " + room.getBuilding() +
-					"\nSize: " + room.classifyRoomSize() +
-					"\nAcademic Hours: " + load);
-		}
+	    if (result == JOptionPane.OK_OPTION) {
+
+	        Room room = system.getRooms().get(roomChoice.getSelectedIndex());
+	        double load = system.calculateRoomLoad(room);
+
+	        JOptionPane.showMessageDialog(
+	                this,
+	                "Room: " + room.getRoomID() +
+	                "\nBuilding: " + room.getBuilding() +
+	                "\nSize: " + room.classifyRoomSize() +
+	                "\nAcademic Hours: " + load,
+	                "Room Load Result",
+	                JOptionPane.INFORMATION_MESSAGE
+	        );
+	    }
 	}
+    
+
 
 	// Timetable dialogs
 	private void openLecturerTimetableDialog()
@@ -3463,8 +3497,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		if (department.equals("Economics and Business Administration")) return "EBA";
 		if (department.equals("Computer Science")) return "CS";
 
-		return department;
-	}
+
+        return department;
+    }
+    
+  
 
 	private void showTextDialog(String title, String text)
 	{
@@ -3475,7 +3512,6 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		dialog.setLocationRelativeTo(this);
 
 		TextArea textArea = new TextArea(text);
-
 		textArea.setEditable(false);
 
 		Button closeButton = new Button("Close");

@@ -806,10 +806,17 @@ public class SchedamySystem
 	//REMOVE LESSONS
 	public void removeLesson(Course course, Lesson lesson)
 	{
-		roomReservations.removeIf(
-				reservation -> reservation.getLesson().equals(lesson)
-				);
+		for (int i = 0; i < roomReservations.size(); i++)
+		{
+		    RoomResrvation reservation = roomReservations.get(i);
 
+		    if (reservation.getLesson().equals(lesson))
+		    {
+		        roomReservations.remove(i);
+		        break;
+		    }
+		    
+		}
 		if (lesson.getRoom() != null)
 		{
 			lesson.getRoom().setStatus("AVAILABLE");
