@@ -2424,39 +2424,42 @@ public class SchedamyGUI extends Frame implements ActionListener {
 				//CalculateHoursThread thread for checking if a lecturer is overloading after adding a lesson
 				if (assigned != null)
 				{
-					AssignedToTeach finalAssigned = assigned;
-					CalculateHoursThread thread = new CalculateHoursThread(finalAssigned);
-					thread.start();
-					thread.join();
+				    double totalHours = 0;
+				    for (AssignedToTeach a : system.getAssignedToTeachList())
+				    {
+				        if (a.getLecturer().getLecturerID().equals(assigned.getLecturer().getLecturerID()))
+				        {
+				            CalculateHoursThread thread = new CalculateHoursThread(a);
+				            thread.start();
+				            thread.join();
 
-					double totalHours = thread.getTotalHours();
-					double requiredHours = assigned.getLecturer().getRequiredHours();
+				            totalHours += thread.getTotalHours();
+				        }
+				    }
+				    double requiredHours = assigned.getLecturer().getRequiredHours();
 
-					System.out.println("Total hours: " + totalHours);
-					System.out.println("Required hours: " + requiredHours);
+				    if (totalHours > requiredHours)
+				    {
+				        Lesson addedLesson = assigned.getCourse().getLessons().get(
+				                assigned.getCourse().getLessons().size() - 1
+				        );
+				        system.removeLesson(assigned.getCourse(), addedLesson);
+				        nextLessonID--;
 
-					if(totalHours > requiredHours) {
-						Lesson addedLesson = assigned.getCourse().getLessons().get(
-								assigned.getCourse().getLessons().size() - 1
-								);
-
-						system.removeLesson(assigned.getCourse(), addedLesson);
-						nextLessonID--;
-
-						JOptionPane.showMessageDialog(
-								this,
-								"Cannot add lesson.\n\n" +
-										assigned.getLecturer().getFirstName() + " " +
-										assigned.getLecturer().getLastName() +
-										" is overloaded.\n" +
-										"Total Hours: " + totalHours +
-										"\nRequired Hours: " + requiredHours +
-										"\n\nThe lesson was not added.",
-										"Lesson Not Added",
-										JOptionPane.WARNING_MESSAGE
-								);
-						return;
-					}
+				        JOptionPane.showMessageDialog(
+				                this,
+				                "Cannot add lesson.\n\n" +
+				                        assigned.getLecturer().getFirstName() + " " +
+				                        assigned.getLecturer().getLastName() +
+				                        " is overloaded.\n" +
+				                        "Total Hours: " + totalHours +
+				                        "\nRequired Hours: " + requiredHours +
+				                        "\n\nThe lesson was not added.",
+				                "Lesson Not Added",
+				                JOptionPane.WARNING_MESSAGE
+				        );
+				        return;
+				    }
 				}
 				if (assigned != null &&
 						system.isStudentGroupOverloaded(assigned.getCourse()))
