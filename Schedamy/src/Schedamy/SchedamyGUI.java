@@ -8,6 +8,8 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
 import java.time.format.DateTimeFormatter;
 import java.awt.event.*;
 
@@ -68,8 +70,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
         // Show the main window.
         setVisible(true);
         
-        // Ask for loading previous data when starting
-        askLoadOnStart();
+        // Load previous data when starting
+        loadDataOnStart();
 
         // Confirm exit when the user closes the window.
         addWindowListener(new WindowAdapter() {
@@ -203,9 +205,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
      // Attach the menu bar to the main window.
      setMenuBar(menuBar);
-    }
-       // Creates the "File" menu and its menu items.
-    private void buildFileMenu() {
+}
+    // Creates the "File" menu and its menu items.
+      private void buildFileMenu() {
      fileMenu = new Menu("File");
 
      // Create menu items with keyboard shortcuts.
@@ -266,11 +268,14 @@ public class SchedamyGUI extends Frame implements ActionListener {
   cancelLessonItem.addActionListener(this);
   manageMenu.add(cancelLessonItem);
 
+  /*
   MenuItem rescheduleLessonItem = new MenuItem("Reschedule Lesson");
   rescheduleLessonItem.addActionListener(this);
   manageMenu.add(rescheduleLessonItem);
-    }
-       //Builds the "View" menu.
+  */
+}
+    //Builds the "View" menu.
+    
     private void buildViewMenu() {
 
  viewMenu = new Menu("View");
@@ -447,9 +452,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
             return;
         }
 
-        if (command.startsWith("LESSONS_COURSE_NAME_")) {
-            String courseName = command.replace("LESSONS_COURSE_NAME_", "");
-            showLessonsOfCourseName(courseName);
+        if (command.startsWith("LESSONS_COURSE_ID_")) {
+            int courseID = Integer.parseInt(command.replace("LESSONS_COURSE_ID_", ""));
+            showLessonsOfCourseID(courseID);
             return;
         }
 
@@ -470,11 +475,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
         }
 
         if (command.startsWith("LESSONS_ROOM_")) {
-            String roomID = command.replace("LESSONS_ROOM_", "");
-            showLessonsOfRoom(roomID);
+            String details = command.replace("LESSONS_ROOM_", "");
+            String[] parts = details.split("_");
+            String roomID = parts[0];
+            int building = Integer.parseInt(parts[1]);
+            showLessonsOfRoom(roomID, building);
             return;
         }
-
         if (command.equals("LESSONS_BY_GROUP")) {
             showLessonsByGroupSelection();
             return;
@@ -832,17 +839,18 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Scheduling", Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel optionsPanel =  new Panel(new GridLayout(0, 2, 25, 25));
+        Panel optionsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 25, 25));
+        
         optionsPanel.setBackground(new Color(245, 247, 250));
 
         Button addLessonButton = createActionButton("Add Lesson", "Add Lesson");
         Button cancelLessonButton = createActionButton("Cancel Lesson", "Cancel Lesson");
-        Button rescheduleLessonButton = createActionButton("Reschedule Lesson", "Reschedule Lesson");
-
 
         optionsPanel.add(addLessonButton);
         optionsPanel.add(cancelLessonButton);
+        /*
         optionsPanel.add(rescheduleLessonButton);
+        */
        
 
         Button backButton = createBackButton("Back to Home", "HOME");
@@ -1283,7 +1291,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
     private Panel createLessonCard(Course course, Lesson lesson) {
         Panel card = new Panel(new GridLayout(4, 1));
         card.setPreferredSize(new Dimension(650, 110));
-        card.setBackground(getLessonStatusColor(lesson.getStatus()));
+        card.setBackground(Color.WHITE);
 
         String roomText = "Zoom";
         if (lesson.getRoom() != null) {
@@ -1368,9 +1376,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         	Button button = createDashboardButton(buttonText);
         	button.setPreferredSize(new Dimension(250, 90));
+        	button.setFont(new Font("Arial", Font.BOLD, 14));
 
         	// Action command must stay clean
-        	button.setActionCommand("LESSONS_COURSE_NAME_" + course.getCourseName());
+        	button.setActionCommand("LESSONS_COURSE_ID_" + course.getCourseID());
 
         	coursesPanel.add(button);
         }
@@ -1386,10 +1395,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
         repaint();
     }
     
-    private void showLessonsOfCourseName(String courseName) {
+    private void showLessonsOfCourseID(int courseID) {
         clearMainPanel();
 
-        Label title = new Label("Lessons - " + courseName, Label.CENTER);
+        Label title = new Label("Lessons - Course " + courseID, Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 15));
 
         Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
@@ -1398,7 +1407,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         boolean foundLessons = false;
 
         for (Course course : system.getCourses()) {
-            if (course.getCourseName().equals(courseName)) {
+        	if (course.getCourseID() == courseID) {
                 for (Lesson lesson : course.getLessons()) {
                     lessonsPanel.add(createLessonCard(course, lesson));
                     foundLessons = true;
@@ -1525,11 +1534,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
         roomsPanel.setBackground(new Color(245, 247, 250));
 
         for (Room room : system.getRooms()) {
-        	Button button = createDashboardButton(
-        		    "Room " + room.getRoomID() + " | Building " + room.getBuilding()
-        		);
-            button.setPreferredSize(new Dimension(250, 90));
-            button.setActionCommand("LESSONS_ROOM_" + room.getRoomID());
+
+        	Button button = createDashboardButton("Room " + room.getRoomID() + " | Building " + room.getBuilding());
+        		button.setPreferredSize(new Dimension(250, 90));
+        		button.setActionCommand("LESSONS_ROOM_" + room.getRoomID() + "_" + room.getBuilding());
 
             roomsPanel.add(button);
         }
@@ -1544,13 +1552,13 @@ public class SchedamyGUI extends Frame implements ActionListener {
         repaint();
     }
     
-    private void showLessonsOfRoom(String roomID) {
+    private void showLessonsOfRoom(String roomID, int building) {
         clearMainPanel();
 
         Room selectedRoom = null;
 
         for (Room room : system.getRooms()) {
-            if (room.getRoomID().equals(roomID)) {
+        	if (room.getRoomID().equals(roomID) && room.getBuilding() == building) {
                 selectedRoom = room;
                 break;
             }
@@ -1561,7 +1569,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
             return;
         }
 
-        Label title = new Label("Lessons - Room " + selectedRoom.getRoomID(), Label.CENTER);
+        Label title = new Label("Lessons - Room " +selectedRoom.getRoomID() +" (Building " +selectedRoom.getBuilding() +")",Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
         Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
@@ -1571,9 +1579,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         for (Course course : system.getCourses()) {
             for (Lesson lesson : course.getLessons()) {
-                if (lesson.getRoom() != null &&
-                    lesson.getRoom().getRoomID().equals(selectedRoom.getRoomID())) {
-
+            	if (lesson.getRoom() != null &&
+            		    lesson.getRoom().getRoomID().equals(selectedRoom.getRoomID()) &&
+            		    lesson.getRoom().getBuilding() == selectedRoom.getBuilding()) 
+            	{
                     lessonsPanel.add(createLessonCard(course, lesson));
                     foundLesson = true;
                 }
@@ -1611,7 +1620,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         for (StudentGroup group : system.getStudentGroups()) {
             Button button = createDashboardButton(
-                group.getDepartment() + " | Year " + group.getStudyYear()
+            		shortenDepartment(group.getDepartment()) + " | Year " + group.getStudyYear()
             );
 
             button.setPreferredSize(new Dimension(250, 90));
@@ -1775,12 +1784,15 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         addButton.addActionListener(e -> {
             try {
+            	 int score = Integer.parseInt(teachingScoreField.getText().trim());
             	 if (!idField.getText().matches("\\d+"))
                      throw new IllegalArgumentException("Lecturer ID must contain only digits");
-
-                 if (!teachingScoreField.getText().matches("\\d+(\\.\\d+)?"))
-                     throw new IllegalArgumentException("Teaching score must be a positive number");
-                 String id = idField.getText().trim();
+            	 
+                 if (score > 100 || score < 0) {
+                	 throw new IllegalArgumentException("Teaching score must be positive and less than 100");
+                 }
+                 
+                String id = idField.getText().trim();
                 String firstName = capitalizeFirstLetter(firstNameField.getText());
                 String lastName = capitalizeFirstLetter(lastNameField.getText());
              
@@ -1870,7 +1882,18 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
             	if (!capacityField.getText().matches("\\d+"))
             	    throw new IllegalArgumentException("Capacity must be a number");
-
+            	if (Integer.parseInt(roomNumberField.getText()) > 999)
+            		{
+            		    throw new IllegalArgumentException("Room number must be smaller than 999");
+            		}
+            		if (Integer.parseInt(buildingField.getText()) > 100)
+            		{
+            		    throw new IllegalArgumentException("Building number must be smaller than 100");
+            		}
+            		if (Integer.parseInt(capacityField.getText()) > 200)
+            		{
+            		    throw new IllegalArgumentException("Capacity must be smaller than 200");
+            		}
                 system.addRoom(
                     roomNumberField.getText(),
                     Integer.parseInt(buildingField.getText()),
@@ -1996,7 +2019,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	  
 	    addButton.addActionListener(e -> {
 	        try {
-	        	int courseID = nextCourseID++; 
+	        	int courseID = nextCourseID; 
 	        	if (lecturerChoice.getItemCount() == 0)
 	        	    throw new IllegalArgumentException("No lecturer matches this course");
 
@@ -2014,6 +2037,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	        			courseTypeChoice.getSelectedItem(),
 	        			lecturerID,
 	        			groupID);
+	        	nextCourseID++;
 	            JOptionPane.showMessageDialog(this,
 	                "Course added successfully!\nTotal courses: " + system.getCourses().size());
 	            dialog.dispose();
@@ -2097,7 +2121,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	        try {
 	        	if (!studentCountField.getText().matches("\\d+"))
 	        	    throw new IllegalArgumentException("Student count must be a positive number");
-	        system.addStudentGroup(nextGroupID++,departmentChoice.getSelectedItem(),Integer.parseInt(studyYearChoice.getSelectedItem()),Integer.parseInt(studentCountField.getText()),programChoice.getSelectedItem());
+	        	system.addStudentGroup(nextGroupID, departmentChoice.getSelectedItem(),
+	        	        Integer.parseInt(studyYearChoice.getSelectedItem()),
+	        	        Integer.parseInt(studentCountField.getText()),
+	        	        programChoice.getSelectedItem());
+	        	nextGroupID++;
 	            //success and error massages
 	            JOptionPane.showMessageDialog(
 	                this,
@@ -2120,8 +2148,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	        Dialog dialog = new Dialog(this, "Add Lesson", true);
 	        enableDialogCloseButton(dialog);
 	        dialog.setLayout(new BorderLayout());
-	        dialog.setSize(600, 350);
-
+	        dialog.setSize(750, 380);
+	        dialog.setLocationRelativeTo(this);
+	        
 	        Panel formPanel = new Panel(new GridLayout(7, 2, 5, 5));
 
 	        Choice courseChoice = new Choice();
@@ -2180,17 +2209,17 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	        Checkbox labCheckbox = new Checkbox("Lab Required");
 	        Choice roomChoice = new Choice();
 	        roomChoice.setEnabled(true);
+	        
 	        modeChoice.addItemListener(e -> {
 
-	            if (labCheckbox.getState() &&
-	                modeChoice.getSelectedItem().equals("ZOOM")) {
-	                JOptionPane.showMessageDialog(this,"Lab lessons cannot be taught on Zoom");
-	                modeChoice.select("FRONTAL");
-	            }
-	            if (modeChoice.getSelectedItem().equals("ZOOM"))
+	        	if (modeChoice.getSelectedItem().equals("ZOOM")) {
 	                roomChoice.setEnabled(false);
-	            else
+	                labCheckbox.setState(false);
+	                labCheckbox.setEnabled(false);
+	            } else {
 	                roomChoice.setEnabled(true);
+	                labCheckbox.setEnabled(true);
+	            }
 	        });
 	        Runnable updateRoomChoices = () -> {
 	            roomChoice.removeAll();
@@ -2280,7 +2309,14 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 	                if (lessonDate.isBefore(LocalDate.now()))
 	                    throw new IllegalArgumentException("Lesson date cannot be in the past");
-
+	                if (lessonDate.equals(LocalDate.now()))
+	                {
+	                    if (!startTime.isAfter(LocalTime.now()))
+	                    {
+	                        throw new IllegalArgumentException(
+	                                "Start time must be in the future for today's date");
+	                    }
+	                }
 	                if (!endTime.isAfter(startTime))
 	                    throw new IllegalArgumentException("End time must be after start time");
 	                
@@ -2291,7 +2327,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	                }
 	                system.addLessonToCourse(
 	                	    courseID,
-	                	    nextLessonID++,
+	                	    nextLessonID,
 	                	    lessonDate,
 	                	    startTime,
 	                	    endTime,
@@ -2300,6 +2336,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	                	    labCheckbox.getState(),
 	                	    selectedRoom
 	                	);
+	                nextLessonID++;
 	                System.out.println("Lesson was added to course ID: " + courseID);
 	                System.out.println("Next lesson ID is now: " + nextLessonID);
 	                
@@ -2412,7 +2449,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	    enableDialogCloseButton(dialog);
 	    dialog.setLayout(new BorderLayout());
 	    dialog.setSize(500, 220);
-
+	    dialog.setLocationRelativeTo(this);
+	    
 	    Panel formPanel = new Panel(new GridLayout(2, 2, 5, 5));
 
 	    Choice lessonChoice = new Choice();
@@ -2424,7 +2462,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	    for (Course course : system.getCourses()) {
 	        for (Lesson lesson : course.getLessons()) {
 	        	if (!lesson.getStatus().equalsIgnoreCase("CANCELLED")&&
-	        		!lesson.getStatus().equalsIgnoreCase("RESCHEDULED")) {
+	        		lesson.getLessonDate().isAfter(LocalDate.now())){
 	            lessonChoice.add(
 	                course.getCourseID() + " - " +
 	                course.getCourseName() + " | Lesson " +
@@ -2437,6 +2475,14 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	            courseIDs.add(course.getCourseID());
 	        	}
 	        }
+	    }
+	    
+	    if (lessonChoice.getItemCount() == 0) {
+	        JOptionPane.showMessageDialog(this,
+	            "There are no lessons available to cancel.",
+	            "No Lessons Found",
+	            JOptionPane.INFORMATION_MESSAGE);
+	        return; 
 	    }
 
 	    TextField reasonField = new TextField();
@@ -2468,29 +2514,149 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	            if (reason.isEmpty()) {
 	                throw new IllegalArgumentException("Cancel reason cannot be empty.");
 	            }
+	            
+	            //ask user before cancelling
+	            String [] options = {"Cancel Only", "Reschedule", "Go Back"};
+	            
+	            int choice = JOptionPane.showOptionDialog(
+	            		this,
+	            		"Would You Like To Reschedule?",
+	            		"Cancel Lesson",
+	            		JOptionPane.DEFAULT_OPTION,
+	            		JOptionPane.QUESTION_MESSAGE,
+	            		null,
+	            		options,
+	            		options[0]);
+	            
+	            if (choice == 2 || choice == -1) {
+	            	return; //Go back or closed dialog
+	            }
 
-	            // Get the selected Lesson directly by index
+	            // Get the selected lesson directly by index
 	            int selectedIndex = lessonChoice.getSelectedIndex();
 	            Lesson selectedLesson = lessonsList.get(selectedIndex);
 	            int courseID = courseIDs.get(selectedIndex);
+	            LocalDate newDate1 = selectedLesson.getLessonDate().plusWeeks(1);
+	            LocalDate newDate2 = selectedLesson.getLessonDate().plusWeeks(2);
 	            
-	            LocalDate newDate = selectedLesson.getLessonDate().plusWeeks(1);
+	            if (choice == 0) {
+	            	system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate1, sharedRoomLock);
+	            	JOptionPane.showMessageDialog(
+	            			this,
+	                        "Lesson cancelled successfully!\nReason: " + reason,
+	                        "Success", JOptionPane.INFORMATION_MESSAGE);
+	                    dialog.dispose();
+	                    return;
+	            }
 	            
-	            system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate, sharedRoomLock);
-
+	            if (choice == 1) {
+	            	dialog.dispose();
+	            }
+	            
 	            JOptionPane.showMessageDialog(
-	                this,
-	                "Lesson cancelled successfully!\nReason: " + reason,
-	                "Success",
-	                JOptionPane.INFORMATION_MESSAGE
-	            );
+	            		this,
+	            		"Searching for available slot...",
+	            		"Searching",
+	            		JOptionPane.INFORMATION_MESSAGE);
 	            
+	            Lecturer lecturer = null;
+	            for (AssignedToTeach a : system.getAssignedToTeachList()) {
+	            	if (a.getCourse().getCourseID() == courseID) {
+	            		lecturer = a.getLecturer();
+	            		break;
+	            	}
+	            }
+	            
+	            AvailabilityThread availThread1 = new AvailabilityThread(
+	            		lecturer, selectedLesson, newDate1,
+	            		new Vector<>(system.getRooms()),
+	            		sharedRoomLock,
+	            		new Vector<>(system.getGroupEnrolments()), false);
+	            AvailabilityThread availThread2 = new AvailabilityThread(
+	            		lecturer, selectedLesson, newDate2,
+	            		new Vector<>(system.getRooms()),
+	            		sharedRoomLock,
+	            		new Vector<>(system.getGroupEnrolments()), false);
+	            
+	            Thread t1 = new Thread(availThread1);
+	            Thread t2 = new Thread(availThread2);
+	            t1.start();
+	            t2.start();
+	            
+	            t1.join();
+	            t2.join();
+	            
+	            String suggestion1 = availThread1.getSuggestion();
+	            String suggestion2 = availThread2.getSuggestion();
+	            
+	            if(suggestion1.isEmpty() && suggestion2.isEmpty()) {
+	            	//neither found a slot
+	            	JOptionPane.showMessageDialog(this,
+	            			"No Available slot found automatically.\nPlease Reshcedule Manually.",
+	            			"No Slot Found",
+	            			JOptionPane.WARNING_MESSAGE);
+	            	SwingUtilities.invokeLater(() -> openRescheduleLessonDialog());
+	            } else {
+	                // Build the message showing available options
+	                String message = "Available slots found!\n\n";
+	                
+	                ArrayList<String> optionsList = new ArrayList<>();
+	                
+	                if (!suggestion1.isEmpty()) {
+	                    message += "Option 1:\n" + suggestion1 + "\n\n";
+	                    optionsList.add("Option 1");
+	                }
+	                if (!suggestion2.isEmpty()) {
+	                    message += "Option 2:\n" + suggestion2 + "\n\n";
+	                    optionsList.add("Option 2");
+	                }
+	                optionsList.add("Pick Manually");
+	                
+	                message += "Lecturer: " + lecturer.getFirstName() + " " + lecturer.getLastName() +
+	                           "\nStudent Group: " + system.getGroupForCourse(courseID);
 
-	            dialog.dispose();
-	            
-	            openRescheduleLessonDialog();
-	            
-	            
+	                String[] option = optionsList.toArray(new String[0]);
+	                
+	                int approveChoice = JOptionPane.showOptionDialog(
+	                    this,
+	                    message,
+	                    "Slots Found",
+	                    JOptionPane.DEFAULT_OPTION,
+	                    JOptionPane.INFORMATION_MESSAGE,
+	                    null,
+	                    option,
+	                    option[0]);
+
+	                // User picked Option 1
+	                if (approveChoice == 0 && !suggestion1.isEmpty()) {
+	                    selectedLesson.setLessonDate(availThread1.getSuggestedDate());
+	                    selectedLesson.setStatus("RESCHEDULED");
+	                    if (availThread1.getSuggestedRoom() != null) {
+	                        selectedLesson.setRoom(availThread1.getSuggestedRoom());
+	                        availThread1.getSuggestedRoom().setStatus("SCHEDULED");
+	                    }
+	                    JOptionPane.showMessageDialog(this,
+	                        "Lesson rescheduled successfully!",
+	                        "Success", JOptionPane.INFORMATION_MESSAGE);
+
+	                // User picked Option 2
+	                } else if (approveChoice == 1 && !suggestion2.isEmpty() && suggestion1.isEmpty() == false) {
+	                    selectedLesson.setLessonDate(availThread2.getSuggestedDate());
+	                    selectedLesson.setStatus("RESCHEDULED");
+	                    if (availThread2.getSuggestedRoom() != null) {
+	                        selectedLesson.setRoom(availThread2.getSuggestedRoom());
+	                        availThread2.getSuggestedRoom().setStatus("SCHEDULED");
+	                    }
+	                    JOptionPane.showMessageDialog(this,
+	                        "Lesson rescheduled successfully!",
+	                        "Success", JOptionPane.INFORMATION_MESSAGE);
+
+	                // User picked Pick Manually 
+	                } else {
+	                    SwingUtilities.invokeLater(() -> openRescheduleLessonDialog());
+	                }
+	            }
+         
 	        } catch (Exception ex) {
 	            JOptionPane.showMessageDialog(
 	                this,
@@ -2668,6 +2834,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 	            if (newDate.isBefore(LocalDate.now())) {
 	                throw new IllegalArgumentException("Lesson date cannot be in the past");
+	            }
+	            
+	            if (newDate.equals(LocalDate.now())) {
+	            	if (!newStart.isAfter(LocalTime.now())) {
+	            		throw new IllegalArgumentException("Start time must be in the future for today date");
+	            	}
 	            }
 
 	            if (!newEnd.isAfter(newStart)) {
@@ -2852,7 +3024,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
             GroupEnrolment[] enrolments =
                     groupCourses.toArray(new GroupEnrolment[groupCourses.size()]);
 
-            int totalHours = group.calculateTotalHours(enrolments);
+            double totalHours = group.calculateTotalHours(enrolments);
             boolean overloaded = group.isScheduleOverloaded(enrolments);
 
             JOptionPane.showMessageDialog(
@@ -2860,7 +3032,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
                     "Student Group: " + group.getDepartment() +
                     " Year " + group.getStudyYear() +
                     "\nProgram: " + group.getProgramName() +
-                    "\nTotal load: " + totalHours +
+                    "\nTotal load: " + String.format("%.2f", totalHours)+
                     "\nOverloaded: " + overloaded
             );
         }
@@ -2870,11 +3042,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
     {
         Choice roomChoice = new Choice();
 
-        for (Room room : system.getRooms()) 
+        for (Room room : system.getRooms())
         {
-        	roomChoice.add(room.getRoomID());
+            roomChoice.add("Room " + room.getRoomID() +" | Building " + room.getBuilding());
         }
-
         int result = JOptionPane.showConfirmDialog(this,roomChoice,"Choose Room",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
@@ -3105,34 +3276,24 @@ public class SchedamyGUI extends Frame implements ActionListener {
         // CANCEL -> do nothing
     }
     
-    private void askLoadOnStart() {
-        int result = JOptionPane.showConfirmDialog(
-            this,
-            "Do you want to load saved data?",
-            "Load Data",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE
-        );
+    private void loadDataOnStart() {
+        try {
+            system.loadDataFromFile();
+            updateNextIDs();
 
-        if (result == JOptionPane.YES_OPTION) {
-            try {
-                system.loadDataFromFile();
-                updateNextIDs();
-
-                JOptionPane.showMessageDialog(
-                    this,
-                    "Data loaded successfully!",
-                    "Success",
-                    JOptionPane.INFORMATION_MESSAGE
-                );
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(
-                    this,
-                    "Error loading data: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE
-                );
-            }
+            JOptionPane.showMessageDialog(
+                this,
+                "Saved data loaded successfully!",
+                "Load Data",
+                JOptionPane.INFORMATION_MESSAGE
+            );
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                "No saved data was loaded.\n" + ex.getMessage(),
+                "Load Data",
+                JOptionPane.INFORMATION_MESSAGE
+            );
         }
     }
         // ------------------------------------------------------
@@ -3189,7 +3350,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
         enableDialogCloseButton(dialog);
         dialog.setLayout(new BorderLayout());
         dialog.setSize(600, 450);
-
+        dialog.setLocationRelativeTo(this);
+        
         TextArea textArea = new TextArea(text);
         
         textArea.setEditable(false);
@@ -3275,7 +3437,6 @@ public class SchedamyGUI extends Frame implements ActionListener {
     	switch (status.toUpperCase()) {
     	case "SCHEDULED": return "SCHEDULED";
     	case "AVAILABLE": return "SCHEDULED";
-    	case "CANCELLED": return "NEEDS TO RESCHEDULE";
     	case "RESCHEDULED": return "RESCHEDULED";
     	default: return status;
     	}
@@ -3298,24 +3459,5 @@ public class SchedamyGUI extends Frame implements ActionListener {
                "------------------------------\n";
     }
     
-    private Color getLessonStatusColor(String status) {
-        if (status == null) {
-            return Color.WHITE;
-        }
-
-        if (status.equalsIgnoreCase("SCHEDULED")) {
-            return Color.WHITE;
-        }
-
-        if (status.equalsIgnoreCase("RESCHEDULED")) {
-            return new Color(220, 235, 255);
-        }
-
-        if (status.equalsIgnoreCase("CANCELLED")) {
-            return new Color(255, 225, 225);
-        }
-
-        return Color.WHITE;
-    }
-    
+   
 }
