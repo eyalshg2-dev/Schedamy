@@ -2,85 +2,85 @@ package Schedamy;
 
 public class GroupEnrolment
 {
-    private int priorityLevel;
-    private boolean attendanceRequired;
-    private StudentGroup group;
-    private Course course;
+	private int priorityLevel;
+	private boolean attendanceRequired;
+	private StudentGroup group;
+	private Course course;
 
-  //Constructor
-    public GroupEnrolment(StudentGroup group, Course course)
-    {
-        this.group = group;
-        this.course = course;
-        this.attendanceRequired = isAttendanceRequired();
-        this.priorityLevel = calculationPriority();
-    }
-    
-    //Get PriorityLevel
-    public int getPriorityLevel()
-    {
-        return priorityLevel;
-    }
-    
-    //Get group
-    public StudentGroup getGroup()
-    {
-        return group;
-    }
-    
-    //Get course
-    public Course getCourse()
-    {
-        return course;
-    }
+	//Constructor
+	public GroupEnrolment(StudentGroup group, Course course)
+	{
+		this.group = group;
+		this.course = course;
+		this.attendanceRequired = isAttendanceRequired();
+		this.priorityLevel = calculationPriority();
+	}
 
-    //To string
-    
-    public String toString()
-    { 
-        return "Group Enrolment\n" +
-               "Course: " + course.getCourseName() + "\n" +
-               "Group ID: " + group.getGroupID() + "\n" +
-               "Department: " + group.getDepartment() + "\n" +
-               "Priority Level: " + priorityLevel + "\n" +
-               "Attendance Required: " + attendanceRequired + "\n" +
-               "-------------------------";
-    }
-   
-    
-    //Calculation if is mandatory
-    public boolean isAttendanceRequired()
-    {
-        if(course.getCourseType().equals("mandatory"))
-        {
-            attendanceRequired = true;
-        }
-        else
-        {
-            attendanceRequired = false;
-        }
-        return attendanceRequired;
-    }
-     
-    // calculation Priority
-    public int calculationPriority()
-    {
-        int finalPriority = 0;
-        if(course.getCourseType().equals("mandatory"))
-        {
-            finalPriority += 10;
-        }
-        if(group.getProgramName().equals("Morning"))
-        {
-            finalPriority += 5;
-        }
-        if(group.getStudyYear() == 3 ||
-           group.getStudyYear() == 4)
-        {
-           finalPriority += 5;
-        }
-        priorityLevel = finalPriority;
-        return priorityLevel;
-    }
+	//Get PriorityLevel
+	public int getPriorityLevel()
+	{
+		return priorityLevel;
+	}
+
+	//Get group
+	public StudentGroup getGroup()
+	{
+		return group;
+	}
+
+	//Get course
+	public Course getCourse()
+	{
+		return course;
+	}
+
+	//To string
+
+	public String toString()
+	{ 
+		return "Group Enrolment\n" +
+				"Course: " + course.getCourseName() + "\n" +
+				"Group ID: " + group.getGroupID() + "\n" +
+				"Department: " + group.getDepartment() + "\n" +
+				"Priority Level: " + priorityLevel + "\n" +
+				"Attendance Required: " + attendanceRequired + "\n" +
+				"-------------------------";
+	}
+
+
+	//Calculation if is mandatory
+	public boolean isAttendanceRequired()
+	{
+		if(course.getCourseType().equals("mandatory"))
+		{
+			attendanceRequired = true;
+		}
+		else
+		{
+			attendanceRequired = false;
+		}
+		return attendanceRequired;
+	}
+
+	// calculation Priority
+	public int calculationPriority()
+	{
+		int finalPriority = 0;
+		if(course.getCourseType().equals("mandatory"))
+		{
+			finalPriority += 10;
+		}
+		if(group.getProgramName().equals("Morning"))
+		{
+			finalPriority += 5;
+		}
+		if(group.getStudyYear() == 3 ||
+				group.getStudyYear() == 4)
+		{
+			finalPriority += 5;
+		}
+		priorityLevel = finalPriority;
+		return priorityLevel;
+	}
 
 }

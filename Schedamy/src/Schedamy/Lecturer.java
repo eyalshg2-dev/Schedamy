@@ -13,48 +13,48 @@ public class Lecturer {
 	private double FTE;
 	private static final int FULL_TIME_HOURS = 40;
 	private Vector<Lesson> lessons;
-	
+
 	//Constructor
 	public Lecturer(String lecturerID, String firstName, String lastName, ArrayList<String> specializations, double teachingScore, double FTE)
-		{
-			this.lecturerID = lecturerID;
-			this.firstName = firstName;
-			this.lastName = lastName;
-			this.specializations = specializations;
-			this.teachingScore = teachingScore;
-			this.FTE = FTE;
-			lessons = new Vector<>();
-		}	
+	{
+		this.lecturerID = lecturerID;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.specializations = specializations;
+		this.teachingScore = teachingScore;
+		this.FTE = FTE;
+		lessons = new Vector<>();
+	}	
 	// get lecturerId
 	public String getLecturerID()
 	{
 		return this.lecturerID;
 	}
-	
+
 	// get firstName
 	public String getFirstName()
 	{
 		return this.firstName;
 	}
-	
+
 	// get lastName
 	public String getLastName()
 	{
 		return this.lastName;
 	}
-	
+
 	// get specialization
 	public ArrayList<String> getSpecializations()
 	{
 		return this.specializations;
 	}
-	
+
 	// get teachingScore
 	public double getTeachingScore()
 	{
 		return this.teachingScore;
 	}
-	
+
 	// get FTE
 	public double getFTE()
 	{
@@ -63,38 +63,38 @@ public class Lecturer {
 
 	public double getRequiredHours()
 	{
-	    return FTE * FULL_TIME_HOURS;
+		return FTE * FULL_TIME_HOURS;
 	}
 
-	
-	
+
+
 	//To String
 	public String toString() 
 	{
-	    return "Lecturer ID: " + lecturerID + "\n" +
-	           "Name: " + firstName + " " + lastName + "\n" +
-	           "Specializations: " + specializations + "\n" +
-	           "FTE: " + FTE + "\n" +
-	           "Teaching Score: " + teachingScore + "\n" +
-	           "-------------------------";
+		return "Lecturer ID: " + lecturerID + "\n" +
+				"Name: " + firstName + " " + lastName + "\n" +
+				"Specializations: " + specializations + "\n" +
+				"FTE: " + FTE + "\n" +
+				"Teaching Score: " + teachingScore + "\n" +
+				"-------------------------";
 	}
 
-	
+
 	public Vector<Lesson> getLessons() {
 		return lessons;
 	}
-	
-	
+
+
 	public void addLesson(Lesson lesson) {
 		lessons.add(lesson);
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
-	    if (this == obj) return true;
-	    if (obj == null || getClass() != obj.getClass()) return false;
-	    Lecturer other = (Lecturer) obj;
-	    return this.lecturerID == other.lecturerID;
+		if (this == obj) return true;
+		if (obj == null || getClass() != obj.getClass()) return false;
+		Lecturer other = (Lecturer) obj;
+		return this.lecturerID == other.lecturerID;
 	}
 
 }
