@@ -649,30 +649,38 @@ public class SchedamyGUI extends Frame implements ActionListener {
         // ======================================================
 
         if (command.equals("Instructions")) {
-            JOptionPane.showMessageDialog(
-                    this,
+            showTextDialog(
+                "Schedamy Instructions",
+                "\n" +
                     "Use Manage to add or update data.\n" +
+                    "\n" +
                     "Use View to display rooms, lecturers, courses and timetables.\n" +
-                    "Use File to save or load system data.",
-                    "Schedamy Instructions",
-                    JOptionPane.INFORMATION_MESSAGE);
+                    "\n" +
+                    "Use File to save or load system data.");                    
             return;
         }
 
         if (command.equals("About Schedemy")) {
-            JOptionPane.showMessageDialog(
-                    this,
+            showTextDialog(
+                "About Schedemy",
+                "\n" +
                     "Schedemy System\n" +
+                    "\n" +
                     "Software Engineering Project\n" +
+                    "\n" +
                     "By Idan Zilcha, Orel Levi, Eyal Shigris and Ola Jangirian\n" +
+                    "\n" +
                     "We are four third-year engineering students who experienced many schedule and classroom changes\n" +
+                    "\n" +
                     "during our studies due to unexpected events such as viruses, wars, and maybe even alien invasions.\n" +
+                    "\n" +
                     "To improve and simplify the process, we created Schedemy - a smart scheduling system,\n" +
+                    "\n" +
                     "designed to manage lesson cancellations, rescheduling, classroom changes, and lecturer availability more efficiently.\n" +
+                    "\n" +
                     "The name \"Schedemy\" combines the words Schedule + Academy,\n" +
-                    "and also sounds like the Hebrew word \"Shakadnu\" (we worked hard) - which we definitely did.\n",
-                    "About Schedemy",
-                    JOptionPane.INFORMATION_MESSAGE);
+                    "\n" +
+                    "and also sounds like the Hebrew word \"Shakadnu\" (we worked hard) - which we definitely did.\n");
             return;
         }
         
@@ -1452,7 +1460,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons - Course " + courseID, Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 15));
 
-        Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 0, 15));
         lessonsPanel.setBackground(new Color(245, 247, 250));
 
         boolean foundLessons = false;
@@ -1473,8 +1481,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
      
         mainPanel.add(title, BorderLayout.NORTH);
 
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(lessonsPanel);
+
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
@@ -1539,7 +1548,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         );
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 0, 15));
         lessonsPanel.setBackground(new Color(245, 247, 250));
 
         boolean foundLesson = false;
@@ -1562,8 +1571,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
     
         mainPanel.add(title, BorderLayout.NORTH);
 
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(lessonsPanel);
+
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
@@ -1623,7 +1633,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Label title = new Label("Lessons - Room " +selectedRoom.getRoomID() +" (Building " +selectedRoom.getBuilding() +")",Label.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 0, 15));
         lessonsPanel.setBackground(new Color(245, 247, 250));
 
         boolean foundLesson = false;
@@ -1647,10 +1657,10 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
         mainPanel.add(title, BorderLayout.NORTH);
 
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(lessonsPanel);
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
 
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
         mainPanel.add(backButton, BorderLayout.SOUTH);
 
         validate();
@@ -1714,7 +1724,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         );
         title.setFont(new Font("Arial", Font.BOLD, 28));
 
-        Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        Panel lessonsPanel = new Panel(new GridLayout(0, 1, 0, 15));
         lessonsPanel.setBackground(new Color(245, 247, 250));
 
         boolean foundLesson = false;
@@ -1737,8 +1747,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
     
         mainPanel.add(title, BorderLayout.NORTH);
 
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = new ScrollPane(ScrollPane.SCROLLBARS_AS_NEEDED);
         scrollPane.add(lessonsPanel);
+
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.add(backButton, BorderLayout.SOUTH);
@@ -3084,8 +3095,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
                     " Year " + group.getStudyYear() +
                     "\nProgram: " + group.getProgramName() +
                     "\nTotal load: " + String.format("%.2f", totalHours)+
-                    "\nOverloaded: " + overloaded
-            );
+                    "\nOverloaded: " + overloaded,
+                    "Student Group Load Result",
+                    JOptionPane.INFORMATION_MESSAGE);
         }
     }
         // Room Load
@@ -3109,7 +3121,9 @@ public class SchedamyGUI extends Frame implements ActionListener {
                     "Room: " + room.getRoomID() +
                     "\nBuilding: " + room.getBuilding() +
                     "\nSize: " + room.classifyRoomSize() +
-                    "\nAcademic Hours: " + load);
+                    "\nAcademic Hours: " + load,
+                    "Room Load Result",
+                    JOptionPane.INFORMATION_MESSAGE);
         }
     }
     
@@ -3413,8 +3427,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
         dialog.setSize(600, 450);
         dialog.setLocationRelativeTo(this);
         
-        TextArea textArea = new TextArea(text);
-        
+        TextArea textArea = new TextArea(text); 
         textArea.setEditable(false);
 
         Button closeButton = new Button("Close");
