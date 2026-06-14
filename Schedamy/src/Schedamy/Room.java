@@ -45,14 +45,14 @@ public class Room {
 	//To String
 	public String toString()
 	{
-	    return "Room Number: " + roomID + "\n" +
-	           "Building: " + building + "\n" +
-	           "Room Type: " + roomType + "\n" +
-	           "Capacity: " + capacity + "\n" +
-	           "Room Size: " + classifyRoomSize() + "\n" +
-	           "Special Equipment: " +"-------------------------";
+		return "Room Number: " + roomID + "\n" +
+				"Building: " + building + "\n" +
+				"Room Type: " + roomType + "\n" +
+				"Capacity: " + capacity + "\n" +
+				"Room Size: " + classifyRoomSize() + "\n" +
+				"Special Equipment: " +"-------------------------";
 	}
-	
+
 
 	//Get room size
 	public String classifyRoomSize()
@@ -65,9 +65,9 @@ public class Room {
 	public String getStatus() {
 		return status;
 	} 
-	
+
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	
+
 }

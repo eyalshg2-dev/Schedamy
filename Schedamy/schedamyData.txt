@@ -12,12 +12,15 @@ STUDENT_GROUPS
 5,Psychology,1,15,Morning
 6,Computer Science,1,40,Morning
 7,Economics and Business Administration,2,45,Morning
+8,Electrical Engineering,1,77,Morning
+9,Electrical Engineering,1,77,Evening
+10,Electrical Engineering,2,88,Morning
 ROOMS
 101,3,Classroom,40,SCHEDULED
 102,3,Computer Lab,20,AVAILABLE
-008,27,Computer Lab,30,AVAILABLE
+8,27,Computer Lab,30,AVAILABLE
 2,21,Laboratory,50,AVAILABLE
-11,300,Auditorium,100,SCHEDULED
+11,123,Auditorium,100,SCHEDULED
 COURSES
 1,Physics,3,mandatory
 2,Algorithms,4,mandatory

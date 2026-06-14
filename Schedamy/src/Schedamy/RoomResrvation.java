@@ -49,37 +49,37 @@ public class RoomResrvation {
 
 	//To String 
 
-	
+
 	public String toString()
 	{
-	    return "Room Reservation\n" +
-	           "Room: " + room.getRoomID() + "\n" +
-	           "Lesson ID: " + lesson.getLessonID() + "\n" +
-	           "Date: " + lesson.getLessonDate() + "\n" +
-	           "Time: " + lesson.getStartTime() + " - " + lesson.getEndTime() + "\n" +
-	           "Occupancy Time: " + occupancyTime.toMinutes() + " minutes\n" +
-	           "-------------------------";
+		return "Room Reservation\n" +
+				"Room: " + room.getRoomID() + "\n" +
+				"Lesson ID: " + lesson.getLessonID() + "\n" +
+				"Date: " + lesson.getLessonDate() + "\n" +
+				"Time: " + lesson.getStartTime() + " - " + lesson.getEndTime() + "\n" +
+				"Occupancy Time: " + occupancyTime.toMinutes() + " minutes\n" +
+				"-------------------------";
 	}
-	
+
 
 	//Calculate the occupancy time
 	public void calculationOccupancyTime(LocalDateTime start,LocalDateTime end)
 	{
 		this.occupancyTime = Duration.between(start, end);
 	}
-	
+
 	public boolean overlaps(Room otherRoom, Lesson otherLesson)
 	{
 		if (!room.getRoomID().equals(otherRoom.getRoomID()) ||
-			    room.getBuilding() != otherRoom.getBuilding()) {
-			    return false;
-			}
+				room.getBuilding() != otherRoom.getBuilding()) {
+			return false;
+		}
 
-	    if (!lesson.getLessonDate().equals(otherLesson.getLessonDate())) {
-	        return false;
-	    }
+		if (!lesson.getLessonDate().equals(otherLesson.getLessonDate())) {
+			return false;
+		}
 
-	    return otherLesson.getStartTime().isBefore(lesson.getEndTime()) &&
-	           otherLesson.getEndTime().isAfter(lesson.getStartTime());
+		return otherLesson.getStartTime().isBefore(lesson.getEndTime()) &&
+				otherLesson.getEndTime().isAfter(lesson.getStartTime());
 	}
 }
