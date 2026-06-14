@@ -42,10 +42,16 @@ public class SchedamyGUI extends Frame implements ActionListener {
     // The main system object that stores and manages all data.
     private SchedamySystem system;
     private final Object sharedRoomLock = new Object();
+    private Panel mainPanel;
+    
+    //Date format
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     
-    private Panel mainPanel;
- 
+    //Popup Menu
+    private PopupMenu reportsPopup;
+   
+    //CheckBox MenuItem
+    private CheckboxMenuItem showCapacityItem;
     
  // ======================================================
  // Constructor
@@ -64,14 +70,14 @@ public class SchedamyGUI extends Frame implements ActionListener {
         
         // Build and attach the menu bar to the window.
         buildMenuBar();
-
+        buildPopupMenu();
         buildMainPanel();
         
         // Show the main window.
         setVisible(true);
         
         // Load previous data when starting
-        loadDataOnStart();
+        askLoadOnStart();
 
         // Confirm exit when the user closes the window.
         addWindowListener(new WindowAdapter() {
@@ -304,7 +310,14 @@ public class SchedamyGUI extends Frame implements ActionListener {
  MenuItem lessonsItem = new MenuItem("Lessons");
  lessonsItem.addActionListener(this);
  viewMenu.add(lessonsItem);
+ 
+ //Show room capacity checkBox 
+ viewMenu.addSeparator();
+ showCapacityItem = new CheckboxMenuItem("Show Room Capacity", true);
+ viewMenu.add(showCapacityItem);
     }
+    
+    
        //Builds the "Help" menu.This menu contains general information about the system.
     private void buildHelpMenu() {
 
@@ -320,32 +333,54 @@ public class SchedamyGUI extends Frame implements ActionListener {
     }
        // reports
     private void buildReportsMenu() {
-    	    optionsMenu = new Menu("Reports");
 
-    	    MenuItem lecturerLoadItem = new MenuItem("Calculate Lecturer Load");
-    	    MenuItem studentLoadItem = new MenuItem("Calculate Student Load");
-    	    MenuItem roomLoadItem = new MenuItem("Calculate Room Load");
+        optionsMenu = new Menu("Reports");
 
-    	    optionsMenu.add(lecturerLoadItem);
-    	    optionsMenu.add(studentLoadItem);
-    	    optionsMenu.add(roomLoadItem);
+        MenuItem lecturerLoadItem =
+                new MenuItem("Calculate Lecturer Load");
 
-    	    optionsMenu.addSeparator();
+        MenuItem studentLoadItem =
+                new MenuItem("Calculate Student Load");
 
-    	    MenuItem lecturerTimetableItem = new MenuItem("Lecturer Timetable");
-    	    MenuItem groupTimetableItem = new MenuItem("Student Group Timetable");
+        MenuItem roomLoadItem =
+                new MenuItem("Calculate Room Load");
 
-    	    optionsMenu.add(lecturerTimetableItem);
-    	    optionsMenu.add(groupTimetableItem);
+        MenuItem moreItem =
+                new MenuItem("More...");
 
-    	    lecturerLoadItem.addActionListener(this);
-    	    studentLoadItem.addActionListener(this);
-    	    roomLoadItem.addActionListener(this);
-    	    lecturerTimetableItem.addActionListener(this);
-    	    groupTimetableItem.addActionListener(this);
-    	}
-   
+        optionsMenu.add(lecturerLoadItem);
+        optionsMenu.add(studentLoadItem);
+        optionsMenu.add(roomLoadItem);
+
+        optionsMenu.addSeparator();
+        optionsMenu.add(moreItem);
+
+        lecturerLoadItem.addActionListener(this);
+        studentLoadItem.addActionListener(this);
+        roomLoadItem.addActionListener(this);
+        moreItem.addActionListener(this);
+
+        menuBar.add(optionsMenu);
+    }
     
+    private void buildPopupMenu() {
+
+        reportsPopup = new PopupMenu();
+
+        MenuItem lecturerTimetableItem =
+                new MenuItem("Lecturer Timetable");
+
+        MenuItem groupTimetableItem =
+                new MenuItem("Student Group Timetable");
+
+        lecturerTimetableItem.addActionListener(this);
+        groupTimetableItem.addActionListener(this);
+
+        reportsPopup.add(lecturerTimetableItem);
+        reportsPopup.add(groupTimetableItem);
+
+        add(reportsPopup);
+    }
     
     
  // ======================================================
@@ -592,6 +627,11 @@ public class SchedamyGUI extends Frame implements ActionListener {
             return;
         }
         
+        if (command.equals("More...")) {
+            reportsPopup.show(this, 250, 80);
+            return;
+        }
+        
         if (command.equals("Lecturer Timetable")) {
             openLecturerTimetableDialog();
             return;
@@ -601,6 +641,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
             openStudentGroupTimetableDialog();
             return;
         }
+        
+        
 
         // ======================================================
         // Help
@@ -761,10 +803,18 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Panel roomsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
         roomsPanel.setBackground(new Color(245, 247, 250));
 
+        
         for (Room room : system.getRooms()) {
-        	Button button = createDashboardButton("Room " + room.getRoomID() + " | Building " + room.getBuilding());
-        		button.setPreferredSize(new Dimension(250, 90));
-        		button.setActionCommand("ROOM_DETAILS_" + room.getRoomID() + "_" + room.getBuilding());
+            String roomText = "Room " + room.getRoomID() + " | Building " + room.getBuilding();
+            if (showCapacityItem != null && showCapacityItem.getState()) {
+                roomText += " | Capacity " + room.getCapacity();
+            }
+
+            Button button = createDashboardButton(roomText);
+            button.setFont(new Font("Arial", Font.BOLD, 13));
+            button.setPreferredSize(new Dimension(250, 90));
+            button.setActionCommand("ROOM_DETAILS_" + room.getRoomID() + "_" + room.getBuilding());
+
             roomsPanel.add(button);
         }
 
@@ -899,11 +949,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Button lecturerTimetableButton = createActionButton("Lecturer Timetable", "Lecturer Timetable");
         Button groupTimetableButton = createActionButton("Student Group Timetable", "Student Group Timetable");
         
+        optionsPanel.add(lecturerTimetableButton);
+        optionsPanel.add(groupTimetableButton);
         optionsPanel.add(lecturerLoadButton);
         optionsPanel.add(studentLoadButton);
         optionsPanel.add(roomLoadButton);
-        optionsPanel.add(lecturerTimetableButton);
-        optionsPanel.add(groupTimetableButton);
+        
         
         Button backButton = createBackButton("Back to Home", "HOME");
 
@@ -1533,14 +1584,14 @@ public class SchedamyGUI extends Frame implements ActionListener {
         Panel roomsPanel = new Panel(new GridLayout(0, 2, 25, 25));
         roomsPanel.setBackground(new Color(245, 247, 250));
 
-        for (Room room : system.getRooms()) {
-
-        	Button button = createDashboardButton("Room " + room.getRoomID() + " | Building " + room.getBuilding());
-        		button.setPreferredSize(new Dimension(250, 90));
-        		button.setActionCommand("LESSONS_ROOM_" + room.getRoomID() + "_" + room.getBuilding());
-
-            roomsPanel.add(button);
-        }
+	        for (Room room : system.getRooms()) {
+	
+	        	Button button = createDashboardButton("Room " + room.getRoomID() + " | Building " + room.getBuilding());
+	        		button.setPreferredSize(new Dimension(250, 90));
+	        		button.setActionCommand("LESSONS_ROOM_" + room.getRoomID() + "_" + room.getBuilding());
+	
+	            roomsPanel.add(button);
+	        }
         Button backButton = createBackButton("Back to Lessons", "Lessons");
         
         mainPanel.add(title, BorderLayout.NORTH);
@@ -3276,24 +3327,34 @@ public class SchedamyGUI extends Frame implements ActionListener {
         // CANCEL -> do nothing
     }
     
-    private void loadDataOnStart() {
-        try {
-            system.loadDataFromFile();
-            updateNextIDs();
+    private void askLoadOnStart() {
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            "Do you want to load saved data?",
+            "Load Data",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
 
-            JOptionPane.showMessageDialog(
-                this,
-                "Saved data loaded successfully!",
-                "Load Data",
-                JOptionPane.INFORMATION_MESSAGE
-            );
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(
-                this,
-                "No saved data was loaded.\n" + ex.getMessage(),
-                "Load Data",
-                JOptionPane.INFORMATION_MESSAGE
-            );
+        if (result == JOptionPane.YES_OPTION) {
+            try {
+                system.loadDataFromFile();
+                updateNextIDs();
+
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Data loaded successfully!",
+                    "Load Data",
+                    JOptionPane.INFORMATION_MESSAGE
+                );
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Error loading data: " + ex.getMessage(),
+                    "Load Data",
+                    JOptionPane.ERROR_MESSAGE
+                );
+            }
         }
     }
         // ------------------------------------------------------
