@@ -1835,7 +1835,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 			try {
 				String scoreText = teachingScoreField.getText().trim();
 				if (!scoreText.matches("\\d+"))
-				    throw new IllegalArgumentException("Teaching Score must contain only digits");
+				    throw new IllegalArgumentException("Teaching Score must be a whole and positive number");
 				double score = Double.parseDouble(teachingScoreField.getText().trim());
 				if (!idField.getText().matches("\\d+"))
 					throw new IllegalArgumentException("Lecturer ID must contain only digits");
