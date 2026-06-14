@@ -8,7 +8,7 @@ public class RoomResrvation {
 	private Room room;
 	private Lesson lesson;
 	private Duration occupancyTime;
-
+	
 	//Constructor
 	public RoomResrvation(Room room, Lesson lesson, Duration occupancyTime)
 	{

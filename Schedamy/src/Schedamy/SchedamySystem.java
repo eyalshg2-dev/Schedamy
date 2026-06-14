@@ -77,7 +77,7 @@ public class SchedamySystem
 		return null;
 	}
 	//add course
-	public void addCourse(int courseID, String courseName,int credits, String courseType,String lecturerID, int groupID)
+	public synchronized void addCourse(int courseID, String courseName,int credits, String courseType,String lecturerID, int groupID)
 	{	
 		for (Course existing : courses) 
 		{
@@ -120,7 +120,7 @@ public class SchedamySystem
 	} 
 
 	//add lecturer
-	public void addLecturer(String id, String firstName, String lastName,ArrayList<String> specializations,double teachingScore,double fte)
+	public synchronized void addLecturer(String id, String firstName, String lastName,ArrayList<String> specializations,double teachingScore,double fte)
 	{
 		// ID must be 9 digits
 		if (String.valueOf(id).length() != 9) 
@@ -148,7 +148,7 @@ public class SchedamySystem
 		lecturers.add(lecturer);
 	}
 
-	public void addRoom(String roomNumber, int building,String roomType, int capacity)
+	public synchronized void addRoom(String roomNumber, int building,String roomType, int capacity)
 	{
 		if (roomNumber == null || roomNumber.isEmpty())
 			throw new IllegalArgumentException("Invalid room number");
@@ -180,13 +180,13 @@ public class SchedamySystem
 		return true;
 	}
 	//add room reservation
-	public void addRoomReservation(RoomResrvation roomReservation)
+	public synchronized void addRoomReservation(RoomResrvation roomReservation)
 	{
 		roomReservations.add(roomReservation);
 	}
 
 	//add student group
-	public void addStudentGroup(int groupID, String department,int studyYear, int studentCount,String programName)
+	public synchronized void addStudentGroup(int groupID, String department,int studyYear, int studentCount,String programName)
 	{
 		for (StudentGroup group : studentGroups)
 		{
@@ -709,7 +709,7 @@ public class SchedamySystem
 				newDate,
 				new Vector<>(rooms),
 				roomLock,
-				new Vector<>(groupEnrolments), true));
+				new Vector<>(groupEnrolments), true, null));
 
 		availabilityThread.start();
 	}

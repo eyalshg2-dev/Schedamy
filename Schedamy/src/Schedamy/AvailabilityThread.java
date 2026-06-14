@@ -6,148 +6,209 @@ import java.util.Vector;
 
 public class AvailabilityThread implements Runnable {
 
-	//By using Runnable we want to create a thread 
-	// that runs in sync by checking the availability
-	// of the lecturers, students and classrooms
-	private static final java.time.format.DateTimeFormatter DATE_FORMAT = 
-			java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    private static final java.time.format.DateTimeFormatter DATE_FORMAT =
+            java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-	private Lecturer lecturer;
-	private Lesson lesson;
-	private LocalDate date;
-	private Vector<Room> rooms;
-	private final Vector<GroupEnrolment> groupEnrolment;
-	private final Object roomLock;
-	private boolean isCancellation;
-	private LocalTime startTime;
-	private LocalTime endTime;
-	private String suggestion = "";
-	private Room suggestedRoom = null;
-	private LocalDate suggestedDate = null;
+    private Lecturer lecturer;
+    private Lesson lesson;
+    private LocalDate date;
+    private Vector<Room> rooms;
+    private final Vector<GroupEnrolment> groupEnrolment;
+    private final Object roomLock;
+    private boolean isCancellation;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private String suggestion = "";
+    private Room suggestedRoom = null;
+    private LocalDate suggestedDate = null;
+    private StudentGroup studentGroup;
 
-	public AvailabilityThread(Lecturer lecturer, Lesson lesson, 
-			LocalDate date, Vector<Room> rooms,
-			Object roomLock, Vector<GroupEnrolment> groupEnrolment,
-			boolean isCancellation) {
-		this.lecturer = lecturer;
-		this.lesson = lesson;
-		this.date = date;
-		this.rooms = rooms;
-		this.roomLock = roomLock;
-		this.groupEnrolment = groupEnrolment;
-		this.isCancellation = isCancellation;
-		this.startTime = lesson.getStartTime();
-		this.endTime = lesson.getEndTime();
-	}
+    public AvailabilityThread(Lecturer lecturer, Lesson lesson,
+            LocalDate date, Vector<Room> rooms,
+            Object roomLock, Vector<GroupEnrolment> groupEnrolment,
+            boolean isCancellation, StudentGroup studentGroup) {
+        this.lecturer = lecturer;
+        this.lesson = lesson;
+        this.date = date;
+        this.rooms = rooms;
+        this.roomLock = roomLock;
+        this.groupEnrolment = groupEnrolment;
+        this.isCancellation = isCancellation;
+        this.startTime = lesson.getStartTime();
+        this.endTime = lesson.getEndTime();
+        this.studentGroup = studentGroup;
+    }
 
-	public void run() {
+    public void run() {
+        try {
+            if (isCancellation) {
+                System.out.println("Lesson Cancelled!");
+                return;
+            }
 
-		try {
+            System.out.println("AvailabilityThread searching date: " + date.format(DATE_FORMAT));
 
-			if (isCancellation) {
-				System.out.println("Lesson Cancelled!");
-				return;
-			}
-			//Check the availability of the lecturer
-			for (Lesson current : lecturer.getLessons()) {
-				if(current.getLessonDate().equals(date)) {
-					System.out.println("Lecturer unavilable on : " + date);
-					return;
-				}
-			}
+            Thread.sleep(1000);
 
-			//Check the student groups availability
-			for(StudentGroup group : lesson.getStudents()) {
-				for(GroupEnrolment enrolment : groupEnrolment) {
-					if(enrolment.getGroup().getGroupID()== group.getGroupID()) {
-						for(Lesson groupLesson : enrolment.getCourse().getLessons()){
-							if(groupLesson.getLessonDate().equals(date) &&
-									!groupLesson.getStatus().equals("CANCELLED")) {
-								System.out.println("Group: " +
-										group.getGroupID() + ("unavailable on: " + date));
-								return;
-							}
-						}
-					}
-				}	
-			}
+            if ("FRONTAL".equals(lesson.getTeachingMode())) {
+                System.out.println("Searching for available slot...");
+                findAvailableSlot(studentGroup);
+            } else {
+                handleZoom();
+            }
 
-			Thread.sleep(1000);
+            System.out.println("Search Complete: " + (suggestion.isEmpty() ? "No slot found" : suggestion));
 
-			if("FRONTAL".equals(lesson.getTeachingMode())) {
-				System.out.println("Searching for available room...");
-				handleFrontal();
-			} else {
-				handleZoom();
-			}
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
 
-			System.out.println("Search Complete!");
+    private void findAvailableSlot(StudentGroup group) {
+    	long lessonDuration =
+    	        java.time.Duration.between(
+    	                lesson.getStartTime(),
+    	                lesson.getEndTime()
+    	        		).toHours();
+        // set time based on the program
+        LocalTime rangeStart = LocalTime.of(8, 0);
+        LocalTime rangeEnd = LocalTime.of(17, 0);
 
-		} catch(Exception e) {
-			System.out.println("Error: " + e.getMessage());
-		}
-	}
+        if (group != null && group.getProgramName().equals("Evening")) {
+            rangeStart = LocalTime.of(16, 0);
+            rangeEnd = LocalTime.of(22, 0);
+        }
 
-	//function to handle incase the class is frontal
-	private void handleFrontal() {
-		synchronized (roomLock) {
-			Room availableRoom = null;
+        // an interval of 2 hours difference
+        LocalTime slotStart = rangeStart;
+        while (!slotStart.plusHours(lessonDuration).isAfter(rangeEnd)) {
+            LocalTime slotEnd = slotStart.plusHours(lessonDuration);
 
-			int studentCount = 0;
-			for (GroupEnrolment enrolment : groupEnrolment) {
-				for (Lesson l : enrolment.getCourse().getLessons()) {
-					if (l.getLessonID() == lesson.getLessonID()) {
-						studentCount = enrolment.getGroup().getStudentCount();
-						break;
-					}
-				}
-			}
+            /*System.out.println("Trying slot: " + slotStart + " - " + slotEnd);*/
 
-			for(Room room : rooms) {
-				if("AVAILABLE".equals(room.getStatus()) &&
-						room.getCapacity() >= studentCount) {
-					availableRoom = room;
-					break;
-				}
-			}
-			if (availableRoom != null) {
-				if (!isCancellation) {
-					// Store suggestion instead of applying
-					suggestedRoom = availableRoom;
-					suggestedDate = date;
-					suggestion = "Date: " + date.format(DATE_FORMAT) + 
-							"\nTime: " + startTime + " - " + endTime + 
-							"\nRoom: " + availableRoom.getRoomID();
-					System.out.println("[FRONTAL] Suggestion found: " + suggestion);
-				}
-			} else {
-				System.out.println("[FRONTAL] No available room on: " + date);
-			}
-		}
-	}
+            // Check lecturer free at this time
+            boolean lecturerFree = true;
+            for (Lesson current : lecturer.getLessons()) {
+                if (current.getStatus().equalsIgnoreCase("CANCELLED")) continue;
+                if (current.getLessonDate().equals(date)) {
+                    boolean overlap = slotStart.isBefore(current.getEndTime().plusMinutes(15)) &&
+                                      slotEnd.isAfter(current.getStartTime().plusMinutes(15));
+                    if (overlap) {
+                        lecturerFree = false;
+                        break;
+                    }
+                }
+            }
+            if (!lecturerFree) {
+                slotStart = slotStart.plusHours(1);
+                continue;
+            }
 
-	//function to handle incase the lesson will be in zoom
-	private void handleZoom() {
-		synchronized (lesson) {
-			if (!isCancellation) {
-				suggestedDate = date;
-				suggestion = "Date: " + date.format(DATE_FORMAT) + 
-						"\nTime: " + startTime + " - " + endTime + 
-						"\nMode: ZOOM (no room needed)";
-				System.out.println("[ZOOM] Suggestion found: " + suggestion);
-			}
-		}
-	}
+            // Check group free at this time
+            boolean groupFree = true;
+            if (group != null) {
+                for (GroupEnrolment enrolment : groupEnrolment) {
+                    if (!enrolment.getGroup().equals(group)) continue;
+                    for (Lesson otherLesson : enrolment.getCourse().getLessons()) {
+                        /*if (otherLesson.getLessonID() == lesson.getLessonID()) continue;*/
+                        if (otherLesson.getStatus().equalsIgnoreCase("CANCELLED")) continue;
+                        if (otherLesson.getLessonDate().equals(date)) {
+                            boolean overlap = slotStart.isBefore(otherLesson.getEndTime().plusMinutes(15)) &&
+                                              slotEnd.isAfter(otherLesson.getStartTime().plusMinutes(15));
+                            if (overlap) {
+                                groupFree = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (!groupFree) break;
+                }
+            }
+            if (!groupFree) {
+                slotStart = slotStart.plusHours(1);
+                continue;
+            }
 
-	public String getSuggestion() {
-		return suggestion;
-	}   
+            // Check room free at this time
+            synchronized (roomLock) {
+                int studentCount = group != null ? group.getStudentCount() : 0;
+                Room availableRoom = null;
 
-	public Room getSuggestedRoom() {
-		return suggestedRoom;
-	}
+                for (Room room : rooms) {
+                	System.out.println(room.getRoomID() + "TYPE: " + room.getRoomType());
+                    if ("PENDING".equals(room.getStatus())) continue;
+                    if (lesson.isLabRoomRequired() &&
+                    		!"Computer Lab".equalsIgnoreCase(room.getRoomType())) {
+                    	continue;
+                    }
+                    
+                    if (room.getCapacity() < studentCount) continue;
+                    
 
-	public LocalDate getSuggestedDate() {
-		return suggestedDate;
-	}
+                    boolean roomFree = true;
+                    for (GroupEnrolment enrolment : groupEnrolment) {
+                        for (Lesson l : enrolment.getCourse().getLessons()) {
+                            if (l.getRoom() == null) continue;
+                            if (!l.getRoom().getRoomID().equals(room.getRoomID())) continue;
+                            if (l.getStatus().equalsIgnoreCase("CANCELLED")) continue;
+                            if (!l.getLessonDate().equals(date)) continue;
+
+                            boolean overlap = slotStart.isBefore(l.getEndTime().plusMinutes(15)) &&
+                                              slotEnd.isAfter(l.getStartTime().plusMinutes(15));
+                            if (overlap) {
+                                roomFree = false;
+                                break;
+                            }
+                        }
+                        if (!roomFree) break;
+                    }
+
+                    if (roomFree) {
+                        availableRoom = room;
+                        break;
+                    }
+                }
+
+                if (availableRoom != null) {
+                    /*availableRoom.setStatus("PENDING");*/
+                    suggestedRoom = availableRoom;
+                    suggestedDate = date;
+                    startTime = slotStart;
+                    endTime = slotEnd;
+                    suggestion = "Date: " + date.format(DATE_FORMAT) +
+                                 "\nTime: " + slotStart + " - " + slotEnd +
+                                 "\nRoom: " + availableRoom.getRoomID();
+                    System.out.println("[FRONTAL] Suggestion found: " + suggestion);
+                    return;
+                }
+            }
+
+            slotStart = slotStart.plusHours(1);
+        }
+
+        System.out.println("No available slot found on: " + date);
+    }
+
+    private void handleZoom() {
+        suggestedDate = date;
+
+        if (studentGroup != null && studentGroup.getProgramName().equals("Evening")) {
+            startTime = LocalTime.of(18, 0);
+            endTime = LocalTime.of(20, 0);
+        } else {
+            startTime = LocalTime.of(10, 0);
+            endTime = LocalTime.of(12, 0);
+        }
+
+        suggestion = "Date: " + date.format(DATE_FORMAT) +
+                     "\nTime: " + startTime + " - " + endTime +
+                     "\nMode: ZOOM (no room needed)";
+        System.out.println("[ZOOM] Suggestion found: " + suggestion);
+    }
+
+    public String getSuggestion() { return suggestion; }
+    public Room getSuggestedRoom() { return suggestedRoom; }
+    public LocalDate getSuggestedDate() { return suggestedDate; }
+    public LocalTime getSuggestedStartTime() { return startTime; }
+    public LocalTime getSuggestedEndTime() { return endTime; }
 }
