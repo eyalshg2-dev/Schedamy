@@ -773,10 +773,11 @@ public class SchedamySystem
 
 		for (RoomResrvation reservation : roomReservations)
 		{
-			if (reservation.getRoom().equals(room))
-			{
-				totalLoad += reservation.getOccupancyTime().toMinutes() / 45.0;
-			}
+			if (reservation.getRoom().getRoomID().equals(room.getRoomID()) &&
+				    reservation.getRoom().getBuilding() == room.getBuilding())
+				{
+				    totalLoad += reservation.getOccupancyTime().toMinutes() / 45.0;
+				}
 		}
 
 		return totalLoad;
