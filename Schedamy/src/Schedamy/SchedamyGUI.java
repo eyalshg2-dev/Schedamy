@@ -2762,7 +2762,6 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	                }
 
 	                Room oldRoom = selectedLesson.getRoom();
-
 	                Room newRoom = null;
 	                LocalDate newDate = null;
 	                LocalTime newStart = null;
