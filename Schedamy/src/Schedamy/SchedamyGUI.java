@@ -1004,7 +1004,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		Label title = new Label(courseName, Label.CENTER);
 		title.setFont(new Font("Arial", Font.BOLD, 28));
 
-		Panel detailsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+		Panel detailsPanel = new Panel(new GridLayout(0, 1, 0, 15));
 		detailsPanel.setBackground(new Color(245, 247, 250));
 
 		boolean found = false;
@@ -1456,7 +1456,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		Label title = new Label("Lessons - Course " + courseID, Label.CENTER);
 		title.setFont(new Font("Arial", Font.BOLD, 15));
 
-		Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+		Panel lessonsPanel = new Panel(new GridLayout(0, 1, 0, 15));
 		lessonsPanel.setBackground(new Color(245, 247, 250));
 
 		boolean foundLessons = false;
