@@ -11,7 +11,7 @@ public class AvailabilityThread implements Runnable {
 
     private Lecturer lecturer;
     private Lesson lesson;
-    private LocalDate date;
+    private LocalDate weekStart;
     private Vector<Room> rooms;
     private final Vector<GroupEnrolment> groupEnrolment;
     private final Object roomLock;
@@ -22,14 +22,15 @@ public class AvailabilityThread implements Runnable {
     private Room suggestedRoom = null;
     private LocalDate suggestedDate = null;
     private StudentGroup studentGroup;
+    private Room excludeRoom; // room to exclude (used by thread 2 if same room found)
 
     public AvailabilityThread(Lecturer lecturer, Lesson lesson,
-            LocalDate date, Vector<Room> rooms,
+            LocalDate weekStart, Vector<Room> rooms,
             Object roomLock, Vector<GroupEnrolment> groupEnrolment,
             boolean isCancellation, StudentGroup studentGroup) {
         this.lecturer = lecturer;
         this.lesson = lesson;
-        this.date = date;
+        this.weekStart = weekStart;
         this.rooms = rooms;
         this.roomLock = roomLock;
         this.groupEnrolment = groupEnrolment;
@@ -37,6 +38,12 @@ public class AvailabilityThread implements Runnable {
         this.startTime = lesson.getStartTime();
         this.endTime = lesson.getEndTime();
         this.studentGroup = studentGroup;
+        this.excludeRoom = null;
+    }
+
+    // Used by GUI to tell thread 2 to skip a specific room
+    public void setExcludeRoom(Room room) {
+        this.excludeRoom = room;
     }
 
     public void run() {
@@ -46,31 +53,48 @@ public class AvailabilityThread implements Runnable {
                 return;
             }
 
-            System.out.println("AvailabilityThread searching date: " + date.format(DATE_FORMAT));
+            System.out.println("AvailabilityThread searching week starting: " + weekStart.format(DATE_FORMAT));
 
             Thread.sleep(1000);
+            
+            java.util.List<Integer> days = new java.util.ArrayList<>();
+            for (int i = 0; i < 7; i++) days.add(i);
+            java.util.Collections.shuffle(days);
 
-            if ("FRONTAL".equals(lesson.getTeachingMode())) {
-                System.out.println("Searching for available slot...");
-                findAvailableSlot(studentGroup);
-            } else {
-                handleZoom();
+            for (int i : days) {
+                LocalDate searchDate = weekStart.plusDays(i);
+                if (searchDate.getDayOfWeek() == java.time.DayOfWeek.SATURDAY) {
+                	continue;
+                }
+                System.out.println("Trying date: " + searchDate.format(DATE_FORMAT));
+
+                if ("FRONTAL".equals(lesson.getTeachingMode())) {
+                    findAvailableSlot(studentGroup, searchDate);
+                } else {
+                    handleZoom(searchDate);
+                }
+
+                if (!suggestion.isEmpty()) {
+                    System.out.println("Slot found on: " + searchDate.format(DATE_FORMAT));
+                    return;
+                }
             }
 
-            System.out.println("Search Complete: " + (suggestion.isEmpty() ? "No slot found" : suggestion));
+            System.out.println("No slot found in week starting: " + weekStart.format(DATE_FORMAT));
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
 
-    private void findAvailableSlot(StudentGroup group) {
-    	long lessonDuration =
-    	        java.time.Duration.between(
-    	                lesson.getStartTime(),
-    	                lesson.getEndTime()
-    	        		).toHours();
-        // set time based on the program
+    private void findAvailableSlot(StudentGroup group, LocalDate searchDate) {
+    	
+    	long lessonDuration = java.time.Duration.between(
+                lesson.getStartTime(),
+                lesson.getEndTime()).toHours();
+    	
+    	if (lessonDuration <= 0) lessonDuration = 2;
+    	
         LocalTime rangeStart = LocalTime.of(8, 0);
         LocalTime rangeEnd = LocalTime.of(17, 0);
 
@@ -79,20 +103,17 @@ public class AvailabilityThread implements Runnable {
             rangeEnd = LocalTime.of(22, 0);
         }
 
-        // an interval of 2 hours difference
         LocalTime slotStart = rangeStart;
         while (!slotStart.plusHours(lessonDuration).isAfter(rangeEnd)) {
             LocalTime slotEnd = slotStart.plusHours(lessonDuration);
-
-            /*System.out.println("Trying slot: " + slotStart + " - " + slotEnd);*/
 
             // Check lecturer free at this time
             boolean lecturerFree = true;
             for (Lesson current : lecturer.getLessons()) {
                 if (current.getStatus().equalsIgnoreCase("CANCELLED")) continue;
-                if (current.getLessonDate().equals(date)) {
-                    boolean overlap = slotStart.isBefore(current.getEndTime().plusMinutes(15)) &&
-                                      slotEnd.isAfter(current.getStartTime().plusMinutes(15));
+                if (current.getLessonDate().equals(searchDate)) {
+                    boolean overlap = slotStart.isBefore(current.getEndTime()) &&
+                                      slotEnd.isAfter(current.getStartTime());
                     if (overlap) {
                         lecturerFree = false;
                         break;
@@ -110,11 +131,13 @@ public class AvailabilityThread implements Runnable {
                 for (GroupEnrolment enrolment : groupEnrolment) {
                     if (!enrolment.getGroup().equals(group)) continue;
                     for (Lesson otherLesson : enrolment.getCourse().getLessons()) {
-                        /*if (otherLesson.getLessonID() == lesson.getLessonID()) continue;*/
                         if (otherLesson.getStatus().equalsIgnoreCase("CANCELLED")) continue;
-                        if (otherLesson.getLessonDate().equals(date)) {
-                            boolean overlap = slotStart.isBefore(otherLesson.getEndTime().plusMinutes(15)) &&
-                                              slotEnd.isAfter(otherLesson.getStartTime().plusMinutes(15));
+                        if (otherLesson.getLessonDate().equals(searchDate)) {
+                        	//15 minute buffer before and after each class
+                        	LocalTime otherStart = otherLesson.getStartTime().minusMinutes(15);
+                            LocalTime otherEnd = otherLesson.getEndTime().plusMinutes(15);
+                            boolean overlap = slotStart.isBefore(otherEnd) && slotEnd.isAfter(otherStart);
+                           
                             if (overlap) {
                                 groupFree = false;
                                 break;
@@ -135,15 +158,11 @@ public class AvailabilityThread implements Runnable {
                 Room availableRoom = null;
 
                 for (Room room : rooms) {
-                	System.out.println(room.getRoomID() + "TYPE: " + room.getRoomType());
-                    if ("PENDING".equals(room.getStatus())) continue;
-                    if (lesson.isLabRoomRequired() &&
-                    		!"Computer Lab".equalsIgnoreCase(room.getRoomType())) {
-                    	continue;
-                    }
-                    
+                    // Skip excluded room (set by GUI if both threads found same room)
+                    if (excludeRoom != null &&
+                        room.getRoomID().equals(excludeRoom.getRoomID())) continue;
+
                     if (room.getCapacity() < studentCount) continue;
-                    
 
                     boolean roomFree = true;
                     for (GroupEnrolment enrolment : groupEnrolment) {
@@ -151,10 +170,10 @@ public class AvailabilityThread implements Runnable {
                             if (l.getRoom() == null) continue;
                             if (!l.getRoom().getRoomID().equals(room.getRoomID())) continue;
                             if (l.getStatus().equalsIgnoreCase("CANCELLED")) continue;
-                            if (!l.getLessonDate().equals(date)) continue;
+                            if (!l.getLessonDate().equals(searchDate)) continue;
 
-                            boolean overlap = slotStart.isBefore(l.getEndTime().plusMinutes(15)) &&
-                                              slotEnd.isAfter(l.getStartTime().plusMinutes(15));
+                            boolean overlap = slotStart.isBefore(l.getEndTime()) &&
+                                              slotEnd.isAfter(l.getStartTime());
                             if (overlap) {
                                 roomFree = false;
                                 break;
@@ -170,12 +189,11 @@ public class AvailabilityThread implements Runnable {
                 }
 
                 if (availableRoom != null) {
-                    /*availableRoom.setStatus("PENDING");*/
                     suggestedRoom = availableRoom;
-                    suggestedDate = date;
+                    suggestedDate = searchDate;
                     startTime = slotStart;
                     endTime = slotEnd;
-                    suggestion = "Date: " + date.format(DATE_FORMAT) +
+                    suggestion = "Date: " + searchDate.format(DATE_FORMAT) +
                                  "\nTime: " + slotStart + " - " + slotEnd +
                                  "\nRoom: " + availableRoom.getRoomID();
                     System.out.println("[FRONTAL] Suggestion found: " + suggestion);
@@ -185,13 +203,9 @@ public class AvailabilityThread implements Runnable {
 
             slotStart = slotStart.plusHours(1);
         }
-
-        System.out.println("No available slot found on: " + date);
     }
 
-    private void handleZoom() {
-        suggestedDate = date;
-
+    private void handleZoom(LocalDate searchDate) {
         if (studentGroup != null && studentGroup.getProgramName().equals("Evening")) {
             startTime = LocalTime.of(18, 0);
             endTime = LocalTime.of(20, 0);
@@ -200,7 +214,8 @@ public class AvailabilityThread implements Runnable {
             endTime = LocalTime.of(12, 0);
         }
 
-        suggestion = "Date: " + date.format(DATE_FORMAT) +
+        suggestedDate = searchDate;
+        suggestion = "Date: " + searchDate.format(DATE_FORMAT) +
                      "\nTime: " + startTime + " - " + endTime +
                      "\nMode: ZOOM (no room needed)";
         System.out.println("[ZOOM] Suggestion found: " + suggestion);
