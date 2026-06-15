@@ -775,7 +775,7 @@ public class SchedamySystem
 		{
 			if (reservation.getRoom().equals(room))
 			{
-				totalLoad += reservation.getOccupancyTime().toMinutes() / 45;
+				totalLoad += reservation.getOccupancyTime().toMinutes() / 45.0;
 			}
 		}
 
