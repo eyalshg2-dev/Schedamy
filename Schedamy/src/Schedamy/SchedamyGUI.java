@@ -8,7 +8,6 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import java.time.format.DateTimeFormatter;
 import java.awt.event.*;
 import java.time.Duration;
