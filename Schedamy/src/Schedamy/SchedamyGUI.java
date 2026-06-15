@@ -11,6 +11,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java.time.format.DateTimeFormatter;
 import java.awt.event.*;
+import java.time.Duration;
 
 
 //======================================================
@@ -2392,6 +2393,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
 				}
 				if (!endTime.isAfter(startTime))
 					throw new IllegalArgumentException("End time must be after start time");
+				long minutes = Duration.between(startTime, endTime).toMinutes();
+
+				if (minutes < 45 || minutes > 300) {
+				    throw new IllegalArgumentException(
+				            "Lesson duration must be between 45 minutes and 5 hours");
+				}
 
 				Room selectedRoom = null;
 
