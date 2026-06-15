@@ -2563,6 +2563,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	        }
 	    }
 
+	    
 	    if (lessonChoice.getItemCount() == 0) {
 	        JOptionPane.showMessageDialog(this,
 	                "There are no lessons available to cancel.",
