@@ -2648,15 +2648,6 @@ public class SchedamyGUI extends Frame implements ActionListener {
 						sharedRoomLock,
 						new Vector<>(system.getGroupEnrolments()), false, group);
 				
-				/*
-				AvailabilityThread availThread2 = new AvailabilityThread(
-						lecturer, selectedLesson, newDate2,
-						new Vector<>(system.getRooms()),
-						sharedRoomLock,
-						new Vector<>(system.getGroupEnrolments()), false, group);
-						*/
-				
-				//reassign thread2 if same room found
 				 AvailabilityThread[] thread2Holder = {new AvailabilityThread(
 	                        lecturer, selectedLesson, newDate2,
 	                        new Vector<>(system.getRooms()),

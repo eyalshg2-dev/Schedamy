@@ -104,7 +104,7 @@ public class SchedamySystem
 
 		if (credits <= 0)
 			throw new IllegalArgumentException("Credits must be greater than 0");
-		Course course = new Course(courseID,courseName,credits,courseType,new Vector<Lesson>());
+ 		Course course = new Course(courseID,courseName,credits,courseType,new Vector<Lesson>());
 
 		Lecturer lecturer = findLecturerById(lecturerID);
 		StudentGroup group = findStudentGroupById(groupID);

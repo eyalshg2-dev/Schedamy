@@ -91,9 +91,9 @@ public class AvailabilityThread implements Runnable {
     	
     	long lessonDuration = java.time.Duration.between(
                 lesson.getStartTime(),
-                lesson.getEndTime()).toHours();
+                lesson.getEndTime()).toMinutes();
     	
-    	if (lessonDuration <= 0) lessonDuration = 2;
+    	if (lessonDuration <= 0) lessonDuration = 45;
     	
         LocalTime rangeStart = LocalTime.of(8, 0);
         LocalTime rangeEnd = LocalTime.of(17, 0);
@@ -104,8 +104,8 @@ public class AvailabilityThread implements Runnable {
         }
 
         LocalTime slotStart = rangeStart;
-        while (!slotStart.plusHours(lessonDuration).isAfter(rangeEnd)) {
-            LocalTime slotEnd = slotStart.plusHours(lessonDuration);
+        while (!slotStart.plusMinutes(lessonDuration).isAfter(rangeEnd)) {
+            LocalTime slotEnd = slotStart.plusMinutes(lessonDuration);
 
             // Check lecturer free at this time
             boolean lecturerFree = true;
@@ -121,7 +121,7 @@ public class AvailabilityThread implements Runnable {
                 }
             }
             if (!lecturerFree) {
-                slotStart = slotStart.plusHours(1);
+                slotStart = slotStart.plusMinutes(lessonDuration);
                 continue;
             }
 
@@ -201,7 +201,7 @@ public class AvailabilityThread implements Runnable {
                 }
             }
 
-            slotStart = slotStart.plusHours(1);
+            slotStart = slotStart.plusMinutes(lessonDuration);
         }
     }
 
