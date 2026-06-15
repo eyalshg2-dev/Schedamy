@@ -1004,7 +1004,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		Label title = new Label(courseName, Label.CENTER);
 		title.setFont(new Font("Arial", Font.BOLD, 28));
 
-		Panel detailsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+		Panel detailsPanel = new Panel(new GridLayout(0, 1, 0, 15));
 		detailsPanel.setBackground(new Color(245, 247, 250));
 
 		boolean found = false;
@@ -1456,7 +1456,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		Label title = new Label("Lessons - Course " + courseID, Label.CENTER);
 		title.setFont(new Font("Arial", Font.BOLD, 15));
 
-		Panel lessonsPanel = new Panel(new FlowLayout(FlowLayout.CENTER, 20, 20));
+		Panel lessonsPanel = new Panel(new GridLayout(0, 1, 0, 15));
 		lessonsPanel.setBackground(new Color(245, 247, 250));
 
 		boolean foundLessons = false;
@@ -2530,159 +2530,164 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 	private void openCancelLessonDialog()
 	{
-		Dialog dialog = new Dialog(this, "Cancel Lesson", true);
-		enableDialogCloseButton(dialog);
-		dialog.setLayout(new BorderLayout());
-		dialog.setSize(500, 220);
-		dialog.setLocationRelativeTo(this);
+	    Dialog dialog = new Dialog(this, "Cancel Lesson", true);
+	    enableDialogCloseButton(dialog);
+	    dialog.setLayout(new BorderLayout());
+	    dialog.setSize(500, 220);
+	    dialog.setLocationRelativeTo(this);
 
-		Panel formPanel = new Panel(new GridLayout(2, 2, 5, 5));
+	    Panel formPanel = new Panel(new GridLayout(2, 2, 5, 5));
 
-		Choice lessonChoice = new Choice();
+	    Choice lessonChoice = new Choice();
 
-		// This vector keeps  Lesson objects in the same order as the Choice list.
-		Vector<Lesson> lessonsList = new Vector<Lesson>();
-		Vector<Integer> courseIDs = new Vector<Integer>();
+			// This vector keeps  Lesson objects in the same order as the Choice list.
+			Vector<Lesson> lessonsList = new Vector<Lesson>();
+			Vector<Integer> courseIDs = new Vector<Integer>();
 
-		for (Course course : system.getCourses()) {
-			for (Lesson lesson : course.getLessons()) {
-				if (!lesson.getStatus().equalsIgnoreCase("CANCELLED")&&
-						lesson.getLessonDate().isAfter(LocalDate.now())){
-					lessonChoice.add(
-							course.getCourseID() + " - " +
-									course.getCourseName() + " | Lesson " +
-									lesson.getLessonID() + " | " +
-									lesson.getLessonDate().format(DATE_FORMAT) + " " +
-									lesson.getStartTime()    	
-							);
+	    for (Course course : system.getCourses()) {
+	        for (Lesson lesson : course.getLessons()) {
+	            if (!lesson.getStatus().equalsIgnoreCase("CANCELLED") &&
+	                    lesson.getLessonDate().isAfter(LocalDate.now())) {
 
-					lessonsList.add(lesson);
-					courseIDs.add(course.getCourseID());
-				}
-			}
-		}
+	                lessonChoice.add(
+	                        course.getCourseID() + " - " +
+	                                course.getCourseName() + " | Lesson " +
+	                                lesson.getLessonID() + " | " +
+	                                lesson.getLessonDate().format(DATE_FORMAT) + " " +
+	                                lesson.getStartTime()
+	                );
 
-		if (lessonChoice.getItemCount() == 0) {
-			JOptionPane.showMessageDialog(this,
-					"There are no lessons available to cancel.",
-					"No Lessons Found",
-					JOptionPane.INFORMATION_MESSAGE);
-			return; 
-		}
+	                lessonsList.add(lesson);
+	                courseIDs.add(course.getCourseID());
+	            }
+	        }
+	    }
 
-		TextField reasonField = new TextField();
+	    if (lessonChoice.getItemCount() == 0) {
+	        JOptionPane.showMessageDialog(this,
+	                "There are no lessons available to cancel.",
+	                "No Lessons Found",
+	                JOptionPane.INFORMATION_MESSAGE);
+	        return;
+	    }
 
-		formPanel.add(new Label("Lesson:"));
-		formPanel.add(lessonChoice);
+	    TextField reasonField = new TextField();
 
-		formPanel.add(new Label("Cancel Reason:"));
-		formPanel.add(reasonField);
+	    formPanel.add(new Label("Lesson:"));
+	    formPanel.add(lessonChoice);
 
-		Panel buttonPanel = new Panel(new GridLayout(1, 2, 5, 5));
-		Button cancelLessonButton = new Button("Cancel");
-		Button closeButton = new Button("Close");
+	    formPanel.add(new Label("Cancel Reason:"));
+	    formPanel.add(reasonField);
 
-		buttonPanel.add(cancelLessonButton);
-		buttonPanel.add(closeButton);
+	    Panel buttonPanel = new Panel(new GridLayout(1, 2, 5, 5));
+	    Button cancelLessonButton = new Button("Cancel");
+	    Button closeButton = new Button("Close");
 
-		dialog.add(formPanel, BorderLayout.CENTER);
-		dialog.add(buttonPanel, BorderLayout.SOUTH);
+	    buttonPanel.add(cancelLessonButton);
+	    buttonPanel.add(closeButton);
 
-		cancelLessonButton.addActionListener(e -> {
-			try {
-				if (lessonChoice.getItemCount() == 0) {
-					throw new IllegalArgumentException("No lessons found.");
-				}
+	    dialog.add(formPanel, BorderLayout.CENTER);
+	    dialog.add(buttonPanel, BorderLayout.SOUTH);
 
-				String reason = reasonField.getText().trim();
+	    cancelLessonButton.addActionListener(e -> {
+	        try {
+	            if (lessonChoice.getItemCount() == 0) {
+	                throw new IllegalArgumentException("No lessons found.");
+	            }
 
-				if (reason.isEmpty()) {
-					throw new IllegalArgumentException("Cancel reason cannot be empty.");
-				}
+	            String reason = reasonField.getText().trim();
 
-				//ask user before cancelling
-				String [] options = {"Cancel Only", "Reschedule", "Go Back"};
+	            if (reason.isEmpty()) {
+	                throw new IllegalArgumentException("Cancel reason cannot be empty.");
+	            }
 
-				int choice = JOptionPane.showOptionDialog(
-						this,
-						"Would You Like To Reschedule?",
-						"Cancel Lesson",
-						JOptionPane.DEFAULT_OPTION,
-						JOptionPane.QUESTION_MESSAGE,
-						null, options, options[0]);
+					//ask user before cancelling
+					String [] options = {"Cancel Only", "Reschedule", "Go Back"};
 
-				if (choice == 2 || choice == -1) return; //Go back or closed dialog
-				
-				// Get the selected lesson directly by index
-				int selectedIndex = lessonChoice.getSelectedIndex();
-				Lesson selectedLesson = lessonsList.get(selectedIndex);
-				int courseID = courseIDs.get(selectedIndex);
-				LocalDate newDate1 = LocalDate.now().with(java.time.DayOfWeek.SUNDAY);
-				LocalDate newDate2 = LocalDate.now().plusWeeks(1).with(java.time.DayOfWeek.SUNDAY);
+	            int choice = JOptionPane.showOptionDialog(
+	                    this,
+	                    "Would You Like To Reschedule?",
+	                    "Cancel Lesson",
+	                    JOptionPane.DEFAULT_OPTION,
+	                    JOptionPane.QUESTION_MESSAGE,
+	                    null, options, options[0]);
 
-				if (choice == 0) {
-					system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate1, sharedRoomLock);
-					JOptionPane.showMessageDialog(
-							this,
-							"Lesson cancelled successfully!\nReason: " + reason,
-							"Success", JOptionPane.INFORMATION_MESSAGE);
-					dialog.dispose();
-					return;
-				}
+					if (choice == 2 || choice == -1) return; //Go back or closed dialog
+					
+					// Get the selected lesson directly by index
+					int selectedIndex = lessonChoice.getSelectedIndex();
+					Lesson selectedLesson = lessonsList.get(selectedIndex);
+					int courseID = courseIDs.get(selectedIndex);
+					LocalDate newDate1 = LocalDate.now().with(java.time.DayOfWeek.SUNDAY);
+					LocalDate newDate2 = LocalDate.now().plusWeeks(1).with(java.time.DayOfWeek.SUNDAY);
 
-				if (choice == 1) {
-					dialog.dispose();
+	            if (choice == 0) {
+	                system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate1, sharedRoomLock);
 
-				Lecturer lecturer = null;
-				for (AssignedToTeach a : system.getAssignedToTeachList()) {
-					if (a.getCourse().getCourseID() == courseID) {
-						lecturer = a.getLecturer();
-						break;
-					}
-				}
-				
-				Course courseForLesson = null;
-				for (Course c : system.getCourses()) {
-					if (c.getCourseID() == courseID) {
-						courseForLesson = c;
-						break;
-					}	
-				}
-				
-				StudentGroup group = system.getGroupForCourse(courseForLesson);
+	                JOptionPane.showMessageDialog(
+	                        this,
+	                        "Lesson cancelled successfully!\nReason: " + reason,
+	                        "Success", JOptionPane.INFORMATION_MESSAGE);
 
-				AvailabilityThread availThread1 = new AvailabilityThread(
-						lecturer, selectedLesson, newDate1,
-						new Vector<>(system.getRooms()),
-						sharedRoomLock,
-						new Vector<>(system.getGroupEnrolments()), false, group);
-				
-				 AvailabilityThread[] thread2Holder = {new AvailabilityThread(
+	                dialog.dispose();
+	                return;
+	            }
+
+	            if (choice == 1) {
+	                dialog.dispose();
+
+	                Lecturer lecturer = null;
+	                for (AssignedToTeach a : system.getAssignedToTeachList()) {
+	                    if (a.getCourse().getCourseID() == courseID) {
+	                        lecturer = a.getLecturer();
+	                        break;
+	                    }
+	                }
+
+	                Course courseForLesson = null;
+	                for (Course c : system.getCourses()) {
+	                    if (c.getCourseID() == courseID) {
+	                        courseForLesson = c;
+	                        break;
+	                    }
+	                }
+
+	                StudentGroup group = system.getGroupForCourse(courseForLesson);
+
+	                AvailabilityThread availThread1 = new AvailabilityThread(
+	                        lecturer, selectedLesson, newDate1,
+	                        new Vector<>(system.getRooms()),
+	                        sharedRoomLock,
+	                        new Vector<>(system.getGroupEnrolments()), false, group);
+
+	                AvailabilityThread[] thread2Holder = {new AvailabilityThread(
 	                        lecturer, selectedLesson, newDate2,
 	                        new Vector<>(system.getRooms()),
 	                        sharedRoomLock,
 	                        new Vector<>(system.getGroupEnrolments()), false, group)};
 
-	            Thread t1 = new Thread(availThread1);
-	            Thread t2 = new Thread(thread2Holder[0]);
-	            t1.start();
-	            t2.start();
-	            t1.join();
-	            t2.join();
-	            
-	            if (!availThread1.getSuggestion().isEmpty() &&
-	                    !thread2Holder[0].getSuggestion().isEmpty() &&
-	                    availThread1.getSuggestedRoom() != null &&
-	                    thread2Holder[0].getSuggestedRoom() != null &&
-	                    availThread1.getSuggestedRoom().getRoomID().equals(
-	                        thread2Holder[0].getSuggestedRoom().getRoomID())) {
+	                Thread t1 = new Thread(availThread1);
+	                Thread t2 = new Thread(thread2Holder[0]);
+	                t1.start();
+	                t2.start();
+	                t1.join();
+	                t2.join();
+
+	                if (!availThread1.getSuggestion().isEmpty() &&
+	                        !thread2Holder[0].getSuggestion().isEmpty() &&
+	                        availThread1.getSuggestedRoom() != null &&
+	                        thread2Holder[0].getSuggestedRoom() != null &&
+	                        availThread1.getSuggestedRoom().getRoomID().equals(
+	                                thread2Holder[0].getSuggestedRoom().getRoomID())) {
 
 	                    System.out.println("Same room found - re-running thread 2 with excluded room");
+
 	                    AvailabilityThread availThread2new = new AvailabilityThread(
 	                            lecturer, selectedLesson, newDate2,
 	                            new Vector<>(system.getRooms()),
 	                            sharedRoomLock,
 	                            new Vector<>(system.getGroupEnrolments()), false, group);
+
 	                    availThread2new.setExcludeRoom(availThread1.getSuggestedRoom());
 
 	                    Thread t2new = new Thread(availThread2new);
@@ -2692,136 +2697,148 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	                    thread2Holder[0] = availThread2new;
 	                }
 
-				String suggestion1 = availThread1.getSuggestion();
-				String suggestion2 = thread2Holder[0].getSuggestion();
+	                String suggestion1 = availThread1.getSuggestion();
+	                String suggestion2 = thread2Holder[0].getSuggestion();
 
-				if(suggestion1.isEmpty() && suggestion2.isEmpty()) {
-					//neither found a slot
-					String[] noSlotOptions = {"Cancel Lesson", "Keep Lesson"};
-					int noSlotChoice = JOptionPane.showOptionDialog(
-							this,
-							"No Available slot found.",
-							"No Slot Found",
-							JOptionPane.DEFAULT_OPTION,
-							JOptionPane.WARNING_MESSAGE,
-							null, 
-							noSlotOptions, 
-							noSlotOptions[1]);
-					
-					if (noSlotChoice == 0) {
-						system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate1, sharedRoomLock);
-						JOptionPane.showMessageDialog(this,
-								"Lesson Cancelled.\nReason: " + reason,
-								"Cancelled", JOptionPane.INFORMATION_MESSAGE);
-					}
+					if(suggestion1.isEmpty() && suggestion2.isEmpty()) {
+						//neither found a slot
+						String[] noSlotOptions = {"Cancel Lesson", "Keep Lesson"};
+						int noSlotChoice = JOptionPane.showOptionDialog(
+								this,
+								"No Available slot found.",
+								"No Slot Found",
+								JOptionPane.DEFAULT_OPTION,
+								JOptionPane.WARNING_MESSAGE,
+								null, 
+								noSlotOptions, 
+								noSlotOptions[1]);
+						
+						if (noSlotChoice == 0) {
+							system.cancelLesson(courseID, selectedLesson.getLessonID(), newDate1, sharedRoomLock);
+							JOptionPane.showMessageDialog(this,
+									"Lesson Cancelled.\nReason: " + reason,
+									"Cancelled", JOptionPane.INFORMATION_MESSAGE);
+						}
 
-				} else {
-					// Build the message showing available options
-					String message = "Available slots found!\n\n";
-
-					ArrayList<String> optionsList = new ArrayList<>();
-
-					if (!suggestion1.isEmpty()) {
-						message += "Option 1:\n" + suggestion1 + "\n\n";
-						optionsList.add("Option 1");
-					}
-					if (!suggestion2.isEmpty()) {
-						message += "Option 2:\n" + suggestion2 + "\n\n";
-						optionsList.add("Option 2");
-					}
-
-					message += "Lecturer: " + lecturer.getFirstName() + " " + lecturer.getLastName() +
-							"\nStudent Group: " + system.getGroupForCourse(courseID);
-
-					String[] option = optionsList.toArray(new String[0]);
-
-					int approveChoice = JOptionPane.showOptionDialog(
-							this,
-							message,
-							"Slots Found",
-							JOptionPane.DEFAULT_OPTION,
-							JOptionPane.INFORMATION_MESSAGE,
-							null, option, option[0]);
-					
-					if (approveChoice == -1) {
-					    if (availThread1.getSuggestedRoom() != null) {
-					        availThread1.getSuggestedRoom().setStatus("AVAILABLE");
-					    }
-					    if (thread2Holder[0].getSuggestedRoom() != null) {
-					        thread2Holder[0].getSuggestedRoom().setStatus("AVAILABLE");
-					    }
-					    return; // lesson stays as is
-					}
-					
-					// User picked Option 1
-					if (!suggestion1.isEmpty() && !suggestion2.isEmpty()) {
-	                    // Both found
-	                    if (approveChoice == 0) {
-	                        selectedLesson.setLessonDate(availThread1.getSuggestedDate());
-	                        selectedLesson.setTime(availThread1.getSuggestedStartTime(), availThread1.getSuggestedEndTime()); 
-	                        selectedLesson.setStatus("RESCHEDULED");
-	                        if (availThread1.getSuggestedRoom() != null) {
-	                            selectedLesson.setRoom(availThread1.getSuggestedRoom());
-	                            availThread1.getSuggestedRoom().setStatus("SCHEDULED");
-	                        }
-	                        if (thread2Holder[0].getSuggestedRoom() != null) {
-	                        	thread2Holder[0].getSuggestedRoom().setStatus("AVAILABLE");
-	                        }
-	                        JOptionPane.showMessageDialog(this, "Lesson rescheduled successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-
-					// User picked Option 2
-	                    } else if (approveChoice == 1) {
-	                        selectedLesson.setLessonDate(thread2Holder[0].getSuggestedDate());
-	                        selectedLesson.setTime(thread2Holder[0].getSuggestedStartTime(), thread2Holder[0].getSuggestedEndTime()); 
-	                        selectedLesson.setStatus("RESCHEDULED");
-	                        if (thread2Holder[0].getSuggestedRoom() != null) {
-	                            selectedLesson.setRoom(thread2Holder[0].getSuggestedRoom());
-	                            thread2Holder[0].getSuggestedRoom().setStatus("SCHEDULED");
-	                        }
-	                        if (availThread1.getSuggestedRoom() != null) {
-	                            availThread1.getSuggestedRoom().setStatus("AVAILABLE");
-	                        }
-	                        JOptionPane.showMessageDialog(this, "Lesson rescheduled successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-	                    }
-	                    
-					} else if (!suggestion1.isEmpty()) {
-	                    // Only option 1
-	                    selectedLesson.setLessonDate(availThread1.getSuggestedDate());
-	                    selectedLesson.setTime(availThread1.getSuggestedStartTime(), availThread1.getSuggestedEndTime());
-	                    selectedLesson.setStatus("RESCHEDULED");
-	                    if (availThread1.getSuggestedRoom() != null) {
-	                        selectedLesson.setRoom(availThread1.getSuggestedRoom());
-	                        availThread1.getSuggestedRoom().setStatus("SCHEDULED");
-	                    }
-	                    JOptionPane.showMessageDialog(this, "Lesson rescheduled successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-					} else if (!suggestion2.isEmpty()) {
-	                    // Only option 2
-	                    selectedLesson.setLessonDate(thread2Holder[0].getSuggestedDate());
-	                    selectedLesson.setTime(thread2Holder[0].getSuggestedStartTime(), thread2Holder[0].getSuggestedEndTime());
-	                    selectedLesson.setStatus("RESCHEDULED");
-	                    if (thread2Holder[0].getSuggestedRoom() != null) {
-	                        selectedLesson.setRoom(thread2Holder[0].getSuggestedRoom());
-	                        thread2Holder[0].getSuggestedRoom().setStatus("SCHEDULED");
-	                    }
-	                    JOptionPane.showMessageDialog(this, "Lesson rescheduled successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+	                    return;
 	                }
+
+	                String message = "Available slots found!\n\n";
+
+	                ArrayList<String> optionsList = new ArrayList<String>();
+
+	                if (!suggestion1.isEmpty()) {
+	                    message += "Option 1:\n" + suggestion1 + "\n\n";
+	                    optionsList.add("Option 1");
+	                }
+
+	                if (!suggestion2.isEmpty()) {
+	                    message += "Option 2:\n" + suggestion2 + "\n\n";
+	                    optionsList.add("Option 2");
+	                }
+
+	                message += "Lecturer: " + lecturer.getFirstName() + " " + lecturer.getLastName() +
+	                        "\nStudent Group: " + system.getGroupForCourse(courseID);
+
+	                String[] option = optionsList.toArray(new String[0]);
+
+	                int approveChoice = JOptionPane.showOptionDialog(
+	                        this,
+	                        message,
+	                        "Slots Found",
+	                        JOptionPane.DEFAULT_OPTION,
+	                        JOptionPane.INFORMATION_MESSAGE,
+	                        null, option, option[0]);
+
+	                if (approveChoice == -1) {
+	                    if (availThread1.getSuggestedRoom() != null) {
+	                        availThread1.getSuggestedRoom().setStatus("AVAILABLE");
+	                    }
+	                    if (thread2Holder[0].getSuggestedRoom() != null) {
+	                        thread2Holder[0].getSuggestedRoom().setStatus("AVAILABLE");
+	                    }
+	                    return;
+	                }
+
+	                Room oldRoom = selectedLesson.getRoom();
+
+	                Room newRoom = null;
+	                LocalDate newDate = null;
+	                LocalTime newStart = null;
+	                LocalTime newEnd = null;
+
+	                if (!suggestion1.isEmpty() && !suggestion2.isEmpty()) {
+	                    if (approveChoice == 0) {
+	                        newRoom = availThread1.getSuggestedRoom();
+	                        newDate = availThread1.getSuggestedDate();
+	                        newStart = availThread1.getSuggestedStartTime();
+	                        newEnd = availThread1.getSuggestedEndTime();
+	                    } else if (approveChoice == 1) {
+	                        newRoom = thread2Holder[0].getSuggestedRoom();
+	                        newDate = thread2Holder[0].getSuggestedDate();
+	                        newStart = thread2Holder[0].getSuggestedStartTime();
+	                        newEnd = thread2Holder[0].getSuggestedEndTime();
+	                    }
+	                } else if (!suggestion1.isEmpty()) {
+	                    newRoom = availThread1.getSuggestedRoom();
+	                    newDate = availThread1.getSuggestedDate();
+	                    newStart = availThread1.getSuggestedStartTime();
+	                    newEnd = availThread1.getSuggestedEndTime();
+	                } else if (!suggestion2.isEmpty()) {
+	                    newRoom = thread2Holder[0].getSuggestedRoom();
+	                    newDate = thread2Holder[0].getSuggestedDate();
+	                    newStart = thread2Holder[0].getSuggestedStartTime();
+	                    newEnd = thread2Holder[0].getSuggestedEndTime();
+	                }
+
+	                selectedLesson.setLessonDate(newDate);
+	                selectedLesson.setTime(newStart, newEnd);
+	                selectedLesson.setStatus("RESCHEDULED");
+	                selectedLesson.setRoom(newRoom);
+
+	                if (oldRoom != null) {
+	                    oldRoom.setStatus("AVAILABLE");
+	                }
+
+	                if (newRoom != null) {
+	                    newRoom.setStatus("SCHEDULED");
+	                }
+
+	                for (int i = 0; i < system.getRoomReservations().size(); i++) {
+	                    RoomResrvation reservation = system.getRoomReservations().get(i);
+
+	                    if (reservation.getLesson().equals(selectedLesson)) {
+	                        system.getRoomReservations().remove(i);
+	                        break;
+	                    }
+	                }
+
+	                if (newRoom != null) {
+	                    system.addRoomReservation(new RoomResrvation(
+	                            newRoom,
+	                            selectedLesson,
+	                            selectedLesson.getDurationTime()));
+	                }
+
+	                JOptionPane.showMessageDialog(
+	                        this,
+	                        "Lesson rescheduled successfully!",
+	                        "Success",
+	                        JOptionPane.INFORMATION_MESSAGE);
 	            }
+
+	        } catch (Exception ex) {
+	            JOptionPane.showMessageDialog(
+	                    this,
+	                    "Invalid input: " + ex.getMessage(),
+	                    "Error",
+	                    JOptionPane.ERROR_MESSAGE);
 	        }
+	    });
 
+	    closeButton.addActionListener(e -> dialog.dispose());
 
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(
-						this,
-						"Invalid input: " + ex.getMessage(),
-						"Error",
-						JOptionPane.ERROR_MESSAGE
-						);
-			}
-		});
-
-		closeButton.addActionListener(e -> dialog.dispose());
-
-		dialog.setVisible(true);
+	    dialog.setVisible(true);
 	}
 
 	/*
