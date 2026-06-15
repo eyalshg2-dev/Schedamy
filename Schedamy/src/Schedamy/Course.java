@@ -32,7 +32,7 @@ public class Course{
 		for (Lesson lesson : lessons) {
 			if (lesson.getStatus().equals("SCHEDULED") ||
 					lesson.getStatus().equals("RESCHEDULED")) {
-				totalHours += lesson.getDurationTime().toMinutes() / 45;
+				totalHours += lesson.getDurationTime().toMinutes() / 45.0;
 			}
 		}
 

@@ -3122,8 +3122,8 @@ public class SchedamyGUI extends Frame implements ActionListener {
 				JOptionPane.showMessageDialog(this,
 						"Lecturer: " + lecturer.getFirstName() + " " + lecturer.getLastName() +
 						"\nRequired load: " + requiredHours +
-						"\nActual load: " + actualHours +
-						"\nDifference: " + diff,
+						 "\nActual load: " + String.format("%.2f", actualHours) +
+                         "\nDifference: " + String.format("%.2f", diff),
 						"Lecturer Load Result",
 						JOptionPane.INFORMATION_MESSAGE);
 
@@ -3220,7 +3220,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 	                "Room: " + room.getRoomID() +
 	                "\nBuilding: " + room.getBuilding() +
 	                "\nSize: " + room.classifyRoomSize() +
-	                "\nAcademic Hours: " + load,
+	                "\nAcademic Hours: " + String.format("%.2f", load),
 	                "Room Load Result",
 	                JOptionPane.INFORMATION_MESSAGE
 	        );
