@@ -600,10 +600,12 @@ public class SchedamyGUI extends Frame implements ActionListener {
 			return;
 		}
 
+		/*
 		if (command.equals("Reschedule Lesson")) {
 			openRescheduleLessonDialog();
 			return;
 		}
+		*/
 
 
 
@@ -2822,6 +2824,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 		dialog.setVisible(true);
 	}
 
+	/*
 	private void openRescheduleLessonDialog()
 	{
 		Dialog dialog = new Dialog(this, "Reschedule Lesson", true);
@@ -3077,6 +3080,7 @@ public class SchedamyGUI extends Frame implements ActionListener {
 
 		dialog.setVisible(true);
 	}
+	*/
 
 
 
